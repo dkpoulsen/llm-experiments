@@ -1,0 +1,43 @@
+{"at": "2026-10-27T09:56:15.242824+00:00", "type": "levers", "register": "analyze", "inference_depth": "standard"}
+{"at": "2026-10-27T09:56:21.459413+00:00", "type": "step", "step": "1", "status": "done", "chapter": null, "force": false}
+{"at": "2026-10-27T09:56:21.467345+00:00", "type": "spend_reconcile", "sources_fetched": 0, "notes_written": 0, "agents_spawned": 0, "estimated_usd": 0.0, "max_sources": null, "max_notes": null, "blocked_on": null}
+{"at": "2026-10-27T12:20:02.388018+00:00", "type": "step", "step": "2", "status": "done", "chapter": null, "force": false}
+{"at": "2026-10-27T12:20:02.389916+00:00", "type": "spend_reconcile", "sources_fetched": 143, "notes_written": 143, "agents_spawned": 0, "estimated_usd": 0.0, "max_sources": null, "max_notes": null, "blocked_on": null}
+{"at": "2026-10-27T12:22:27.089578+00:00", "type": "step", "step": "3", "status": "done", "chapter": null, "force": false}
+{"at": "2026-10-27T12:22:27.091423+00:00", "type": "spend_reconcile", "sources_fetched": 143, "notes_written": 143, "agents_spawned": 0, "estimated_usd": 0.0, "max_sources": null, "max_notes": null, "blocked_on": null}
+{"at": "2026-10-27T12:53:11.424494+00:00", "type": "step", "step": "4", "status": "done", "chapter": null, "force": false}
+{"at": "2026-10-27T12:53:11.426655+00:00", "type": "spend_reconcile", "sources_fetched": 143, "notes_written": 143, "agents_spawned": 0, "estimated_usd": 0.0, "max_sources": null, "max_notes": null, "blocked_on": null}
+{"at": "2026-10-27T14:09:48.805825+00:00", "type": "step", "step": "5", "status": "done", "chapter": null, "force": false}
+{"at": "2026-10-27T14:09:48.807527+00:00", "type": "spend_reconcile", "sources_fetched": 177, "notes_written": 183, "agents_spawned": 0, "estimated_usd": 0.0, "max_sources": null, "max_notes": null, "blocked_on": null}
+{"at": "2026-10-27T14:10:49.834917+00:00", "type": "step", "step": "6", "status": "done", "chapter": null, "force": false}
+{"at": "2026-10-27T14:10:49.836509+00:00", "type": "spend_reconcile", "sources_fetched": 177, "notes_written": 183, "agents_spawned": 0, "estimated_usd": 0.0, "max_sources": null, "max_notes": null, "blocked_on": null}
+{"at": "2026-10-27T14:12:28.157544+00:00", "type": "step", "step": "7", "status": "done", "chapter": null, "force": false}
+{"at": "2026-10-27T14:12:28.159253+00:00", "type": "spend_reconcile", "sources_fetched": 177, "notes_written": 183, "agents_spawned": 0, "estimated_usd": 0.0, "max_sources": null, "max_notes": null, "blocked_on": null}
+{"at": "2026-10-27T15:03:47.843636+00:00", "type": "step", "step": "8", "status": "done", "chapter": null, "force": false}
+{"at": "2026-10-27T15:03:47.845347+00:00", "type": "spend_reconcile", "sources_fetched": 219, "notes_written": 225, "agents_spawned": 0, "estimated_usd": 0.0, "max_sources": null, "max_notes": null, "blocked_on": null}
+{"at": "2026-10-27T15:05:12.189560+00:00", "type": "step", "step": "9", "status": "done", "chapter": null, "force": false}
+{"at": "2026-10-27T15:05:12.191633+00:00", "type": "spend_reconcile", "sources_fetched": 219, "notes_written": 225, "agents_spawned": 0, "estimated_usd": 0.0, "max_sources": null, "max_notes": null, "blocked_on": null}
+{"at": "2026-10-27T16:21:31.217837+00:00", "type": "step", "step": "10", "status": "done", "chapter": null, "force": false}
+{"at": "2026-10-27T16:21:31.219674+00:00", "type": "spend_reconcile", "sources_fetched": 219, "notes_written": 225, "agents_spawned": 0, "estimated_usd": 0.0, "max_sources": null, "max_notes": null, "blocked_on": null}
+{"at": "2026-10-27T17:14:35.146869+00:00", "type": "step", "step": "11", "status": "done", "chapter": null, "force": false}
+{"at": "2026-10-27T17:14:35.149042+00:00", "type": "spend_reconcile", "sources_fetched": 219, "notes_written": 225, "agents_spawned": 0, "estimated_usd": 0.0, "max_sources": null, "max_notes": null, "blocked_on": null}
+{"at": "2026-10-27T17:49:09.585569+00:00", "type": "step", "step": "12", "status": "done", "chapter": null, "force": false}
+{"at": "2026-10-27T17:49:09.587546+00:00", "type": "spend_reconcile", "sources_fetched": 219, "notes_written": 225, "agents_spawned": 0, "estimated_usd": 0.0, "max_sources": null, "max_notes": null, "blocked_on": null}
+{"at": "2026-10-27T17:49:53.036535+00:00", "type": "step", "step": "13", "status": "done", "chapter": null, "force": false}
+{"at": "2026-10-27T17:49:53.039540+00:00", "type": "spend_reconcile", "sources_fetched": 219, "notes_written": 225, "agents_spawned": 0, "estimated_usd": 0.0, "max_sources": null, "max_notes": null, "blocked_on": null}
+{"at": "2026-10-27T18:11:12.603912+00:00", "type": "step", "step": "14", "status": "done", "chapter": null, "force": false}
+{"at": "2026-10-27T18:11:12.605865+00:00", "type": "spend_reconcile", "sources_fetched": 219, "notes_written": 225, "agents_spawned": 0, "estimated_usd": 0.0, "max_sources": null, "max_notes": null, "blocked_on": null}
+{"at": "2026-10-27T18:36:01.122652+00:00", "type": "step", "step": "14.5", "status": "done", "chapter": null, "force": false}
+{"at": "2026-10-27T18:36:01.124459+00:00", "type": "spend_reconcile", "sources_fetched": 219, "notes_written": 225, "agents_spawned": 0, "estimated_usd": 0.0, "max_sources": null, "max_notes": null, "blocked_on": null}
+{"at": "2026-10-27T18:44:24.804206+00:00", "type": "step", "step": "15", "status": "done", "chapter": null, "force": false}
+{"at": "2026-10-27T18:44:24.806227+00:00", "type": "spend_reconcile", "sources_fetched": 219, "notes_written": 225, "agents_spawned": 0, "estimated_usd": 0.0, "max_sources": null, "max_notes": null, "blocked_on": null}
+{"at": "2026-10-27T18:50:40.571632+00:00", "type": "step", "step": "16", "status": "done", "chapter": null, "force": false}
+{"at": "2026-10-27T18:50:40.573412+00:00", "type": "spend_reconcile", "sources_fetched": 219, "notes_written": 225, "agents_spawned": 0, "estimated_usd": 0.0, "max_sources": null, "max_notes": null, "blocked_on": null}
+{"at": "2026-10-27T19:00:15.983202+00:00", "type": "spend_reconcile", "sources_fetched": 219, "notes_written": 225, "agents_spawned": 0, "estimated_usd": 0.0, "max_sources": null, "max_notes": null, "blocked_on": null}
+{"at": "2026-10-27T19:00:15.983678+00:00", "type": "finish", "passed": true, "failed_checks": []}
+{"at": "2026-10-27T19:00:19.132458+00:00", "type": "spend_reconcile", "sources_fetched": 219, "notes_written": 225, "agents_spawned": 0, "estimated_usd": 0.0, "max_sources": null, "max_notes": null, "blocked_on": null}
+{"at": "2026-10-27T19:00:19.132921+00:00", "type": "finish", "passed": true, "failed_checks": []}
+{"at": "2026-10-27T19:00:22.373276+00:00", "type": "spend_reconcile", "sources_fetched": 219, "notes_written": 225, "agents_spawned": 0, "estimated_usd": 0.0, "max_sources": null, "max_notes": null, "blocked_on": null}
+{"at": "2026-10-27T19:00:22.373923+00:00", "type": "finish", "passed": true, "failed_checks": []}
+{"at": "2026-10-27T19:01:28.439596+00:00", "type": "spend_reconcile", "sources_fetched": 219, "notes_written": 225, "agents_spawned": 0, "estimated_usd": 0.0, "max_sources": null, "max_notes": null, "blocked_on": null}
+{"at": "2026-10-27T19:01:28.440103+00:00", "type": "finish", "passed": true, "failed_checks": []}

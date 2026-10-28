@@ -1,0 +1,1331 @@
+---
+title: 'veScale-FSDP: Flexible and High-Performance FSDP at'
+id: vescale-fsdp-flexible-and-high-performance-fsdp-at
+tags:
+- cmp170hx-training-feasibility-a0d4fc
+- fsdp
+- zero
+- sharding
+- scaling
+- communication
+- sub-q3
+created: '2026-10-27T10:11:58.357064Z'
+updated: '2026-10-27T19:00:31.086453Z'
+source: https://arxiv.org/abs/2602.22437
+source_domain: arxiv.org
+fetched_at: '2026-10-27T10:11:58.356360Z'
+fetch_provider: crawl4ai
+status: review
+type: note
+tier: institutional
+content_type: paper
+deprecated: false
+summary: 'ByteDance Seed (arXiv 2602.22437, Apr 2026): FSDP reimplementation built
+  on RaggedShard (block-aligned sharding) plus a structure-aware planning algorithm,
+  giving zero-copy collectives and native support for block-wise quantization and
+  non-element-wise optimizers (Shampoo, Muon). Claims 5-66% higher throughput and
+  16-30% lower memory than existing FSDP systems while scaling to 10K GPUs. The load-bearing
+  statement for this run: ''the communication cost of FSDP and the computation cost
+  per GPU remain constant with respect to the number of GPUs, depending only on the
+  model and input sizes'' - so at a fixed global batch, adding GPUs shrinks per-GPU
+  tokens and lets parameter AllGather plus gradient ReduceScatter dominate runtime.
+  Linear strong scaling holds at a 120M-token global batch up to 10K GPUs, and 3.4x
+  from 1K to 8K GPUs at a 16M-token batch; 2.4T parameters train on 1K GPUs with no
+  MFU degradation. Testbed: 8x H800 per node (979 BF16 TFLOPS, 80 GB HBM, 400 GB/s
+  NVLink). Practical guidance: avoid oversized FSDP groups, prefer HSDP; FSDP1 has
+  slow ReduceScatter, FSDP2 has tensor-copy overhead, Megatron-FSDP pays padding cost.'
+raw_file: raw/vescale-fsdp-flexible-and-high-performance-fsdp-at.pdf
+doi: arXiv:2602.22437
+utility_score: 13.0
+---
+
+veScale-FSDP: Flexible and High-Performance FSDP at
+Scale
+Zezhou Wang∗, Youjie Li∗,†, Zhiqi Lin∗, Jiacheng Yang∗, Cong Xie, Guanyu Feng,
+Zheng Zhong, Ziyue Huang, Hongyu Zhu, Zhi Zhang, Yanghua Peng†, Xin Liu
+ByteDance Seed
+∗Equal Contribution, †Corresponding authors
+Abstract
+Fully Sharded Data Parallel (FSDP), also known as Zero Redundancy Optimizer (ZeRO), is widely
+used for large-scale model training, because of its memory efficiency and minimal intrusion on model
+code. However, existing FSDP systems rely on fixed element-wise or row-wise sharding formats that
+conflict with block-structured computations. As a result, they struggle to support modern structure-
+aware training methods, including block-wise quantization and non-element-wise optimizers such
+as Shampoo and Muon. In addition, today’s implementations incur communication and memory
+overheads that degrade efficiency at the scale of tens of thousands of GPUs.
+We introduce
+veScale-FSDP, a novel FSDP system that combines RaggedShard, a flexible sharding format, with
+a structure-aware planning algorithm to deliver both flexibility and performance. veScale-FSDP
+enables zero-copy FSDP communications and natively supports block-wise quantization and non-
+element-wise optimizers, achieving 5∼66% higher throughput and 16∼30% lower memory usage
+than existing FSDP systems, while scaling efficiently to tens of thousands of GPUs.
+Date: April 23, 2026
+Correspondence: youjie.li@bytedance.com and pengyanghua.yanghua@bytedance.com
+Project Page: https://github.com/volcengine/veScale
+1
+Introduction
+Large language models (LLMs) have become a transformative technology in everyday applications. Driven
+by the scaling law [10], LLMs now reach billions of parameters and approach human-level performance in
+various domains. Training such giant models requires parallelization techniques that distribute the model and
+optimizer states across thousands of GPUs [8]. Among these, Fully Sharded Data Parallel (FSDP) [16, 19, 35],
+also known as DeepSpeed ZeRO [24], is one of the most fundamental techniques. FSDP is often the first
+choice because of its memory efficiency and flexible data-parallel programming paradigm that is decoupled
+from model architecture. When additional scaling is needed, FSDP can be combined with other forms of
+parallelism [15, 26].
+However, existing FSDP systems struggle to support modern structure-aware training methods. State-of-the-art
+models use non-element-wise optimizers such as Shampoo [6] and Muon [9], and block-wise quantized training
+as used in DeepSeek-V3 [14], all of which require tensor blocks to remain intact under sharding. The core
+limitation is that existing FSDP frameworks shard model states either element-wise [24, 35] or row-wise [16, 19],
+producing sharding boundaries that often misalign with the required block structure. Consequently, either
+1
+arXiv:2602.22437v3  [cs.DC]  21 Apr 2026
+
+
+---
+
+model developers must intrusively modify the model or optimizer code to match tensor boundaries, or system
+developers must handle complex boundary checks, padding, and additional communication logic.
+Beyond inflexibility, existing FSDP systems fall short of production throughput and memory targets, where
+we aim to extract every bit of hardware efficiency. GPU Memory is the tighter constraint: in shared clusters,
+jobs run out of memory or will operate at the memory limit incurring expensive device-side frees, prompting
+over-provisioning that leaves GPU resources wasted. These demands become even more critical when scaling
+training to over 10K GPUs and trillions of parameters. Few existing FSDP systems can scale to this level while
+maintaining efficiency. DeepSpeed ZeRO [24] pioneered FSDP research but suffers from fragmented AllGather
+operations [7] and inefficient memory management [33]. PyTorch FSDP1 [35] addresses some AllGather
+inefficiency, but incurs slow ReduceScatter [36] and does not solve memory overhead [33]. PyTorch FSDP2 [19]
+improves memory management [5] but introduces a high tensor copy overhead. Meanwhile, both FSDP1 and
+FSDP2 suffer from slow collectives due to unaligned communication buffers [17, 32]. Megatron-FSDP [16]
+adopts a zero-copy design that avoids FSDP2’s tensor copy overhead but requires extra padding, increasing
+both communication and memory costs.
+To address these flexibility and performance shortcomings, we present veScale-FSDP, a novel FSDP system
+that preserves the PyTorch-native fully_shard API while rearchitecting the PyTorch FSDP2 backend for
+flexible and high-performance training at scale:
+▷For flexibility, veScale-FSDP introduces a novel sharding format, RaggedShard, which supports arbitrary
+sharding granularity with custom block sizes for structure-aware training, while seamlessly composing with
+existing PyTorch DTensor sharding formats.
+▷For performance, veScale-FSDP introduces a planning algorithm that rearranges RaggedShard tensors to
+maximize communication efficiency while respecting their desired sharding blocks. We formulate planning
+as an NP-hard optimization problem and use practical polynomial-time heuristics that achieve high-quality
+solutions in practice.
+▷veScale-FSDP further provides a high-performance primitive, Distributed Buffer (DBuffer), that backs
+RaggedShard tensors with slices of a global buffer, enabling zero-copy access, reducing communication overhead,
+and reducing memory fragmentation via batched memory allocations.
+Our extensive evaluations demonstrate that veScale-FSDP outperforms all existing FSDP systems on both
+dense and sparse LLMs across different scales, achieving 5∼66% higher throughput and 16∼30% lower memory
+usage while scaling efficiently to tens of thousands of GPUs. In addition, case studies show that veScale-FSDP
+natively accommodates both non-element-wise optimizers such as Muon [9] and block-wise quantization
+methods such as 8-bit Adam [2]. veScale-FSDP has been deployed in production for most training workloads
+at ByteDance Seed, and is portable without relying on internal infrastructure.
+RaggedShard code is open-sourced at https://github.com/volcengine/veScale.
+2
+Background and Motivation
+2.1
+Structure–Aware Training
+Structure-aware training underpins frontier models such as Kimi K2 [28], Gemini [27], and DeepSeek-V3 [14],
+and is becoming increasingly important. Representative examples include:
+Matrix Optimizers.
+Matrix-based optimizers such as Shampoo [6] and Muon [9] can converge faster than
+AdamW [31]. Their updates operate on parameters in their original 2D matrix rather than on independently
+sharded elements. In practice, this requires gathering each matrix on a selected device before performing the
+matrix-level update, and then redistributing the update back.
+Block-wise Quantization.
+Quantizing model weights [14] and optimizer states [2] is widely used to improve
+training efficiency. Block-wise quantization is a common technique because per-block scaling factors mitigate
+the accuracy loss from reduced precision while preserving system efficiency. However, communication-free
+block-wise quantization requires each quantization block to reside entirely on a single device. If parameters
+2
+
+
+---
+
+mat
+mul
+Communication
+DTensor
+Shard(0)
+DTensor
+Replicate
+DTensor
+Shard(1)
+DTensor
+Shard(1)
+redistribute
+Computation
+Figure 1 Distributed Tensor (DTensor) for flexible communication and computation. The figure shows an example
+of DTensors executing a sharded matrix multiplication (matmul) on a device. A row-sharded (Shard(0)) DTensor is
+first redistributed to a replicated (Replicate) DTensor so that it can be multiplied with a column-sharded (Shard(1))
+DTensor, producing a column-sharded (Shard(1)) DTensor. The blue part in each DTensor indicates the materialized
+local tensor on that device.
+Table 1 Interleaved copy overhead in FSDP2 for GPT-OSS-120B on 64 H800 GPUs. The table reports the time of
+interleaved Copy-Out relative to AllGather on the AllGather path, and the time of interleaved Copy-In relative to
+ReduceScatter on the ReduceScatter path. Shard(0) is the default sharding format for each parameter, while Shard(1)
+is used when Shard(0) incurs large padding.
+AllGather path
+ReduceScatter path
+AllGather
+Copy-Out
+ReduceScatter
+Copy-In
+Shard(0)
+43.71 ms
+5.22 ms
+94.24 ms
+12.37 ms
+Shard(1)
+44.35 ms
+13.72 ms
+95.36 ms
+23.14 ms
+are sharded without respecting block boundaries, devices must exchange scaling-factor metadata, complicating
+the implementation and reducing the efficiency gains.
+2.2
+DTensor and JaggedTensor
+Distributed Tensor (DTensor) [13, 30, 34] is a promising primitive of PyTorch that provides an opportunity
+towards structure–aware training. It represents a logical global tensor distributed across multiple devices,
+with each device holding its local tensor. DTensor supports three sharding formats (placements): Shard(dim),
+which evenly shards a global tensor along a tensor dimension; Replicate, which replicates the global tensor
+on every device; and Partial, in which each device holds a partial value of the global tensor that must be
+reduced across devices to materialize the full result. It also provides a redistribute API that converts
+a DTensor between placements with implicit collective communications. Additionally, DTensors can be
+computed directly from operators such as matmul, as shown in Figure 1. However, a fundamental limitation
+remains for structure-aware training: the Shard format cannot represent the block-wise sharding needed for
+quantization or the uneven sharding required by matrix optimizers.
+JaggedTensor/NestedTensor on a single device
+[20, 21, 29] is a PyTorch/TensorFlow primitive for
+representing tensors whose last dimension is jagged. For example, a 2D tensor whose rows may have different
+lengths. These primitives cannot express sharding with block-level granularity, but they offer a useful hint for
+how veScale-FSDP can support structure-aware sharding in distributed training.
+2.3
+ZeRO and FSDPs
+DeepSpeed ZeRO
+[24] pioneered this line of FSDP research. Its core idea is to concatenate a layer of
+tensors (parameters, gradients, and optimizer states) and then shard each concatenated tensor across devices,
+where tensors may be irregularly partitioned across device boundaries. ZeRO only unshards a layer using
+AllGather before the forward and backward passes, and reduces the layer gradients using ReduceScatter back
+across devices. Such a sharding design is fundamentally element-wise and cannot support structure-aware
+training.
+FullyShardedDataParallel (FSDP1)
+[35] is the first PyTorch-native ZeRO, following the same sharding
+format and limitation, but it is optimized for performance.
+3
+
+
+---
+
+Device 0
+Device 1
+Per-Param Copy In
+[0]
+[1]
+[0]
+[1]
+[0]
+[1]
+AllGather
+[0]
+[1]
+[0]
+[1]
+[0]
+[1]
+[0]
+[1]
+[0]
+[1]
+[0]
+[1]
+Per-Param 
+Copy Out
+Parameter
+[0]
+[1]
+Parameter
+Parameter
+[0]
+[1]
+[0]
+[1]
+Full Tensor
+[0]
+[1]
+[0]
+[1]
+[0]
+[1]
+Full Tensor
+Parameter
+[0]
+[1]
+Parameter
+Parameter
+[0]
+[1]
+[0]
+[1]
+DTensor
+Interleaved 
+Address
+Figure 2 The copy overhead in the FSDP2 design. Each parameter is represented as a Shard(0) DTensor and is
+evenly sharded across devices. Before AllGather, the input communication buffer on each device needs to copy in the
+local shards of all parameters. After AllGather, the output communication buffer stores each parameter in interleaved
+memory addresses rather than a contiguous address. As a result, FSDP2 must copy out each parameter from the
+output buffer to materialize the full tensor with a contiguous address needed for computation. The ReduceScatter
+path is a reversed one and incurs interleaved Copy-In overhead.
+fully_shard (FSDP2) is the second PyTorch-native ZeRO and represents the state of the art in the FSDP
+community. It replaces the concatenated-shard design with per-parameter sharding, representing each tensor as
+a Shard(0) DTensor. This exposes DTensor flexibility for FSDP parameters in communication, computation,
+and checkpointing. However, this evenly sharded format still falls short of enabling structure-aware training.
+Moreover, FSDP2 introduces performance overheads by copying parameters into and from interleaved memory
+addresses, as shown in Figure 2 and Table 1.
+Megatron-FSDP
+[16] is the most recent FSDP prototype optimized for speed. It forgoes FSDP2’s design
+and reverts to FSDP1’s concatenated sharding to avoid copying overhead, while further optimizing performance.
+However, Megatron-FSDP introduces a special mechanism to make a concatenation-sharded tensor appear as
+a Shard(0) DTensor so that model checkpointing can reuse DTensor. This mechanism inserts padding into
+the concatenation so that tensors are sharded row-wise along device boundaries rather than element-wise.
+Without careful padding planning, the concatenation size can grow significantly, increasing both memory
+usage and communication volume. Moreover, row-wise sharding still falls short of supporting structure-aware
+training. Its granularity is fixed by the parameter layout and may not match what the block-wise quantization
+requires.
+3
+Overview
+To address both flexibility and performance challenges, we present veScale-FSDP, a novel FSDP system.
+Figure 3 provides an overview. veScale-FSDP allows model developers to build sophisticated large models
+(e.g., with sparse MoE structures) and structure-aware optimizers (e.g., with non-element-wise operators)
+that achieve better model quality. At the same time, developers can parallelize these models and optimizers
+through PyTorch’s native fully_shard API, as in FSDP2, without intrusive modifications to model or
+optimizer code. During parallelization, complex model and optimizer operators can still preserve single-device
+semantics through a new sharding format, RaggedShard, which supports arbitrary sharding granularities
+4
+
+
+---
+
+Distributed Buffer (DBuffer)
+RaggedShard DTensor
+veScale-FSDP
+10K Devices
+PyTorch-Native API
+Complex Large Model
+Structure-Aware Optimizer
+Planning Algorithm
+...
+...
+Figure 3 veScale-FSDP overview.
+Element-wise 
+Shard
+Non-
+Element-wise
+Compute
+Redistribute
+(Communicate)
+Block-wise
+Quantize 
+(No Comm.)
+General 
+Format
+Row-wise 
+Shard
+Row-wise 
+RaggedShard
+Block-wise 
+RaggedShard
+Custom
+Block Size
+#2 Block
+#3 Block
+Tensor
+Shard
+Device 0
+Device 1
+Figure 4 Flexibility comparison of different sharding formats.
+over contiguous storage and arbitrary distributions across devices for each DTensor (§4). Under the hood,
+RaggedShard DTensors are grouped for bucketed communication. To optimize performance, their layouts are
+rearranged by a planning algorithm derived from an NP-hard optimization problem. The planned layouts are
+then mapped to a Distributed Buffer (DBuffer), a new primitive that enables zero-copy communication path
+with minimal overhead (§5). Together, these components enable veScale-FSDP to scale efficiently to 10K
+GPUs in real production deployments.
+4
+RaggedShard for Flexibility
+This section proposes RaggedShard, a novel and general sharding format to increase FSDP’s flexibility for
+complex models and structure-aware optimizers.
+Existing sharding formats.
+Figure 4 summarizes existing sharding formats for FSDP tensors. The most
+common and conventional format is the Element-wise Shard, where tensors are partitioned arbitrarily across
+devices without respecting structural boundaries. This leads to dangling elements on each device and a loss of
+tensor shape and stride information. Consequently, this format severely limits flexibility: (i) non-element-wise
+operations such as matrix multiplications break on misaligned elements, (ii) collective communication for
+redistributing tensors across dimensions becomes complex and inefficient, and (iii) quantization methods
+such as block-wise FP8 quantization cannot align block sizes with random shard boundaries, introducing
+5
+
+
+---
+
+Shard(0)
+RaggedShard
+DTensor
+Device 0
+Device 2
+Device 1
+Device 3
+Block
+Block
+Block
+Block
+Block
+Block
+Figure 5 Composability of RaggedShard with existing evenly sharded DTensor placements in 2D parallelism schemes
+such as FSDP×EP (Expert Parallelism).
+substantial communication overhead for cross-boundary synchronization. Unfortunately, this element-wise
+sharding design remains the backbone of DeepSpeed and FSDP1.
+The second format is the Row-wise (Even) Shard, where a tensor is evenly partitioned along a dimension,
+with equal-sized shards assigned to each device. This design improves flexibility by enabling non-element-wise
+computations on sharded tensors and allowing dimension redistribution via All2All collectives. However, it
+still faces challenges with block-wise quantization, as evenly divided shards are not guaranteed to align with
+block boundaries. This row-wise sharding format serves as the foundation of FSDP2.
+The RaggedShard format.
+Inspired by JaggedTensor/NestedTensor [20, 21, 29], we propose the RaggedShard
+format for DTensor.
+RaggedShard increases flexibility by supporting arbitrary sharding granularity in
+contiguous memory, i.e., the size of the atomic non-shardable block, and arbitrary sharding distribution, i.e.,
+the number of such blocks placed on each device. The sharding granularity can be defined over contiguous
+tensor units, such as elements, rows, or higher-dimensional planes. Figure 4 shows a simple example: when
+the sharding granularity is set to one tensor row, RaggedShard yields Row-wise RaggedShard, where different
+devices may hold different numbers of rows. A similar idea has been prototyped in the model checkpointing
+mechanism of Megatron-FSDP.
+The most flexible sharding format is the Block-wise RaggedShard, where the sharding granularity is defined as
+a tensor block with a customizable shape. For example, a tensor may be partitioned into three 2D blocks,
+with one block placed on device 0 and two blocks on device 1 (see Figure 4). This format not only supports
+non-element-wise computation and efficient redistribution but also enables block-wise quantization with perfect
+alignment between quantization blocks and shard boundaries. In fact, the block-wise RaggedShard generalizes
+all previous sharding formats through different choices of block size.
+Composing with existing sharding formats.
+DTensor has been widely used to express tensor partitions
+in parallelization strategies such as Tensor Parallelism (TP) [25] and Expert Parallelism (EP) [11]. It allows
+tensors to be represented using replicated, partial-value, or evenly sharded placements along a selected
+dimension. RaggedShard extends this capability as an additional DTensor placement.
+To support combinations of multiple parallelization strategies, RaggedShard needs to compose cleanly with
+existing DTensor placements. RaggedShard is orthogonal to both replicated and partial-value placements
+and veScale-FSDP specially handles the Shard placement. In practice, TP uses Shard(0) and Shard(1) for
+column- and row-wise Tensor Parallelism; EP can be encoded as Shard(0) along the expert dimension. By
+convention, EP/TP is applied before FSDP. In PyTorch, however, the DTensor placement list is organized in
+the opposite order of conceptual application (see Figure 5): a tensor shown with placements (RaggedShard,
+Shard(0)) is partitioned as Shard(0) followed by RaggedShard. veScale-FSDP reconciles this by: (i) for
+Shard(0), introducing a dedicated placement StridedRaggedShard that carries reordering/stride metadata
+and performs the required reshuffle when materializing the full tensor; and (ii) for Shard(dim>0), adapting
+the ragged sharding granularity so it never cuts into that dimension by choosing the granularity as Least
+Common Multiple (LCM) of the tensor stride of that dimension and user-defined granularity.
+Meanwhile, RaggedShard, as an extended DTensor placement, offers checkpointing capability by directly reusing
+DTensor-based checkpointing stacks (e.g., PyTorch Distributed Checkpoint [22]) for failure recovery and also
+inheriting their optimizations such as communication-free sharded checkpointing.
+6
+
+
+---
+
+Pad
+...
+Device 0
+Device 1
+DTensor
+DTensor
+DTensor
+Block 0
+Block 1
+Block 2
+Ragged
+Shard
+Block
+Block
+Pad
+Sharded 
+Block
+Block 0
+...
+...
+Block 1
+Block 2
+Non-contiguous 
+Tensor Memory
+Imbalanced Load
+Inefficient Communication
+(a) Naive approach
+Block
+Block
+Block
+Block
+Block
+Device 0
+Device 1
+DTensor
+DTensor
+DTensor
+Block 0
+Block 1
+Block 2
+Block
+Block
+Non-Sharded 
+Block
+Block 0
+...
+Block 1
+Block 2
+Contiguous 
+Tensor 
+Memory
+Balanced Load
+Efficient Communication
+(b) Structure-aware Planner
+Block
+Block
+Block
+Block
+Block
+Permute
+Tensors
+Pad
+Between
+Tensors
+Comm. 
+Buffer
+Comm. 
+Buffer
+Figure 6 Communication layouts for grouped RaggedShard DTensors. (a) shows a naive strategy that concatenates
+tensors directly into the communication buffer. This can split blocks across shard boundaries, introduce padding
+within tensors, and produce unequal per-device buffer sizes, leading to inefficient communication. (b) shows our
+structure-aware planner that carefully plans the communication layout – first permutes tensors and then inserts
+padding between tensors rather than within them. This preserves non-sharded blocks, keeps each tensor contiguous in
+memory, and balances per-device communication buffers, leading to efficient communication.
+5
+Grouped RaggedShard for Performance
+This section discusses how to group RaggedShard DTensors for efficient communication. We formulate the
+underlying optimization problem, prove the NP-hardness of the problem, and present a polynomial-time
+heuristic algorithm that achieves high-quality solutions in practice.
+Challenges for efficient communication.
+As is well known in the systems community, collective
+communication relies on tensor bucketing or grouping to maximize network utilization [12, 35]. The same
+principle applies to communication over RaggedShard DTensors in veScale-FSDP. However, efficiently group-
+ing RaggedShard tensors is non-trivial and straightforward approaches can lead to significant inefficiencies.
+Figure 6(a) illustrates three major sources of inefficiency:
+• Sharded block: Tensors are concatenated into a communication buffer without respecting block boundaries,
+causing individual blocks to be split across devices; this violates the abstraction of Block-wise RaggedShard
+and incurs additional communication for quantization.
+• Non-contiguous tensor memory: Padding may be inserted at the ends of communication buffers to satisfy
+collective alignment requirements [17, 32] or equal-size constraints across devices [18], but may fall within a
+tensor. This breaks tensor contiguity and introduces interleaved copy overhead, similar to the Copy-Out
+after AllGather in Figure 2.
+• Imbalanced load: Differences in tensor sizes, block sizes, or padding sizes may lead to unequal buffer sizes
+across devices. This breaks the symmetry of collective communication and results in underutilized network
+bandwidth.
+Towards efficient communication.
+To efficiently group RaggedShard DTensors, we propose a two-step
+approach that addresses the above challenges: first permute tensors, and then pad between them rather than
+padding within individual tensors, as illustrated in Figure 6(b). The key idea is to balance tensor and block
+sizes across devices while aligning block boundaries in the sharded communication buffer so that blocks are
+placed contiguously. This approach inevitably introduces some padding overhead, which must be carefully
+minimized to reduce both memory usage and communication volume.
+Optimization problem formulation.
+Formally, the proposed approach can be formulated as an
+optimization problem. Let T = {t1, t2, . . . , tn} denote a set of RaggedShard DTensors, which are sharded
+across m devices. Each DTensor t ∈T has a block size of gt, a total tensor size (in elements) et, and therefore
+contains ut = et/gt sharding blocks. We allocate a global communication buffer and place each t in the buffer
+as a contiguous memory interval [ℓt, rt). The decision variables are a uniform per-device buffer size S and the
+interval endpoints {ℓt, rt}t∈T . The global communication buffer therefore has total size mS, partitioned into
+7
+
+
+---
+
+Algorithm 1 Structure-aware planning for grouped communication of RaggedShard DTensors.
+1: Input: ordered tensor list T ; per-tensor sharding block size gt (collectively G = {gt}); per-tensor size et;
+per-tensor number of blocks ut; number of devices m; collective preferred unit size gcoll.
+2: Output: minimal uniform per-device buffer size S⋆.
+3: Notation: for a candidate shard size S, dp(t, i; S) denotes the minimum number of device-local shards
+required to place all tensors before t and the first i sharding blocks of tensor t.
+4:
+5: function CheckValidShard(S)
+6:
+initialize segment records for dp(·, ·; S)
+7:
+for all t ∈T do
+8:
+l ←0
+9:
+while l < ut do
+10:
+// dp(t, i; S) is monotonic in i, so skip intermediate states within a constant segment
+11:
+r ←max{i∈[l, ut) : dp(t, i; S) = dp(t, l; S)}
+12:
+record segment [l, r] with value dp(t, l; S)
+13:
+l ←r + 1
+14:
+end while
+15:
+end for
+16:
+return dp(tlast, utlast; S) ≤m
+17: end function
+18:
+19: g ←gcoll
+20: S⋆←+∞
+21: for all g′ ∈SortAscending(G) do
+22:
+g ←LeastCommonMultiple(g, g′)
+23:
+S′ ←min{k ∗g : k ∈N∧CheckValidShard(k ∗g)}
+24:
+S⋆←min(S⋆, S′)
+25: end for
+26: return S⋆
+m equal-sized device-local buffers, where device k owns a memory interval of [(k −1)S, kS) for k = 1, . . . , m.
+Our goal is to minimize S subject to three constraints: Non-Sharded Block, Contiguous Tensor Memory, and
+Balanced Load (Figure 6(b)):
+min
+S,{ℓt,rt}t∈T S
+s.t.
+rt −ℓt = et ∧rt ≤mS, ∀t ∈T ,
+rt ≤ℓt′ ∨rt′ ≤ℓt, ∀t̸ = t′ ∈T ,
+kS ≤ℓt ∨kS ≥rt ∨(kS −ℓt) ≡0
+(mod gt),
+∀t ∈T , ∀k = 1, . . . , m
+This optimization problem is NP-hard, as it can be reduced from the classic Partition problem [4]. Although
+it can be formulated as an Integer Linear Programming (ILP) problem and solved using off-the-shelf solvers,
+such methods are impractical at scale. In practice, ILP solvers often take tens of minutes to generate a
+plan and may even trigger system timeouts. Given that user-defined FSDP wrapping can yield hundreds of
+parameter groups with diverse sharding block sizes, and deployments may span up to hundreds of thousands
+of devices, we instead design a polynomial-time heuristic algorithm that achieves near-optimal efficiency in
+practice.
+Heuristic-guided solution.
+veScale-FSDP introduces a polynomial-time dynamic-programming (DP)
+buffer-layout algorithm, guided by permutation heuristics that exploit the regularity of transformer models.
+The optimization difficulty arises from tensor ordering: in principle, any permutation of tensors could be
+8
+
+
+---
+
+DTensor
+DTensor
+DTensor
+Zero Copy
+Redistribute with 
+Inplace Communication
+Group-level 
+Operator
+DBuffer
+Device 0
+Device 1
+Device 2
+Device 3
+Shard
+Replicate
+DBuffer
+Replicate
+Replicate
+Device 0, Device1
+Device 2, Device 3
+Zero Copy
+Figure 7 Distributed Buffer (DBuffer) for high-performance communication. A 2D DBuffer for parameter AllGather
+is shown; conversely, a 2D DBuffer redistributing from (Partial, Partial) to (Replicate, Shard) implements 2D
+gradient reduction with ReduceScatter and AllReduce.
+mapped into the global communication buffer, and finding the global optimum would require exploring all
+permutations. Fortunately, in practice, transformer parameters are highly structured: linear weights dominate
+the total parameter count, and sharding blocks are often consistent across layers. To leverage this regularity,
+we consider three tensor orders: (i) the default tensor order; (ii) sorting by sharding block size; and (iii)
+sorting by tensor shape. Our statistics show that these orders yield optimal or near-optimal results, so we
+adopt the default order for simplicity and ease of debugging. For non-transformer architectures, alternative
+tensor orderings can be plugged in without changing the DP algorithm itself.
+Given the tensor order, the proposed algorithm applies a DP procedure to place tensors into the smallest
+possible global buffer while enforcing the aforementioned three constraints. It has a time complexity of
+O(|T |2m log(E) log(|T |m)). Algorithm 1 presents the details.
+The core idea is a case analysis of how each tensor aligns with shard boundaries in any valid layout: (1) it lies
+entirely within a single local shard; (2) it straddles two adjacent shards but does not fully contain a shard;
+and (3) it fully contains at least one shard. If every tensor falls into cases (1) or (2), feasibility is monotonic
+in the shard size S: whenever a layout exists for S, it also exists for S + ∆, where ∆is the smallest alignment
+unit required by the layout. Because every shard includes an inter-tensor boundary, the additional ∆can
+always be absorbed as padding. If any tensor falls into case (3), the feasible shard sizes must be multiples of
+L = LCM{ gt | t is in case (3) }. In this regime, feasibility is monotonic over multiples of L: if kL is feasible,
+then (k + 1)L is also feasible. We therefore binary-search for the minimal feasible S over the corresponding
+multiples, as shown in Lines 21–25. To avoid enumerating an exponential number of candidate case-(3) sets,
+we sort tensors by element count and consider only prefixes of this sorted order, yielding a 2-approximation.
+Within CheckValidShard, we define dp(t, i) as the minimum number of devices (shards) required to store
+all previous tensors and the first i sharding blocks of tensor t. Although the DP state space indexes every
+block position within a tensor, dp(t, i) is monotonic: dp(t, i) ≤dp(t, i + 1). Therefore, each tensor has at most
+m distinct DP values. In Lines 10–13, we exploit this property by grouping contiguous indices into segments
+and skipping intermediate dp(t, ∗) calculations, which yields the stated time complexity.
+Distributed Buffer (DBuffer)
+Beyond grouping RaggedShard DTensors, the underlying communication
+buffer also plays a vital role in achieving high communication, computation, and memory efficiency. veScale-
+FSDP introduces a new primitive, Distributed Buffer (DBuffer), for efficient grouped DTensors. Figure 7
+shows the design. First, inspired by DTensor, DBuffer provides global buffer semantics over an N-dimensional
+device topology, with a sharding specification along each dimension, abstracting away the complexity of
+N-D communication and operations. Second, DBuffer takes a group of tensors and executes group-level
+9
+
+
+---
+
+operators rather than per-tensor operators. For example, before communication, each tensor may need
+to launch its own CUDA kernels for add, scale, zero, or copy (which may differ across tensors), incurring
+fragmented compute overhead and blocking communication. With DBuffer, identical kernels across tensors are
+fused before communication, reducing blocking time. Third, DBuffer offers zero-copy access before and after
+communication by leveraging RaggedShard’s planning algorithm and providing a persistent address mapping
+to each tensor’s data pointer, thereby minimizing memory footprint and fragmentation. Finally, DBuffer uses
+in-place communication and computation.
+6
+Evaluation
+Our evaluation answers the following questions:
+• How much does veScale-FSDP improve end-to-end training performance over all baseline systems (§6.1)?
+• How well does veScale-FSDP scale to large device counts (§6.2), in terms of weak scaling, strong scaling,
+and model size scaling?
+• How are 8-bit Adam and Muon optimizer enabled by veScale-FSDP’s customizable sharding granularity
+and RaggedShard DTensor, in both performance and development velocity (§6.3)?
+• How does the veScale-FSDP planner minimize padding, and what is the algorithm overhead (§6.4)?
+• How much does each component of veScale-FSDP contribute to the training performance (§6.5)?
+Hardware: We ran the experiments §6.1, §6.4, and §6.5 on a NVIDIA H800 cluster; each node contains
+8×H800 GPUs (979 BF16 TFLOPS, 80 GB HBM) and 400 GB/s NVLinks. The experiments §6.2 and §6.3
+were conducted on a NVIDIA Hopper cluster.
+Implementation: veScale-FSDP is implemented with 7.6 K lines of code (LoC) in Python, transparently
+replacing the backend of FSDP2 while using the same PyTorch-native fully_shard API. veScale-FSDP serves
+as a plug-and-play Python module, compatible with standard PyTorch distributed runtimes and a wide range
+of PyTorch versions.
+Baselines: We compare veScale-FSDP against state-of-the-art open-source frameworks: DeepSpeed ZeRO
+v0.17.6 [24], PyTorch 2.7.1 FullyShardedDataParallel (FSDP1) [35], PyTorch 2.7.1 fully_shard (FSDP2) [19],
+and Megatron-FSDP. For fairness, all frameworks are configured to use ZeRO-3 with mixed precision (i.e.,
+FP32 master weights and BF16 forward/backward). Unless otherwise specified, veScale-FSDP employs
+element-wise sharding granularity and is compatible with standard training workflows.
+Workloads: For the end-to-end comparison with the baselines (§6.1), we evaluate two state-of-the-art open-
+source models, LLaMA-3-70B [3] and GPT-OSS-120B [1], as well as an internal MoE model. Under weak
+scaling, each device is statically assigned one batch; the sequence length is 4096 for the dense LLaMA model
+and 8192 for the MoE models. We use the AdamW optimizer by default. To avoid out-of-memory (OOM)
+errors for the baselines on GPT-OSS, we also report results using the SGD optimizer.
+6.1
+End-to-End Performance
+Figure 8 compares the performance of veScale-FSDP against the baselines on the three representative models
+introduced in the previous section with 1024 GPUs.
+Throughput: On the MoE models, veScale-FSDP is 11∼66% faster than all baselines. On LLaMA-3-70B,
+veScale-FSDP is 5% faster than DeepSpeed, FSDP1, and FSDP2, and slightly ahead of Megatron-FSDP. The
+higher throughput arises from optimized communication overlapping, DBuffer-based zero-copy collectives, and
+flexible sharding granularities that avoid padding overhead. In contrast, DeepSpeed emits fragmented collectives
+[7], while FSDP1 exhibits communication bubbles where data movement operations block NCCL progress,
+under-utilizing the network in both systems. FSDP2 relies on the per-parameter DTensor even-sharding format
+that introduces interleaved Copy-Out after AllGather and interleaved Copy-In before ReduceScatter; together
+these copies can consume up to 14% of a training iteration and hence reduce throughput. In addition, FSDP1
+and FSDP2 do not enforce NCCL buffer address alignment, so collectives may operate on unaligned memory
+addresses and suffer substantial communication performance degradation in certain cases [32]. Although
+Megatron is optimized for zero-copy collectives, its fixed Shard(0) sharding granularity, chosen to remain
+10
+
+
+---
+
+128
+256
+2*256
+4*256
+# GPUs
+0
+1
+2
+4
+6
+8
+10
+12
+Normalized Throughput
+128
+256
+2*256
+4*256
+# GPUs
+0
+20
+40
+60
+80
+Per GPU Memory (GB)
+Internal-Model-160B
+128
+256
+2*256
+4*256
+# GPUs
+0
+15
+30
+45
+60
+ERROR
+ERROR
+OOM
+OOM
+OOM
+128
+256
+2*256
+4*256
+# GPUs
+0
+20
+40
+60
+80
+ERROR
+ERROR
+OOM
+OOM
+OOM
+GPT-OSS-120B
+128
+256
+2*256
+4*256
+# GPUs
+0
+1
+2
+4
+6
+8
+10
+12
+128
+256
+2*256
+4*256
+# GPUs
+0
+20
+40
+60
+80
+Llama-3-70B 
+DeepSpeed
+FSDP1
+FSDP2
+Megatron-FSDP
+veScale-FSDP
+Figure 8 FSDP training performance. Top row: normalized aggregate throughput (tokens/s). Bottom row: peak
+per-GPU memory (GB). We sweep FSDP (ZeRO-3) at 128/256 GPUs and HSDP with 2- and 4-way replication (2*256,
+4*256 GPUs).
+consistent with the upstream DTensor Shard(0) semantics for distributed checkpointing, induces 33% buffer
+padding inflation in MoE models and thus slows collective communication [16]. Our experiments show that
+veScale-FSDP achieves linear scalability; detailed analysis appears in §6.2.
+Memory: Across benchmarks, veScale-FSDP reduces peak reserved memory by 16–30%. The memory saving
+stems from deterministic, batched DBuffer memory management: We explicitly manage stream dependencies for
+predictable memory deallocation, and we batch allocations to reduce fragmentation. By contrast, DeepSpeed
+and FSDP1 inherit non-deterministic deallocations from PyTorch’s implicit record_stream mechanism [5],
+which often prevents the caching allocator from reusing buffers, inflating peak reserved memory by 20%.
+Relative to FSDP2 ’s per-parameter eager allocation, our batched policy yields a further 12% reduction.
+Megatron’s padding-inflated buffers not only degrade collective efficiency but also raise peak memory by
+33% in MoE experiments; its mixed-precision support persists low-precision buffers, consuming 24% more
+memory than veScale-FSDP in the LLaMA-3 experiments. Lower reserved memory translates directly into
+higher end-to-end efficiency: under high memory pressure, the PyTorch caching allocator issues device frees
+that synchronize with the driver and stall training. In terms of scalability, veScale-FSDP’s memory footprint
+decreases monotonically as the FSDP group size increases and grows only marginally with the replication
+factor, matching scaling expectations. A notable exception appears with GPT-OSS: FSDP2 trains at 128
+devices but OOMs at 256. The per-parameter sharding design in DTensor requires padding to enforce even
+splits along the sharded dimension; with 128 experts spread over 256 devices, the AllGather buffer effectively
+doubles, exhausting memory. While FSDP2 allows custom sharding along other dimensions, it requires manual
+padding and thus doubles the interleaved-copy overhead, making it prohibitively expensive (recall Table 1).
+6.2
+Scalability and Composability
+The flexibility of RaggedShard also enables seamless integration with complementary parallelization strategies
+such as Expert Parallelism (EP) [11]. Combining these techniques allows veScale-FSDP to efficiently scale
+training to internal models with up to 2.4T parameters on as many as 10K Hopper GPUs, as shown in
+Figure 9. Note that we evaluate scalability of MoE, because MoE workloads are often more challenging
+to scale under FSDP: sparse expert computation lowers per-GPU compute while requiring substantial
+AllGather/ReduceScatter traffic, making communication and padding overheads more significant.
+Weak scaling: Figure 9a presents the weak scaling performance of veScale-FSDP. We train an 800B-parameter
+MoE internal model on 1K to 8K GPUs while keeping the input size fixed at 2K–16K tokens per GPU.
+11
+
+
+---
+
+1024
+2048
+4096
+8192
+# GPUs
+0
+1
+2
+4
+6
+8
+10
+Normalized Throughput
+Fixed per-GPU Batch Tokens
+2K
+4K
+8K
+16K
+Linear
+(a) 10K-GPU weak scaling
+1024
+2048
+4096
+8192
+# GPUs
+0
+1
+2
+4
+6
+8
+10
+Normalized Throughput
+Fixed Global Batch Tokens
+16M
+32M
+64M
+128M
+Linear
+(b) 10K-GPU strong scaling
+0
+0.25
+0.5
+0.75
+1
+Normalized # GPUs
+0
+5
+10
+15
+20
+25
+30
+Normalized Throughput
+Fixed Global Batch Tokens
+120M
+Linear
+(c) Strong scaling
+400B
+800B
+1200B
+1600B
+2400B
+Model Size
+0%
+10%
+20%
+30%
+40%
+50%
+Model FLOPS Utilization (MFU)
+(d) 1K-GPU model scaling
+Figure 9 Scalability of veScale-FSDP. (a) Weak scaling to 8K GPUs. (b) Strong scaling to 8K GPUs. (c) Strong
+scaling at larger scale with normalized throughput and normalized GPU count. (d) Model scaling on 1K GPUs up to
+2.4T parameters.
+Across all input sizes, veScale-FSDP demonstrates near-linear scalability as the GPU count increases. This is
+expected since the communication cost of FSDP and the computation cost per GPU remain constant with
+respect to the number of GPUs, depending only on the model and input sizes. These results confirm the
+efficiency of veScale-FSDP on large-scale GPU clusters.
+Strong scaling: We further evaluate the strong scaling performance of veScale-FSDP by fixing the global
+batch size to 16M–128M tokens and tuning expert and sequence parallelism configurations for each setting.
+Figures 9b and 9c show the resulting throughput across different numbers of GPUs. veScale-FSDP scales
+linearly with a 120M-token global batch up to 10K GPUs, while still delivering a 3.4× throughput gain
+from 1K to 8K GPUs at a 16M-token global batch. Figure 9c presents the same strong-scaling trend using
+normalized throughput and normalized GPU count. When the number of GPUs is small, each GPU processes
+enough tokens to fully overlap communication with computation, yielding near-linear scaling. However,
+as the GPU count continues to increase, fewer tokens are assigned per GPU per iteration, causing FSDP
+communication––including parameter AllGather and gradient ReduceScatter––to dominate runtime. To
+mitigate this overhead, we adopt cross-node Expert Parallelism, which further reduces FSDP communication
+time. This optimization introduces higher computation cost due to token exchange and reduced kernel
+efficiency, resulting in the performance drop at very large scales.
+Model scaling: We also evaluate model scaling by fixing the GPU count to 1K and increasing the model size
+from 400B to 2.4T parameters. With model sparsity constant and 8K training tokens per GPU, we scale both
+depth (number of layers) and width (intermediate dimensions) proportionally. Figure 9d reports the effective
+Model FLOPS Utilization (MFU) per GPU as model size grows. Enabled by efficient memory management of
+DBuffer (§5), veScale-FSDP can train 2.4T-parameter models on only 1K GPUs without any performance
+degradation. In fact, MFU slightly improves with larger models due to the increased compute intensity and
+better utilization of GPU resources.
+6.3
+8-bit Adam and Muon Optimizer
+We demonstrate the flexibility of RaggedShard DTensor using two examples: the 8-bit Adam optimizer and
+the distributed Muon optimizer.
+8-bit Adam optimizer.
+8-bit Adam [2] applies block-wise INT8 quantization to the gradient statistics,
+substantially reducing optimizer-state memory. To enable 8-bit Adam, veScale-FSDP exposes an orig_-
+param_policy interface that lets users set the quantization granularity per parameter. In our setup, we use
+32 × 32 blocks and assign matrix parameters to 32-row block granularity. With this layout, each device
+quantizes its local shard independently without any communication, and block boundaries are perfectly
+preserved by RaggedShard. In contrast, existing FSDP systems do not natively track such block boundaries,
+so enabling block-wise 8-bit Adam often requires intrusive system changes or manual collectives to exchange
+quantization metadata, incurring both complexity and overhead.
+We implement 8-bit Adam using veScale-FSDP with few lines of code and provide the evaluation in Figure 10a.
+We compare 8-bit Adam under distributed data parallelism (DDP) and with veScale-FSDP. The loss curves
+track closely, with occasional spikes characteristic of reduced-precision optimizer states. The small difference
+12
+
+
+---
+
+2
+8
+32
+128
+Consumed Tokens (B)
+2
+3
+4
+5
+Training Loss
+veScale-FSDP 8-bit Adam
+DDP 8-bit Adam
+(a) 8-bit Adam
+2
+8
+32
+128
+Consumed Tokens (B)
+2
+3
+4
+5
+Training Loss
+AdamW
+DDP Muon
+veScale-FSDP Muon
+(b) Distributed Muon
+Figure 10 Training convergence with veScale-FSDP on 64 GPUs (FSDP size 64) for 8-bit Adam and distributed Muon.
+Algorithm 2 RaggedShard Distributed Muon
+1: for all w in 2D parameter tensors do
+2:
+g ←grad(w)
+3:
+u ←MomentumUpdate(g, m)
+4:
+p ←placement(u) // original DTensor placement
+5:
+// Choose compute device via load balancing
+6:
+r ←SelectRoot()
+7:
+// Unshard to root via redistribute
+8:
+o ←Redistribute(u, RaggedShard(r))
+9:
+// Muon update: Newton–Schulz on full tensor.
+10:
+o ←NewtonSchulz(o)
+11:
+// Redistribute update back.
+12:
+o ←Redistribute(o, p)
+13:
+w ←w −η o
+14: end for
+stems from the gradient-reduction schedule: DDP uses bucketed AllReduce, whereas veScale-FSDP performs
+layer-wise ReduceScatter. (Note that the loss curves in Figure 10 are not directly comparable: for 8-bit Adam,
+we use a smaller learning rate to mitigate overflow/underflow in reduced precision.)
+Distributed Muon optimizer. The matrix-sign preconditioner (e.g., Newton–Schulz) of Muon requires the
+full 2D parameter matrix with its original shape. Algorithm 2 sketches the distributed Muon optimizer
+enabled by RaggedShard. Thanks to RaggedShard’s capability to support uneven sharding, users can write
+Muon’s parameter-gather step in a clean SPMD way: after redistribution, only the root rank holds the
+full 2D parameter, so the Newton–Schulz update becomes a no-op on other ranks. As lines 5–8 show, the
+algorithm selects a root via load balancing and unshards to it using the standard DTensor redistribute
+with RaggedShard placement. Lines 9–10 run the Muon matrix iteration only on the root that holds the full
+tensor. Finally, lines 11–13 redistribute the update back to the original device and apply it. Therefore, users
+do not need to handle the complex logic of communication and can further overlap communication with
+computation via asynchronous redistribute. In addition, our optimized Muon reaches 47.3% MFU on 256
+Hopper GPUs by exploiting the communication-computation overlapping and using torch.compile to further
+increase compute density.
+We implement distributed Muon using veScale-FSDP with few lines of code and provide the evaluation in
+Figure 10b. We compare the loss curves of Muon with AdamW: the two Muon runs (veScale-FSDP and DDP)
+match closely, and Muon converges faster than AdamW, stabilizing around 0.01 lower loss after training ∼80B
+tokens, which is consistent with prior results [31].
+6.4
+Planning Quality
+A major design objective of the planning algorithm (Algorithm 1) is to enable arbitrary granularity of
+RaggedShard, while minimizing padding overhead and thus reducing communication volume. The quality
+13
+
+
+---
+
+0
+250
+500
+750
+1000
+FSDP Size
+0%
+3%
+6%
+9%
+12%
+15%
+18%
+21%
+24%
+Padding Overhead (%)
+128x Row
+16x Row
+1x Row
+(a) DeepSeek-V3-671B
+0
+250
+500
+750
+1000
+FSDP Size
+0%
+3%
+6%
+9%
+12%
+15%
+18%
+21%
+24%
+Padding Overhead (%)
+128x Row
+16x Row
+1x Row
+(b) GPT-OSS-120B
+Figure 11 Padding overhead (extra padding bytes over total parameter size) of RaggedShard communication. Lines
+compare the sharding granularities (1×/16×/128× parameter row size) versus FSDP sharding size (number of GPUs).
+Table 2 Component ablation for 8-bit Adam, reported as normalized throughput after disabling each component
+independently. N/A indicates that the corresponding configuration is not meaningfully runnable without intrusive
+modifications to the model or optimizer code or manual management of custom collectives.
+veScale-FSDP Component
+Normalized Throughput
+Combined
+100.0%
+Disable DBuffer only
+92.8%
+Disable Planning Algorithm only
+65.4%
+Disable RaggedShard only
+N/A
+of the planning algorithm can be directly evaluated by padding size. We evaluate it by benchmarking
+DeepSeek-V3-671B and GPT-OSS-120B across varying device counts. Following a DeepSeek-style quantization
+scheme, we quantize only the FFN weights (most parameters) and sweep the row granularity of expert-MLP
+matrices over 128, 16, 1. The 128-row setting reproduces DeepSeek’s 128×128 tiling (i.e., weights can be
+sliced into 128×128 blocks). We then report the resulting relative padding ratios and analyze the root cause
+of the extra padding.
+Figure 11a and 11b show that with 1× and 16× row granularities, veScale-FSDP keeps padding overhead
+less than 3% across all FSDP sizes for both models. With 128× rows, DeepSeek-V3 remains mostly below
+3% with mild growth, whereas GPT-OSS exhibits step-like fluctuations with spikes up to 18%. GPT-OSS
+fuses all experts into a single parameter tensor, whereas DeepSeek-V3 materializes each expert as a separate
+parameter; this enables per-expert padding between MLPs and thus relaxes the global padding constraint. The
+fluctuation behavior is expected: each matrix must be partitioned across the shard group in discrete quanta
+determined by (i) the granularity unit (e.g., rows) and (ii) NCCL’s even-input alignment for high-performance
+collectives. Effective shard sizes are therefore rounded up to the least common multiple of these granularities;
+when the group size crosses a multiple, the per-device shard size jumps, producing the observed spikes.
+We also evaluate the overhead of the planning algorithm itself: the algorithm runtime is less than 0.3 seconds
+across all experiments, which is one-time and negligible in distributed training initialization.
+Based on Figure 11 and our experience, a practical guideline is to avoid excessively large FSDP group sizes and
+use hierarchical parallelism (e.g., HSDP) to scale to larger GPU counts. In practice, we select the FSDP group
+size by offline simulation to minimize LCM-induced rounding for a given model and RaggedShard granularity.
+When model dimensions remain configurable, choosing hidden sizes divisible by small composite factors rather
+than large co-prime dimensions can further reduce padding overhead.
+6.5
+Performance Breakdown
+To quantify the benefit of each component, we ablate veScale-FSDP by disabling one component at a time
+and report the resulting throughput, normalized to the full system. We run this study on 32 GPUs when
+training a GPT-OSS-style model with 8-bit Adam.
+14
+
+
+---
+
+Table 2 shows that DBuffer and the planning algorithm account for most of the realized speedups: disabling
+them reduces throughput to 92.8% and 65.4%, respectively. In contrast, RaggedShard is not just an optimization;
+it is the abstraction that makes block-wise 8-bit Adam usable without intrusive model/optimizer changes or
+hand-written collectives. Specifically:
+• DBuffer. Disabling DBuffer drops throughput by 7.2%, reflecting the Copy-In/Copy-Out overhead around
+collectives when communication buffers require copying.
+• Planning Algorithm. Disabling the planning drops throughput by 34.6% because quantization blocks are
+no longer guaranteed to be fully contained within a device’s local shard. The system then falls back to
+DTensor redistribution to assemble the required optimizer states before per-block quantization, incurring
+substantial extra communication overhead.
+• RaggedShard DTensor. Disabling RaggedShard makes it effectively non-runnable: users must either (i) carefully
+change every model and optimizer tensor so that 32 × 32 block boundaries align with shard boundaries, or
+(ii) manually implement complex collectives (e.g., per-block metadata exchange and state gathering) to
+recover block-wise semantics. We therefore report this setting as N/A to indicate it is not meaningfully
+usable.
+7
+Lessons Learned
+During the deployment of veScale-FSDP for real industrial workloads that use more than 10K GPUs, we
+summarize the key lessons we have learned.
+Lesson-1: Small-scale workloads can predict large-scale performance. The performance of FSDP-based
+workloads can be accurately estimated using each layer’s computation time and FSDP communication time.
+Computation occurs entirely within each GPU, and FSDP communication time remains largely unchanged
+when the number of GPUs increases. This observation is validated by our weak scaling experiments (§6). In
+practice, we profile the performance of veScale-FSDP on around 64 GPUs and extrapolate to thousands of
+GPUs, achieving similar results.
+This extrapolation assumes that the profiling run exercises network behavior similar to the target scale:
+comparable network topology, identical collective algorithms/protocols, and a sufficiently large workload to
+reach bandwidth saturation. To further improve predictability at large scales, we use additional parallelization
+(e.g., HSDP/EP) to cap the collective group size, preventing excessively large collectives whose latency can
+vary more.
+Lesson-2: Design system abstractions on the shoulders of giants. DTensor provides a powerful abstraction that
+already supports a wide range of parallelization techniques. By designing new abstractions on top of DTensor,
+we can seamlessly integrate existing parallelization strategies. In our work, RaggedShard is implemented as
+an optional placement on DTensor, enabling easy collaboration of established infrastructure such as Tensor
+and Expert Parallelism, as well as mature training tools like distributed checkpointing [22]. This approach
+minimizes engineering effort while contributing to a shared ecosystem that benefits the broader community.
+In fact, RaggedShard has already appeared as a planned feature on the official roadmap [23] of PyTorch.
+Lesson-3: Decoupled model definition with system optimization matters. The rapid evolution of model
+architectures demands frequent updates to model definitions. However, existing frameworks such as Megatron-
+LM tightly couple system-level parallelization optimizations with model code, making it difficult for researchers
+to modify or extend architectures. In veScale-FSDP, we decouple model definition from the system framework,
+allowing researchers to focus on model design while maintaining linear scalability across up to 10K GPUs.
+This separation greatly simplifies model development and accelerates architectural innovation.
+8
+Conclusion
+veScale-FSDP is a scalable training system that combines high flexibility with high performance through
+the RaggedShard abstraction and a structure-aware planning algorithm that maximizes GPU utilization.
+Experiments demonstrate that veScale-FSDP seamlessly integrates with emerging techniques such as Muon
+optimizers and significantly outperforms existing systems, achieving 5∼66% higher throughput and 16∼30%
+lower memory usage, while scaling efficiently to tens of thousands of GPUs.
+15
+
+
+---
+
+9
+Acknowledgments
+veScale-FSDP would not have been possible without the tremendous support and collaboration of our
+teammates and colleagues. We sincerely thank them (in no particular order; this list is not exhaustive):
+• veScale members: Hongrui Zhan, Ziyi Zhang, Hao Feng
+• ByteDance teammates: Jianyu Jiang, Chenyuan Wang, Cesar Andres Stuardo Moraga, Juntao Zhao, Bin
+Jia, Chengye Li, Zhongkai Zhao, Shixiong Zhao, Tiantian Fan, Hanshi Sun, Wenlei Bao, Shixun Wu, Zhekun
+Zhang, Yanbo Liang, Li-wen Chang, Jun Wang, Cheng Li, Li Han, Heng Zhang, Zhenbo Sun, Bo Liu,
+Xiaonan Nie, Ru Zhang, Hao Gong, Zuquan Song, Yucheng Nie, Jiawei Wu, Hongpeng Guo, Xinyi Di
+Equally important, we thank everyone on the TorchTitan team and Edward Z. Yang for the insightful
+discussions and collaboration within the open-source community.
+16
+
+
+---
+
+References
+[1] Sandhini Agarwal, Lama Ahmad, Jason Ai, Sam Altman, Andy Applebaum, Edwin Arbus, Rahul K Arora, Yu Bai,
+Bowen Baker, Haiming Bao, et al. gpt-oss-120b & gpt-oss-20b model card. arXiv preprint arXiv:2508.10925, 2025.
+[2] Tim Dettmers, Mike Lewis, Sam Shleifer, and Luke Zettlemoyer. 8-bit optimizers via block-wise quantization. In
+International Conference on Learning Representations, 2022.
+[3] Abhimanyu Dubey, Abhinav Jauhri, Abhinav Pandey, Abhishek Kadian, Ahmad Al-Dahle, Aiesha Letman,
+Akhil Mathur, Alan Schelten, Amy Yang, Angela Fan, et al. The llama 3 herd of models. arXiv e-prints, pages
+arXiv–2407, 2024.
+[4] Michael R Garey and David S. Johnson.
+Complexity results for multiprocessor scheduling under resource
+constraints. SIAM journal on Computing, 4(4):397–411, 1975.
+[5] Andrew Gu, Wei Feng, and Yanli Zhao. [rfc] per-parameter-sharding fsdp, 2023. URL https://github.com/
+pytorch/pytorch/issues/114299.
+[6] Vineet Gupta, Tomer Koren, and Yoram Singer. Shampoo: Preconditioned stochastic tensor optimization. In
+International Conference on Machine Learning, pages 1842–1850. PMLR, 2018.
+[7] Halilakin. Deepspeed is slower than fsdp, 2024. URL https://github.com/deepspeedai/DeepSpeed/issues/
+5047#issuecomment-1926275502.
+[8] Ziheng Jiang, Haibin Lin, Yinmin Zhong, Qi Huang, Yangrui Chen, Zhi Zhang, Yanghua Peng, Xiang Li, Cong
+Xie, Shibiao Nong, et al. {MegaScale}: Scaling large language model training to more than 10,000 {GPUs}. In
+21st USENIX Symposium on Networked Systems Design and Implementation (NSDI 24), pages 745–760, 2024.
+[9] Keller Jordan, Yuchen Jin, Vlado Boza, Jiacheng You, Franz Cesista, Laker Newhouse, and Jeremy Bernstein. Muon:
+An optimizer for hidden layers in neural networks, 2024. URL https://kellerjordan.github.io/posts/muon/.
+[10] Jared Kaplan, Sam McCandlish, Tom Henighan, Tom B Brown, Benjamin Chess, Rewon Child, Scott Gray, Alec
+Radford, Jeffrey Wu, and Dario Amodei. Scaling laws for neural language models. arXiv preprint arXiv:2001.08361,
+2020.
+[11] Dmitry Lepikhin, HyoukJoong Lee, Yuanzhong Xu, Dehao Chen, Orhan Firat, Yanping Huang, Maxim Krikun,
+Noam Shazeer, and Zhifeng Chen. Gshard: Scaling giant models with conditional computation and automatic
+sharding. arXiv preprint arXiv:2006.16668, 2020.
+[12] Shen Li, Yanli Zhao, Rohan Varma, Omkar Salpekar, Pieter Noordhuis, Teng Li, Adam Paszke, Jeff Smith, Brian
+Vaughan, Pritam Damania, et al. Pytorch distributed: Experiences on accelerating data parallel training. arXiv
+preprint arXiv:2006.15704, 2020.
+[13] Youjie Li, Cheng Wan, Zhiqi Lin, Hongyu Zhu, Jiacheng Yang, Ziang Song, Xinyi Di, Jiawei Wu, Huiyao Shu,
+Wenlei Bao, Yanghua Peng, Haibin Lin, and Li-Wen Chang. veScale: Consistent and Efficient Tensor Programming
+with Eager-Mode SPMD, 2025. URL https://arxiv.org/abs/2509.07003.
+[14] Aixin Liu, Bei Feng, Bing Xue, Bingxuan Wang, Bochao Wu, Chengda Lu, Chenggang Zhao, Chengqi Deng,
+Chenyu Zhang, Chong Ruan, et al. Deepseek-v3 technical report. arXiv preprint arXiv:2412.19437, 2024.
+[15] Qianli Ma, Yaowei Zheng, Zhelun Shi, Zhongkai Zhao, Bin Jia, Ziyue Huang, Zhiqi Lin, Youjie Li, Jiacheng Yang,
+Yanghua Peng, Zhi Zhang, and Xin Liu. VeOmni: Scaling Any Modality Model Training with Model-Centric
+Distributed Recipe Zoo, 2025. URL https://arxiv.org/abs/2508.02317.
+[16] Megatron. Mcore custom fully sharded data parallel (fsdp). Technical report, 2025.
+[17] NVIDIA NCCL. Regarding the allgather bandwidth with different byte alignment under different protocols, 2025.
+URL https://github.com/NVIDIA/nccl/issues/413.
+[18] NVIDIA NCCL.
+Nccl: Collective operations, 2025.
+URL https://docs.nvidia.com/deeplearning/nccl/
+user-guide/docs/usage/collectives.html.
+[19] PyTorch. Fully sharded data parallel (fsdp2). Technical report, 2024.
+[20] PyTorch.
+Pytorch jaggedtensor, 2025.
+URL https://docs.pytorch.org/FBGEMM/fbgemm_gpu/overview/
+jagged-tensor-ops/JaggedTensorOps.html.
+17
+
+
+---
+
+[21] PyTorch. Pytorch nestedtensor, 2025. URL https://docs.pytorch.org/docs/main/nested.html.
+[22] PyTorch Team. Distributed checkpoint, 2025. URL https://docs.pytorch.org/docs/stable/distributed.
+checkpoint.html#distributed-checkpoint-torch#-distributed-checkpoint.
+[23] PyTorch Team. Meta pytorch team 2026 h1 roadmaps, 2026. URL https://dev-discuss.pytorch.org/t/
+meta-pytorch-team-2026-h1-roadmaps.
+[24] Samyam Rajbhandari, Jeff Rasley, Olatunji Ruwase, and Yuxiong He. Zero: Memory optimizations toward training
+trillion parameter models. In SC20: International Conference for High Performance Computing, Networking,
+Storage and Analysis, pages 1–16. IEEE, 2020.
+[25] Mohammad Shoeybi, Mostofa Patwary, Raul Puri, Patrick LeGresley, Jared Casper, and Bryan Catanzaro.
+Megatron-lm:
+Training multi-billion parameter language models using model parallelism.
+arXiv preprint
+arXiv:1909.08053, 2019.
+[26] Shaden Smith, Mostofa Patwary, Brandon Norick, Patrick LeGresley, Samyam Rajbhandari, Jared Casper, Zhun
+Liu, Shrimai Prabhumoye, George Zerveas, Vijay Korthikanti, et al. Using deepspeed and megatron to train
+megatron-turing nlg 530b, a large-scale generative language model. arXiv preprint arXiv:2201.11990, 2022.
+[27] Gemini Team, Petko Georgiev, Ving Ian Lei, Ryan Burnell, Libin Bai, Anmol Gulati, Garrett Tanzer, Damien
+Vincent, Zhufeng Pan, Shibo Wang, et al. Gemini 1.5: Unlocking multimodal understanding across millions of
+tokens of context. arXiv preprint arXiv:2403.05530, 2024.
+[28] Kimi Team, Yifan Bai, Yiping Bao, Guanduo Chen, Jiahao Chen, Ningxin Chen, Ruijue Chen, Yanru Chen,
+Yuankun Chen, Yutian Chen, et al. Kimi k2: Open agentic intelligence. arXiv preprint arXiv:2507.20534, 2025.
+[29] TensorFlow. Tensorflow ragged tensors, 2025. URL https://www.tensorflow.org/guide/ragged_tensor.
+[30] The PyTorch Team. PyTorch DTensor (Distributed Tensor). https://pytorch.org/docs/stable/distributed.
+tensor.html, 2024.
+[31] Kaiyue Wen, David Hall, Tengyu Ma, and Percy Liang. Fantastic pretraining optimizers and where to find them.
+arXiv preprint arXiv:2509.02046, 2025.
+[32] Bowen Wu, Wei Cui, Carlo Curino, Matteo Interlandi, and Rathijit Sen. Terabyte-scale analytics in the blink of
+an eye. arXiv preprint arXiv:2506.09226, 2025.
+[33] Jane
+Xu.
+FSDP
+&
+CUDACachingAllocator.
+https://dev-discuss.pytorch.org/t/
+fsdp-cudacachingallocator-an-outsider-newb-perspective/1486, 2024. PyTorch Dev Discuss.
+[34] Yuanzhong Xu, HyoukJoong Lee, Dehao Chen, Blake Hechtman, Yanping Huang, Rahul Joshi, Maxim Krikun,
+Dmitry Lepikhin, Andy Ly, Marcello Maggioni, et al.
+Gspmd: general and scalable parallelization for ml
+computation graphs. arXiv preprint arXiv:2105.04663, 2021.
+[35] Yanli Zhao, Andrew Gu, Rohan Varma, Liang Luo, Chien-Chin Huang, Min Xu, Less Wright, Hamid Shojanazeri,
+Myle Ott, Sam Shleifer, et al. Pytorch fsdp: experiences on scaling fully sharded data parallel. arXiv preprint
+arXiv:2304.11277, 2023.
+[36] Yanli
+Zhao,
+Andrew
+Gu,
+Rohan
+Varma,
+Liang
+Luo,
+Chien-Chin
+Huang,
+Min
+Xu,
+Less
+Wright,
+Hamid Shojanazeri,
+Myle Ott,
+Sam Shleifer,
+et al.
+Fsdp1 post backward reduce,
+2025.
+URL
+https://github.com/pytorch/pytorch/blob/a4925c0ce004cf883fdd1b248d71676769524934/torch/
+distributed/fsdp/_runtime_utils.py#L695C1-L773C1.
+18

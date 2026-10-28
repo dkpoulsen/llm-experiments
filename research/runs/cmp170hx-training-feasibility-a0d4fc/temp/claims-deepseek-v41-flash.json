@@ -1,0 +1,389 @@
+[
+  {
+    "claim": "CSA2 does not run an indexer in every layer: each layer is statically assigned one of three modes (Full, Reindex, Reuse), and in the shipped 40-layer configuration only 4 layers run a Full-mode indexer, 4 run Reindex indexers, 27 are Reuse with no indexer at all, and the first 2 layers are pure sliding-window attention.",
+    "stance": "refutes",
+    "stance_target": "The repo's claim that 'at 32k the indexer is a second, smaller attention running in parallel' in every layer",
+    "evidence_type": "theoretical",
+    "scope_conditions": "DeepSeek-V4.1-Flash 40-layer CED configuration (20 encoder + 20 decoder); arXiv 2609.19969v1",
+    "quoted_support": "Each CSA2 layer is statically assigned one of three modes: Full, Reindex, or Reuse. ... In each group, the first layer operates in Full Mode, and the remaining five layers operate in Reuse Mode. The 20 decoder layers use CSA2 with a compression rate of m = 1. These layers are divided into five groups of four layers. In the first group, the first layer operates in Full Mode, and the remaining three layers operate in Reuse Mode. The remaining four groups share the same configuration: the first layer operates in Reindex Mode, and the remaining three layers operate in Reuse Mode.",
+    "numbers": [
+      "40 layers total",
+      "20 encoder + 20 decoder",
+      "4 Full-mode layers",
+      "4 Reindex-mode layers",
+      "27 Reuse-mode layers",
+      "2 pure-SWA layers",
+      "67.5% of layers run no indexer"
+    ],
+    "entities": [
+      "CSA2",
+      "DeepSeek-V4.1-Flash",
+      "Full mode",
+      "Reindex mode",
+      "Reuse mode",
+      "SWA"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-v41-flash"
+  },
+  {
+    "claim": "The Hierarchical Sparse Indexer caps the candidate pool at 16,384 positions (2,048 blocks of 8 positions) while the final per-layer attention top-k is 512 KV entries.",
+    "stance": "supports",
+    "stance_target": "The repo's stated 16,384 candidate-pool cap",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Section 2.3.2 and Section 4.2.1 model setups",
+    "quoted_support": "For example, selecting 2,048 blocks with 8 positions each yields 16,384 candidate positions. This pool defines where later indexers search; the final Top-K selection determines which main KV entries each layer reads.",
+    "numbers": [
+      "16,384 candidate positions",
+      "2,048 blocks",
+      "8 positions per block",
+      "top-k = 512",
+      "32 indexer query heads",
+      "indexer head dim 128"
+    ],
+    "entities": [
+      "Hierarchical Sparse Indexer",
+      "CSA2",
+      "top-k"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-v41-flash"
+  },
+  {
+    "claim": "At a 32k training context the 16,384-candidate cap is active but only halves the positions scored by deeper indexers (16,384 of 32,768), whereas at 1M it cuts them 64-fold \u2014 so the hierarchical indexer's per-query saving is roughly 32x smaller at 32k than at 1M. The repo's phrasing 'at 32k it barely binds' is directionally right about the size of the win but wrong about the mechanism: the cap does bind at 32k, just weakly.",
+    "stance": "neutral",
+    "stance_target": "The repo's candidate-cap argument for why CSA2 underperforms at 32k",
+    "evidence_type": "statistical",
+    "scope_conditions": "Arithmetic from the paper's stated 16,384 cap against 32,768- and 1,048,576-token contexts",
+    "quoted_support": "For a fixed candidate-pool size, the number of positions scored per query by each subsequent indexer is bounded independently of context length. The first Full Mode layer still scans the entire causally visible range.",
+    "numbers": [
+      "16,384 / 32,768 = 50% at 32k (2x reduction)",
+      "16,384 / 1,048,576 = 1.6% at 1M (64x reduction)",
+      "32x difference in saving between 32k and 1M"
+    ],
+    "entities": [
+      "Hierarchical Sparse Indexer",
+      "candidate pool",
+      "32k context",
+      "1M context"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-v41-flash"
+  },
+  {
+    "claim": "The hierarchical indexer is a decoder-only, post-training-introduced mechanism whose candidate restriction is applied identically during training and inference, so it is training-aware rather than a free inference-time add-on.",
+    "stance": "neutral",
+    "stance_target": "Whether CSA2's sparse indexer can be bolted onto an existing training run without retraining",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Section 2.3.2; CED decoder only",
+    "quoted_support": "We therefore introduce the Hierarchical Sparse Indexer, which is used only in the decoder of CED to reduce this repeated scoring during decode. ... The mechanism is training-aware and introduced in post-training: the candidate restriction is applied identically during training and inference, so deeper indexers are optimized under the same search domain they use at inference.",
+    "numbers": [],
+    "entities": [
+      "Hierarchical Sparse Indexer",
+      "CED",
+      "post-training",
+      "training-aware"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-v41-flash"
+  },
+  {
+    "claim": "The first Full-mode layer in each decoder group still scores every causally visible position, so CSA2 never eliminates the O(S^2) indexer cost \u2014 it only bounds the cost of later indexers.",
+    "stance": "supports",
+    "stance_target": "The repo's caveat that the indexer is an extra quadratic-cost component at 32k",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Section 2.3.2; applies at every context length",
+    "quoted_support": "The first Full Mode layer still scans the entire causally visible range. Hierarchical indexing therefore reduces the cost of later indexer evaluations while retaining the initial full-range pass.",
+    "numbers": [],
+    "entities": [
+      "CSA2",
+      "Full mode",
+      "indexer",
+      "quadratic cost"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-v41-flash"
+  },
+  {
+    "claim": "DeepSeek-V4.1-Flash trains sparse attention from scratch at a 64K sequence length with no dense-attention warm-up, then extends to 1M at 34T tokens \u2014 so 32k is below the regime the architecture was trained in, and the 'no dense warmup needed' result is established at 64K, not 32k.",
+    "stance": "neutral",
+    "stance_target": "Whether a CSA2 experiment at 32k can rely on the paper's from-scratch sparse-training result",
+    "evidence_type": "empirical",
+    "scope_conditions": "45T-token pretraining run; sequence length 64K then 1M at 34T tokens",
+    "quoted_support": "Sparse attention is trained from scratch at a sequence length of 64K, without any dense attention warmup stages. ... We train the model from scratch with sparse attention at a sequence length of 64K and extend the sequence length to 1M at 34T tokens.",
+    "numbers": [
+      "64K training sequence length",
+      "1M extension at 34T tokens",
+      "45T total tokens",
+      "no dense warmup"
+    ],
+    "entities": [
+      "DeepSeek-V4.1-Flash",
+      "sparse attention",
+      "sequence length",
+      "dense warmup"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-v41-flash"
+  },
+  {
+    "claim": "FP4 global KV caching is used during training, not only at inference, with only marginal degradation \u2014 so a CSA2-style experiment must carry FP4 QAT machinery for the main KV cache as well as the indexer.",
+    "stance": "supports",
+    "stance_target": "The repo's note that the 890 B/token figure is inference-side, while adding that FP4 KV is already a training-time choice",
+    "evidence_type": "empirical",
+    "scope_conditions": "Section 2.4.4 FP4 Main KV Cache; QAT extended from FP4 indexer Q/K to main KV cache",
+    "quoted_support": "At the cache-precision level, we use FP4 global KV caches during training with only marginal performance degradation. ... DeepSeek-V4 already uses quantization-aware training (QAT) for FP4 indexer queries and keys, accelerating index computation and reducing the indexer cache size.",
+    "numbers": [
+      "FP4 KV cache",
+      "MXFP4 block scaling",
+      "marginal performance degradation"
+    ],
+    "entities": [
+      "FP4",
+      "QAT",
+      "KV cache",
+      "MXFP4"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-v41-flash"
+  },
+  {
+    "claim": "The headline 890 bytes/token KV footprint and the near-flat decode-FLOP curve are inference/decode figures, not training activation figures \u2014 the paper's own framing is 'global KV cache footprint (always in HBM)' and 'single-token Decode FLOPs'.",
+    "stance": "supports",
+    "stance_target": "The repo's caveat that 'the published 890 B/token figure is an inference KV-cache number, not a training activation number'",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Abstract, Figure 1(b) and Figure 2 (decode FLOPs vs context length)",
+    "quoted_support": "These designs reduce its global KV cache footprint (always in HBM) to 890 bytes per token, roughly 1/4 of the corresponding footprint of DeepSeek-V4-Flash. ... Figure 2 | Single-token Decode FLOPs versus context length across generations of DeepSeek models.",
+    "numbers": [
+      "890 bytes/token",
+      "~1/4 of V4-Flash",
+      "437-fold reduction vs V1",
+      "4K->1M raises decode FLOPs only 1/4"
+    ],
+    "entities": [
+      "KV cache",
+      "decode FLOPs",
+      "DeepSeek-V4-Flash"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-v41-flash"
+  },
+  {
+    "claim": "Distributed CSA2 training requires machinery beyond the attention computation: shadow indexers (a lightweight executable replica per pipeline stage with a single logical owner), pipeline payload extensions carrying intermediate representations and sparse routing information across stage boundaries, and micro-batch-level shared-state management across forward, recomputation and backward.",
+    "stance": "refutes",
+    "stance_target": "Any estimate that treats CSA2 as a drop-in attention swap with no distributed-training engineering cost",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Section 3.1.2 Attention Sharing Training for CSA2; pipeline-parallel training",
+    "quoted_support": "Shadow indexers address this issue by placing a lightweight executable replica on each participating stage while retaining a single logical owner for the shared parameters. The owner remains responsible for optimization and checkpointing, whereas parameter synchronization and gradient aggregation keep the shadow replicas consistent throughout training.",
+    "numbers": [],
+    "entities": [
+      "CSA2",
+      "shadow indexers",
+      "pipeline parallelism",
+      "gradient aggregation",
+      "micro-batch shared state"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-v41-flash"
+  },
+  {
+    "claim": "The pretraining run used a fixed 100.6M-token batch size over 45T tokens with Muon for linear transforms, AdamW for RMSNorm/non-matrix parameters, and Sinkhorn-balanced updates for embeddings and prediction head.",
+    "stance": "neutral",
+    "stance_target": "Reference recipe for a large-batch sparse-attention pretraining run",
+    "evidence_type": "empirical",
+    "scope_conditions": "Section 4.2.2 Training Setups",
+    "quoted_support": "We keep the batch size fixed at 100.6 million tokens throughout training. The learning rate is linearly warmed up over the first 2000 steps and then maintained at 2.6 x 10^-4 until 28T tokens.",
+    "numbers": [
+      "100.6M-token batch",
+      "45T tokens",
+      "LR 2.6e-4",
+      "2000 warmup steps",
+      "cosine decay 28T->40T to 2.6e-5"
+    ],
+    "entities": [
+      "Muon",
+      "AdamW",
+      "Sinkhorn",
+      "DeepSeek-V4.1-Flash"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-v41-flash"
+  },
+  {
+    "claim": "The model is a 552B-backbone MoE with 8B active parameters per token in prefill and 16B in decode, 40 layers of width 5120, and MoE layers with 1 shared + 384 routed experts (6 activated, expert intermediate dim 2304) \u2014 a scale that cannot be reproduced on a 5-GPU 320 GB box.",
+    "stance": "refutes",
+    "stance_target": "Any plan to reproduce DeepSeek-V4.1-Flash itself rather than a scaled-down CSA2 variant",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Section 4.2.1 Model Setups",
+    "quoted_support": "Under this configuration, DeepSeek-V4.1-Flash comprises 552B backbone parameters, with 8B activated per token during prefill and 16B during decode.",
+    "numbers": [
+      "552B backbone params",
+      "8B active prefill",
+      "16B active decode",
+      "40 layers",
+      "d=5120",
+      "384 routed experts",
+      "6 activated experts",
+      "expert intermediate 2304",
+      "SWA window 128"
+    ],
+    "entities": [
+      "DeepSeek-V4.1-Flash",
+      "MoE",
+      "shared expert",
+      "routed experts"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-v41-flash"
+  },
+  {
+    "claim": "Reuse-mode CSA2 layers execute with only 15 kernels during prefill and 11 during decode, which is where the paper's kernel-fusion engineering effort sits \u2014 the cheap path is the one most layers take.",
+    "stance": "neutral",
+    "stance_target": "How much kernel engineering a CSA2 reproduction needs before it is fast",
+    "evidence_type": "empirical",
+    "scope_conditions": "Section 3.2 Inference System; fused-RoPE-attention-RoPE-cast (FlashMLA), Mega-Gate/Mega-mHC/Mega-MoE (DeepGEMM), TileKernels, DeepSelect TopK",
+    "quoted_support": "each CSA2 Reuse Mode layer executes with only 15 kernels during prefill and 11 during decode.",
+    "numbers": [
+      "15 kernels prefill",
+      "11 kernels decode"
+    ],
+    "entities": [
+      "CSA2",
+      "Reuse mode",
+      "FlashMLA",
+      "DeepGEMM",
+      "DeepSelect"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-v41-flash"
+  },
+  {
+    "claim": "Engram tables in the V4.1 training system are partitioned by row across engram-parallel process groups with optimizer state sharded across replicas, embeddings stored/fetched in FP8, prefetch issued for the whole local batch before each pipeline stage, and embedding gradients buffered during backward and returned to owning ranks after the backbone backward.",
+    "stance": "neutral",
+    "stance_target": "The communication and scheduling cost of Engram tables during training",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Section 3.1.3 Engram; multimodal training infrastructure",
+    "quoted_support": "Engram embedding tables are partitioned by row across dedicated process groups of engram parallel size. ... Embedding gradients are buffered during backward and returned to their owning ranks after the backbone backward pass.",
+    "numbers": [
+      "FP8 embeddings",
+      "Engram LR scaled 5x"
+    ],
+    "entities": [
+      "Engram",
+      "engram parallel size",
+      "FP8",
+      "gradient buffering"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-v41-flash"
+  },
+  {
+    "claim": "CSA2 simplifies CSA's compressor by removing the overlapping source entries and absolute positional embedding, and derives indexer K by projecting main KV entries instead of a separate compression path from hidden states, which the authors say increases training efficiency.",
+    "stance": "supports",
+    "stance_target": "The claim that CSA2 is cheaper to implement and train than CSA",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Section 2.3",
+    "quoted_support": "In addition, CSA2 obtains indexer K by projecting main KV entries, replacing CSA's separate compression path from hidden states. Both designs simplify the implementation and increase the training efficiency.",
+    "numbers": [],
+    "entities": [
+      "CSA2",
+      "CSA",
+      "indexer K",
+      "compressor"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "deepseek-v41-flash"
+  },
+  {
+    "claim": "In the CED architecture the decoder's Full-mode layer computes its global KV from the hidden state of the encoder's last layer (layer L/2), so encoder and decoder attention are coupled through a single projection point rather than being independent stacks.",
+    "stance": "neutral",
+    "stance_target": "Whether CSA2's encoder/decoder split can be simplified away in a small-scale reproduction",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Section 2.3.1; CED with 20 encoder + 20 decoder layers",
+    "quoted_support": "When CSA2 is combined with CED, the decoder layer assigned to Full Mode computes its own global KV from the hidden state of the (L/2)-th layer, i.e. the last layer of the causal encoder.",
+    "numbers": [
+      "L/2 = layer 20 of 40"
+    ],
+    "entities": [
+      "CED",
+      "CSA2",
+      "Full mode",
+      "causal encoder"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-v41-flash"
+  },
+  {
+    "claim": "The paper reports no CSA2 training result at 32k: the only stated training sequence lengths are 64K (from scratch) and 1M (extension at 34T tokens), so any claim about CSA2's payoff at 32k is an extrapolation from 64K+ data.",
+    "stance": "neutral",
+    "stance_target": "The repo's CSA2-at-32k verdict, which is currently argued from 1M-context published numbers",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Section 4.2.2; absence of any 32k training ablation in the report",
+    "quoted_support": "We train the model from scratch with sparse attention at a sequence length of 64K and extend the sequence length to 1M at 34T tokens.",
+    "numbers": [
+      "64K",
+      "1M",
+      "34T tokens"
+    ],
+    "entities": [
+      "DeepSeek-V4.1-Flash",
+      "32k context",
+      "training sequence length"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "deepseek-v41-flash"
+  },
+  {
+    "claim": "The paper's own efficiency claim is that extending context 256-fold (4K to 1M) raises decode FLOPs by only 1/4, which is a decode-side result and says nothing about training-step cost at 32k.",
+    "stance": "neutral",
+    "stance_target": "Using the paper's FLOP-flatness claim as evidence for training-side savings",
+    "evidence_type": "empirical",
+    "scope_conditions": "Figure 2; BF16/FP8/FP4 weighted 1/0.5/0.25",
+    "quoted_support": "Figure 2 shows that extending the context length 256-fold, from 4K to 1M, increases its Decode FLOPs by only 1/4, significantly less than the growth observed for DeepSeek-V4-Flash.",
+    "numbers": [
+      "256-fold context increase",
+      "1.25x decode FLOPs"
+    ],
+    "entities": [
+      "decode FLOPs",
+      "context length",
+      "DeepSeek-V4.1-Flash"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-v41-flash"
+  }
+]

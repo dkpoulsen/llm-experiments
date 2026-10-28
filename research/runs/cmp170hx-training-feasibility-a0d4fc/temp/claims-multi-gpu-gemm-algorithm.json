@@ -1,0 +1,193 @@
+[
+  {
+    "claim": "On an 8x A100 NVLink 3.0 node the authors' multi-GPU SGEMM reaches >80% of peak for 3-8 GPUs at tile size 1024 (N=90000), with strong scaling close to ideal.",
+    "stance": "supports",
+    "stance_target": "NVLink-connected server GPUs scale multi-GPU GEMM near-ideally",
+    "evidence_type": "empirical",
+    "scope_conditions": "8x A100 80GB, NVSwitch, N=90000, tile 1024",
+    "quoted_support": "For all NGP Us = 3–8 we see the optimum Ni = 1024. At this tile size the eﬃciency of the algorithm (attained FLOPS over theoretical peak performance) reaches more than 80% for all NGP Us.",
+    "numbers": [
+      ">80%",
+      "tile 1024",
+      "N=90000",
+      "3-8 GPUs"
+    ],
+    "entities": [
+      "A100",
+      "NVLink 3.0",
+      "NVSwitch",
+      "SGEMM"
+    ],
+    "time_period": "2022",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "On a 4x AMD RX 6900 XT node connected by PCIe 4.0, the same algorithm's efficiency falls below 40% for 3 and 4 GPUs.",
+    "stance": "supports",
+    "stance_target": "PCIe-attached consumer GPUs lose most of their multi-GPU GEMM efficiency",
+    "evidence_type": "empirical",
+    "scope_conditions": "4x RX 6900 XT, PCIe 4.0, ROCm 5.2.1",
+    "quoted_support": "The results show surprisingly modest performance and low eﬃciency that is lower than 40% for 3 and for 4 GPUs.",
+    "numbers": [
+      "<40%",
+      "3 GPUs",
+      "4 GPUs"
+    ],
+    "entities": [
+      "RX 6900 XT",
+      "PCIe 4.0",
+      "ROCm",
+      "hipBLAS"
+    ],
+    "time_period": "2022",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "A single-GPU SGEMM launch on RX 6900 XT reaches only 8 TFLOPS of the 22.5 TFLOPS peak, with 'considerable delays between data transfers'.",
+    "stance": "supports",
+    "stance_target": "consumer GPUs struggle to overlap computation with data transfer",
+    "evidence_type": "empirical",
+    "scope_conditions": "RX 6900 XT, single-GPU SGEMM, N=32768, tile 8192",
+    "quoted_support": "the performance is 8 TFLOPS from the peak 22.5 TFLOPS. Figure 6 shows also considerable delays between data transfers.",
+    "numbers": [
+      "8 TFLOPS",
+      "22.5 TFLOPS",
+      "N=32768",
+      "tile 8192"
+    ],
+    "entities": [
+      "RX 6900 XT",
+      "SGEMM",
+      "hipBLAS"
+    ],
+    "time_period": "2022",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "The authors conclude the multi-GPU performance of their algorithm 'can not be transferred easily to the consumer-grade GPU systems' because consumer GPUs are not built to compute and transfer simultaneously.",
+    "stance": "supports",
+    "stance_target": "consumer/mining-class GPUs are a poor substrate for communication-heavy multi-GPU work",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "consumer-grade PCIe GPUs",
+    "quoted_support": "We suppose that these problems might be explained by the diﬃculty for the GPU (that is a consumer GPU, not a server grade GPU) to perform computations and data transfers simultaneously. This observation points to the fact that the multi-GPU performance of the algorithm considered can not be transferred easily to the consumer-grade GPU systems.",
+    "numbers": [],
+    "entities": [
+      "RX 6900 XT",
+      "consumer GPU"
+    ],
+    "time_period": "2022",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "Table 1 platform parameters: A100 peak FP32 19.5 TFLOPS (real 18.4), FP32 tensor-core peak 156 TFLOPS (real 124), peak GPU-GPU 300 GB/s (real 281); RX 6900 XT peak FP32 22.5 TFLOPS (real 21.4), peak GPU-GPU 32 GB/s (real 25.5).",
+    "stance": "neutral",
+    "stance_target": "reference hardware parameters for NVLink vs PCIe multi-GPU nodes",
+    "evidence_type": "empirical",
+    "scope_conditions": "A100 80GB and RX 6900 XT 16GB",
+    "quoted_support": "Peak GPU-GPU bandwidth (GB/s) 300 32 / Real GPU-GPU bandwidth (GB/s) 281 25.5",
+    "numbers": [
+      "19.5 TFLOPS",
+      "18.4 TFLOPS",
+      "156 TFLOPS",
+      "124 TFLOPS",
+      "300 GB/s",
+      "281 GB/s",
+      "22.5 TFLOPS",
+      "21.4 TFLOPS",
+      "32 GB/s",
+      "25.5 GB/s"
+    ],
+    "entities": [
+      "A100",
+      "RX 6900 XT",
+      "NVLink 3.0",
+      "PCIe 4.0"
+    ],
+    "time_period": "2022",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "Turning tensor cores on raises absolute TFLOPS but drops efficiency below 40% at 8 GPUs, i.e. tensor-core throughput does not rescue multi-GPU scaling.",
+    "stance": "refutes",
+    "stance_target": "tensor cores fix multi-GPU scaling inefficiency",
+    "evidence_type": "empirical",
+    "scope_conditions": "8x A100, tensor-core SGEMM",
+    "quoted_support": "Despite signiﬁcant acceleration in absolute values, the level of eﬃciency with tensor cores becomes lower (even lower than 40% N = 8).",
+    "numbers": [
+      "<40%",
+      "8 GPUs"
+    ],
+    "entities": [
+      "A100",
+      "tensor cores",
+      "SGEMM"
+    ],
+    "time_period": "2022",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "The algorithm beats cuBLAS-XT on the same 8x A100 problem (N=90000), showing library-level multi-GPU GEMM leaves performance on the table.",
+    "stance": "supports",
+    "stance_target": "hand-tuned multi-GPU GEMM can outperform vendor libraries",
+    "evidence_type": "empirical",
+    "scope_conditions": "8x A100, N=90000",
+    "quoted_support": "Figure 2c shows the performance of cuBlas-XT for the exactly same problem (N = 90000, the points correspond to the minimum execution times at the variation of the tile size). One can see that the performance of cuBlas-XT is signiﬁcantly worse that the performance of our algorithm.",
+    "numbers": [
+      "N=90000"
+    ],
+    "entities": [
+      "cuBLAS-XT",
+      "A100",
+      "SGEMM"
+    ],
+    "time_period": "2022",
+    "region": "",
+    "confidence": "medium"
+  },
+  {
+    "claim": "The PCIe 4.0 testbed delivers 32 GB/s peak / 25.5 GB/s real GPU-GPU bandwidth, roughly 25-32x the CMP box's Gen2 x4 link, so the consumer-GPU penalty observed here should be at least as severe on the CMP box.",
+    "stance": "neutral",
+    "stance_target": "transferability of the PCIe consumer-GPU penalty to a Gen2 x4 CMP 170HX box",
+    "evidence_type": "theoretical",
+    "scope_conditions": "PCIe 4.0 x16 vs PCIe Gen2 x4",
+    "quoted_support": "The second platform is the server with 4 AMD RX 6900 XT GPUs connected by PCIe 4.0",
+    "numbers": [
+      "32 GB/s",
+      "25.5 GB/s",
+      "Gen2 x4",
+      "~1 GB/s"
+    ],
+    "entities": [
+      "RX 6900 XT",
+      "CMP 170HX",
+      "PCIe 4.0"
+    ],
+    "time_period": "2022",
+    "region": "",
+    "confidence": "medium"
+  },
+  {
+    "claim": "The RX 6900 XT result is anomalous relative to older consumer cards: a GTX1070 benchmark of the same algorithm showed efficiency over 50%, so the PCIe penalty is not purely a function of link bandwidth.",
+    "stance": "neutral",
+    "stance_target": "whether the consumer-GPU penalty is monotonic in link bandwidth",
+    "evidence_type": "empirical",
+    "scope_conditions": "RX 6900 XT vs GTX1070, same algorithm",
+    "quoted_support": "It is a strange fact since even for the quite old Nvidia GTX1070 GPUs the similar benchmark showed eﬃciency over 50% (see [6]).",
+    "numbers": [
+      ">50%"
+    ],
+    "entities": [
+      "GTX1070",
+      "RX 6900 XT"
+    ],
+    "time_period": "2022",
+    "region": "",
+    "confidence": "medium"
+  }
+]

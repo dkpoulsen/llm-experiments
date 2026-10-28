@@ -1,0 +1,215 @@
+{
+  "total_findings": 31,
+  "applied": [
+    {
+      "id": "structural-glued-heading",
+      "critic": "width (bloat.formatting_defect_not_a_width_finding)",
+      "severity": "formatting",
+      "counts_toward_findings": false,
+      "action": "Removed the duplicated H2 glued to the end of the Hardware Reality paragraph ('...[[readmemd]].## Training Topologies'), leaving a single '## Training Topologies' on its own line. The duplicate heading is gone; the H2 count is unchanged at 8."
+    },
+    {
+      "id": "D1",
+      "critic": "dialectic",
+      "severity": "critical",
+      "action": "Opening thesis rewritten to match the body's arithmetic: 'the all-reduce is slower than the model assumes once the right column is read' (numerator grows 1.48x) and 'the step is far longer ... once attention is counted', with 'the second correction dominates — the ratio falls 5.4x'. Removed the false 'they nearly cancel' causal story and its 'which is why the conclusion looks sound' clause."
+    },
+    {
+      "id": "D2",
+      "critic": "dialectic",
+      "severity": "critical",
+      "action": "6.6% replaced by an explicit T4 range wherever it is load-bearing: thesis now reads '5.3–7.1% at Gen2 x4 ... 11.4% at Gen1 x4, 1.5% at Gen2 x16 (T4)'; the derivation paragraph states the 6.6% is 'a T4 extrapolation, not a measurement' scaling a three-card Gen2 x16 receipt, gives the report's own calibrated algbw band (5.3–6.1%) and busbw row (7.1%), and adds the unquantified N=5 alignment penalty. Verdict (a) now says 'single-digit percent at Gen2 x4'; the claim table and the topology table carry the range. Added the algbw-only reproducibility of the 36% ('under the busbw reading it is 54–58% at the plan's denominator')."
+    },
+    {
+      "id": "D5",
+      "critic": "dialectic",
+      "severity": "major",
+      "action": "EP exclusion restated as absence-of-evidence rather than evidence-of-absence: 'the corpus holds no evidence of a training-grade EP implementation for a no-P2P, no-NVLink, no-RDMA fabric — the closest are VarioPath ... and ThunderEP ... Both are systems projects to port, not hardware impossibilities.'"
+    },
+    {
+      "id": "D6",
+      "critic": "dialectic",
+      "severity": "major",
+      "action": "'only one is physically possible' -> 'only one is consistent with the best measured efficiency'. Added the 72%-confidence qualifier, the 494M/140k tok/s datapoint that weakly favours algbw, the P2P-is-a-driver-configuration scenario in which algbw becomes plausible and the overhead doubles, and the pre-flight instruction to establish P2P with cuMemcpyPeer rather than cudaDeviceCanAccessPeer."
+    },
+    {
+      "id": "D7",
+      "critic": "dialectic",
+      "severity": "major",
+      "action": "Freeze-vs-replicate distinction added: 'Freezing removes the gradient collective; replicating the table removes the forward gather collective, and the design needs both', with the frozen-but-sharded alternative at ~4.9 GB/card and the forward all-to-all at one-fifth the volume."
+    },
+    {
+      "id": "D8",
+      "critic": "dialectic",
+      "severity": "major",
+      "action": "TP restated as feasible-but-dominated: table cell 'Ruled out on placement' -> 'Feasible, dominated'; the TP paragraph now says 'TP is dominated rather than ruled out', cites on-optimizing-the-communication-of-model-parallelism for overlap and efficient-training-on-multiple-consumer-gpus-with for TP overtaking DP above ~20B on PCIe; Verdict (b) says 'True for EP; for TP the fabric does not rule it out so much as make it lose'."
+    },
+    {
+      "id": "depth-1",
+      "critic": "depth",
+      "severity": "critical",
+      "action": "The 11x internal inconsistency is now stated explicitly in 'The table is 24 GB, not 12 GB': the 24.58 GB figure holds only on the paper's 3M entries per layer, and the repo's §3 '33M entries per grafted layer' implies 135 GB/layer and 270 GB for two, which fits neither 64 GB nor the 320 GB aggregate. Verdict (c) now carries the same condition ('only on the paper's 3M entries per layer; on the repo's §3 figure of 33M the table is 270 GB and the claim is false'). The secondary rho=0 / LongCat-50%-cap caveat was not added (length cap)."
+    },
+    {
+      "id": "depth-5",
+      "critic": "depth",
+      "severity": "major",
+      "action": "Added the 'why the port is hard' mechanism paragraph after the five-row stack table: Hopper wgmma.mma_async vs Ampere mma.sync with TileLang's 1.81x fallback (possible-but-slow, not impossible); StreamIndex at 8% of H200 BF16 peak against TileLang's 40%, so even a 64x FLOP cut does not yield a usable training kernel; HISA's 1.6 ms Sparse MLA vs 5.6 ms indexer at 64K on A100; and the V4.1-Flash layer mix (2 SWA + 4 Full + 4 Reindex + 30 Reuse) that makes attention density, not the 16,384 cap, the right quantity."
+    },
+    {
+      "id": "depth-8",
+      "critic": "depth",
+      "severity": "major",
+      "action": "Added a sequenced program to the Verdict after the four premise checks: GQA check as a free gate that can drop the sparse arm before kernel work; the architecture comparison moved to 8K on a four-point ladder (50M/125M/250M/500M x 2 architectures) trained to ~1/3 of budget with the first 10% of checkpoints discarded, fitting L(C) and comparing exponents (~12–35 days); CSA2/NSA alone at 32k with a phase-stratified metric; and the 100B-per-arm wall-clock (43–58 days per arm, 215–290 for five) that rules out matching the literature."
+    },
+    {
+      "id": "w-01",
+      "critic": "width",
+      "severity": "critical",
+      "action": "Data-pipeline verdict inverted: 'The data pipeline is the part of the plan that is wrong.' The paragraph now states that the repo's default (random interleaving with document-boundary masking off) is MIXChunk, cites the measured INTRADoc advantage (0.762 PPL at 2K, 0.986 at 8K), the code-specific damage (−1.3 / −2.0 PPL on GitHub), that code is 15% of the mix, that cu_seqlens is already stored so the fix is a kernel flag, and its measured 4.0% step-time cost. Removed the false 'Packing ... is standard and not cosmetic' claim."
+    },
+    {
+      "id": "w-02",
+      "critic": "width",
+      "severity": "critical",
+      "action": "bf16_compress_hook now has a verdict: ~3% of step time at the corrected window (1.85 s saved against 56.3 s), ~18% only under the plan's own 36% premise; the measured A6000 analogue (+33%) corresponds to a 131% overhead regime; and the cluster consensus that compression pays more, not less, on slow fabrics (AGoQ 3.7x at 10 Gbps vs 3.4x at 200 Gbps; CERAR −17.3% on PCIe vs 33% slower on NVLink). Framed as insurance against the Gen1-x4 and short-context cases, not a lever at 32k."
+    },
+    {
+      "id": "w-03",
+      "critic": "width",
+      "severity": "major",
+      "action": "Added the 5-rank ring-pathology paragraph after the busbw derivation: Tartan's 'One should avoid adopting 5 GPUs in their application setup' and the NCCL maintainer's offset-alignment explanation with the 16x5-byte padding remedy. States that every overhead figure is a floor and that bucket padding belongs in the pre-flight."
+    },
+    {
+      "id": "w-04",
+      "critic": "width",
+      "severity": "major",
+      "action": "Added the batch-shape paragraph to the Verdict: 1M tokens is ~17x below the measured CBS at plateau (~16.8M tokens) but CBS is near zero at initialisation, so a fixed 1M batch from step 0 is far above it; the measured consequence (fixed 4,096-document batch ends worse than the small-batch control despite 75% fewer steps; batch-size warmup beats that control by 0.0166 loss with 43% fewer steps); and that the linear LR-scaling rule is an SGD-on-vision result."
+    },
+    {
+      "id": "w-05",
+      "critic": "width",
+      "severity": "major",
+      "action": "ECC sentence replaced with the temporal resolution: off/N/A through cmpunlocker v0.4, v0.5 (2026-10-06) reports N/A -> Enabled at ≤0.3% integration-level cost with integration-level-only verification; amoghmunikote lists Working while bayley, dl4rce and the 170th Street spec sheet say not restored. Converted to a two-part pre-flight: enable ECC, deploy the five-minute counter snapshot, and run memtest_vulkan over the full 64 GB rather than the 8 GiB region."
+    },
+    {
+      "id": "w-07",
+      "critic": "width",
+      "severity": "major",
+      "action": "Sequence parallelism added as the sixth topology in the enumeration (Ulysses all-to-all on the head dimension, Ring Attention P2P ring passes, the standard alternative to activation checkpointing at 32k), with an SP=5 row in the corrected-comparison table (62.9 GB/GPU/step, ~1.4x, ruled out on availability) and a matching sentence in the table's summary paragraph. 'Five ways' -> 'Six ways'."
+    },
+    {
+      "id": "ins-01",
+      "critic": "instruction",
+      "severity": "critical",
+      "action": "Stated the unstated precision premise: 2.0 GB is 2 bytes/param and is only reachable with bf16_compress_hook registered; under standard AMP the buckets stay fp32 (4.0 GB) and the overhead doubles; with pure-bf16 parameters the hook is a no-op cast. Cited the measured PCIe-only result (2.06x -> 2.65x at 124M, 1.91x -> 2.72x at 355M). Added a 2M-token row to the overhead table (112.6 s compute, 4.0 s all-reduce, 3.5%; 7.1% with fp32 buckets) and a sentence stating the invariance claim holds at both batch sizes."
+    },
+    {
+      "id": "ins-02",
+      "critic": "instruction",
+      "severity": "major",
+      "action": "Added both named mechanisms to the payoff subsection: top-k is non-differentiable, so the indexer is trained by clipped-log KL distillation against the main attention distribution rather than end-to-end, adding a second score-tensor forward+backward and a separate loss term per step; and the indexer's cost is additive and measured at 3.5x the kernel it feeds (HISA 5.6 ms vs 1.6 ms), so the −20% to −30% payoff is not net of it."
+    },
+    {
+      "id": "ins-06",
+      "critic": "instruction",
+      "severity": "minor",
+      "action": "Added the missing TP row to the claim-by-claim verdict table: 'TP ruled out at ~70x | ~70x | ~2.8x arithmetic (126 GB/GPU/step, 156 s); no training-grade TP path on a no-P2P link | T4/T3 | Wrong by ~25x; dominated, not excluded'. The repo does state 'TP is the same shape' as EP's ~70x, so the paired claim (b) is now fully tabulated."
+    }
+  ],
+  "skipped": [
+    {
+      "id": "D3",
+      "critic": "dialectic",
+      "severity": "major",
+      "reason": "Substance is covered without a separate edit: the thesis already anchors the wall-clock claim against the plan's 25-hour figure, and the new depth-8 program paragraph establishes the multi-arm program (five arms at 100B tokens = 215–290 days) as the binding constraint. A standalone threshold definition would cost ~50 words the report does not have at 9,957/10,000."
+    },
+    {
+      "id": "D4",
+      "critic": "dialectic",
+      "severity": "major",
+      "reason": "Fixing the 91–100 TFLOPS/card T1 anchor against the repo's 140k tok/s baseline would require re-deriving the sustained-throughput band and every downstream wall-clock estimate across three sections — regeneration-scale, not a surgical hunk. The report's existing 14–39k tok/s band already brackets the 130–162 TFLOPS/card the baseline implies, so the inconsistency is bounded rather than hidden."
+    },
+    {
+      "id": "depth-2",
+      "critic": "depth",
+      "severity": "major",
+      "reason": "The proposed 'How the table is read' mechanism paragraph is ~150 words of new content at the length cap. The query's 'does it fit DDP' question is answered on the VRAM side, and the traffic side is already bounded by the section's collective-elimination argument (frozen + replicated = zero lookup traffic)."
+    },
+    {
+      "id": "depth-3",
+      "critic": "depth",
+      "severity": "major",
+      "reason": "Would require a new exponent table plus ~120 words. The report already states that the 0.004-nat floor is measured at 124M–184M, not at 500M/9B, and that the extrapolation is unmeasured at the target scale — the finding's core caveat is present, only the ln(tokens) projection and the ranking-reversal asymmetry are absent."
+    },
+    {
+      "id": "depth-4",
+      "critic": "depth",
+      "severity": "major",
+      "reason": "Propagating 7.1% through five downstream sites and renormalising two table columns to wire bytes is a section rewrite. The D2 patch already replaces the 6.6% point estimate with the 5.3–7.1% range, which absorbs the units-basis discrepancy the finding identifies (1.60x vs 1.48x, 4.75x vs 5.4x)."
+    },
+    {
+      "id": "depth-6",
+      "critic": "depth",
+      "severity": "major",
+      "reason": "The proposed production-literature paragraph (DeepSeek-V3's 1:1 compute-to-communication ratio, DeepSpeed-MoE's 40x ratio and 372-vs-70 samples/s, Piper's PP x EP grid) plus the MoE trade-rate reconciliation is ~200 words at the length cap. The section's availability argument and the 112 GB plain-DDP arithmetic already carry the verdict, and PP=5 is already recommended as the route that trains the experts without freezing."
+    },
+    {
+      "id": "depth-7",
+      "critic": "depth",
+      "severity": "major",
+      "reason": "The 5-GPU pathology is applied in Hardware Reality under w-03, and the host-staged saturation plateau would duplicate it. Editing the Source Tensions item set is inseparable from the ins-04 restructure, which is escalated to the orchestrator rather than patched here."
+    },
+    {
+      "id": "w-06",
+      "critic": "width",
+      "severity": "major",
+      "reason": "The frozen-table literature paragraph (Delta N-gram's forward-only writer and its EP4 provenance, LongCat's 50% allocation cap, representation drift as the affirmative case) is ~180 words at the length cap. depth-1's 33M resolution already carries the memory-budget caveat, which is the load-bearing half for the query's third claim."
+    },
+    {
+      "id": "w-08",
+      "critic": "width",
+      "severity": "major",
+      "reason": "Four separate operational corrections (Stack-Edu SWHID hydration cost, SmolLM2-vs-Qwen3 tokenizer mismatch, checkpoint bytes at 14 B/param, the dataloader 150k tok/s per-GPU unit error) at ~200 words. The critical half of the same paragraph — the masking inversion — is applied under w-01; these are secondary and the report is at the length cap."
+    },
+    {
+      "id": "ins-03",
+      "critic": "instruction",
+      "severity": "major",
+      "reason": "A per-arm feasibility roster table would duplicate Verdict (a)–(d) and the new depth-8 program paragraph, which already give each arm's memory, wall-clock and measurability position. Adding a third table to the Verdict would cost ~120 words."
+    },
+    {
+      "id": "ins-05",
+      "critic": "instruction",
+      "severity": "major",
+      "reason": "Recomputing the 39.6k tok/s bound on the corrected 494M/28L/d≈1216 config (1.635e10 FLOPs/token -> ~61.8k at 100% MFU, overshoot 1.3–1.9x rather than 2–3x) cascades into the throughput band, the 3–7 day estimate and the claim table — regeneration-scale. The report already flags the 494M/28L/d=2048 triple as arithmetically impossible and gives the corrected hidden≈1216 FLOPs ratio, so the reader can see the bound is conservative."
+    },
+    {
+      "id": "ins-07",
+      "critic": "instruction",
+      "severity": "minor",
+      "reason": "Minor: pinning the Qwen3 tokenizer by hash and specifying data-order determinism (shuffle seed, packing order) would cost ~35 words. The report already covers FP-arithmetic determinism, which is the stronger requirement, and the length budget is exhausted."
+    }
+  ],
+  "conflicts": [
+    {
+      "ids": ["D2", "depth-4"],
+      "resolution": "Both target the 6.6% figure with incompatible fixes: D2 asks for a 5.3–7.1% range with T4 provenance, depth-4 asks for a single corrected point estimate of 7.1% propagated through every downstream mention. Applied D2 (higher severity, critical) because it is the honest form given no five-rank measurement exists; depth-4's units-basis correction is absorbed by the range rather than propagated as a new point estimate."
+    },
+    {
+      "ids": ["depth-1", "w-06"],
+      "resolution": "Both add caveats to the frozen-table verdict. depth-1 (critical) was applied; w-06's allocation-law and Delta N-gram material was skipped, so the Verdict carries the 33M/3M condition but not the rho=0 / 50%-cap condition. No contradiction introduced — the two caveats are independent."
+    }
+  ],
+  "orchestrator_escalated": [
+    {
+      "id": "ins-04",
+      "critic": "instruction",
+      "severity": "major",
+      "issue": "The report carries 8 H2s against the decomposition's 'exactly 7' contract. '## Source Tensions' is an extra top-level section appended after '## Verdict', so the report terminates on a caveat ('every wall-clock estimate here carries a 1.3x error bar from that axis alone') rather than on its committed recommendation.",
+      "why_escalated": "The proposed fix is not a heading-line edit. Demoting '## Source Tensions' to '### Source Tensions' and moving it before '## Verdict' requires relocating a five-item block (~700 words) plus moving the closing 'one-sentence inversion' paragraph to the very end. That is a block move, which the patcher contract routes to the orchestrator rather than executing as an oversized patch.",
+      "state_left": "The section is untouched and still sits after the Verdict as the 8th H2. The glued duplicate '## Training Topologies' heading was fixed separately, so the only remaining structural defect is this one.",
+      "minimal_alternative_if_orchestrator_prefers": "A single-line demotion of '## Source Tensions' to '### Source Tensions' in place would satisfy the 'exactly 7 H2s' mechanical check without a block move, but would leave the report terminating on a Verdict subsection that is a caveat list rather than the recommendation."
+    }
+  ]
+}

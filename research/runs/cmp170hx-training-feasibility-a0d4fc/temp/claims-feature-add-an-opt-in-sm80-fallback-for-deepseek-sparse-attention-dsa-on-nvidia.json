@@ -1,0 +1,80 @@
+[
+  {
+    "claim": "As of August 2026 SGLang has no end-to-end CUDA path for DeepSeek Sparse Attention on A100/SM80, with two independent blockers in the indexer and the sparse-MLA attention.",
+    "stance": "supports",
+    "stance_target": "cc-4's committed position that CSA2/DSA on sm_80 is a porting project, not an experiment",
+    "evidence_type": "empirical",
+    "scope_conditions": "SGLang issue #35420, opened 2026-08-19, closed inactive; A100 40GB/80GB, SM80, BF16 KV cache",
+    "quoted_support": "SGLang currently has no end-to-end CUDA path for running DeepSeek Sparse Attention (DSA), including DeepSeek-V3.2, on NVIDIA A100 / SM80.",
+    "numbers": [],
+    "entities": [
+      "SGLang",
+      "DSA",
+      "A100",
+      "SM80"
+    ],
+    "time_period": "2026-08",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "feature-add-an-opt-in-sm80-fallback-for-deepseek-sparse-attention-dsa-on-nvidia"
+  },
+  {
+    "claim": "Blocker 1: the DSA indexer's DSAPagedMQALogitsBackend.AUTO selects DeepGEMM on CUDA, and the paged-MQA logits implementation it needs is unavailable on SM80.",
+    "stance": "supports",
+    "stance_target": "The claim that the DSA indexer has no sm_80 kernel",
+    "evidence_type": "empirical",
+    "scope_conditions": "python/sglang/srt/layers/attention/dsa/dsa_indexer.py::_get_topk_paged",
+    "quoted_support": "DSA indexer DSAPagedMQALogitsBackend.AUTO selects DeepGEMM on CUDA. The paged-MQA logits implementation used by the DSA indexer is not available on SM80.",
+    "numbers": [],
+    "entities": [
+      "DeepGEMM",
+      "DSAPagedMQALogitsBackend",
+      "SM80"
+    ],
+    "time_period": "2026-08",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "feature-add-an-opt-in-sm80-fallback-for-deepseek-sparse-attention-dsa-on-nvidia"
+  },
+  {
+    "claim": "Blocker 2: the BF16 DSA decode path selects FA3 on pre-Blackwell GPUs, and SM80 FA3 cannot handle DSA's asymmetric head dimensions (QK 576 = 512 nope + 64 RoPE, V 512), failing with 'Only Hopper supports different V headdim'.",
+    "stance": "supports",
+    "stance_target": "The claim that the sparse-MLA attention path is Hopper-shaped",
+    "evidence_type": "empirical",
+    "scope_conditions": "python/sglang/srt/layers/attention/dsa_backend.py::_forward_fa3",
+    "quoted_support": "The SM80 FA3 implementation does not support this different V head dimension and can fail with: RuntimeError: Only Hopper supports different V headdim",
+    "numbers": [
+      "QK head dim 576 (512 nope + 64 RoPE)",
+      "V head dim 512"
+    ],
+    "entities": [
+      "FA3",
+      "SM80",
+      "DSA",
+      "asymmetric head dims"
+    ],
+    "time_period": "2026-08",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "feature-add-an-opt-in-sm80-fallback-for-deepseek-sparse-attention-dsa-on-nvidia"
+  },
+  {
+    "claim": "The proposed SM80 work is explicitly inference-only: a chunked Torch sparse-MLA correctness reference, then SM80 Triton paged-MQA logits and a BF16 Triton sparse-MLA DECODE kernel with online softmax — no backward and no training path.",
+    "stance": "supports",
+    "stance_target": "The claim that no sm_80 DSA training kernel exists or is planned in SGLang",
+    "evidence_type": "empirical",
+    "scope_conditions": "Proposed implementation, Phases 1 and 2",
+    "quoted_support": "Phase 2: SM80 Triton kernels ... add a BF16 Triton sparse-MLA decode kernel with online softmax; keep both kernels explicitly opt-in.",
+    "numbers": [],
+    "entities": [
+      "Triton",
+      "SM80",
+      "sparse-MLA decode",
+      "online softmax"
+    ],
+    "time_period": "2026-08",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "feature-add-an-opt-in-sm80-fallback-for-deepseek-sparse-attention-dsa-on-nvidia"
+  }
+]

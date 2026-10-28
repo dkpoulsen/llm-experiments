@@ -1,0 +1,72 @@
+[
+  {
+    "claim": "CMP 170HX cards enumerate as PCI device 10de:20c2, expose CUDA compute capability 8.0, and report 65,536 MiB of HBM after the community unlock path is applied.",
+    "stance": "supports",
+    "stance_target": "the repo's premise that five cards provide 320 GB of usable HBM2e (64 GB x 5)",
+    "evidence_type": "empirical",
+    "scope_conditions": "PixelML/club-170hx four-card rig; Ubuntu 22.04, kernel 6.8, driver 610.43.03, pinned cmpunlocker; measured 2026-08-30",
+    "quoted_support": "The cards tested by this project enumerate as PCI device `10de:20c2`, expose CUDA compute capability 8.0, and report 65,536 MiB after the community unlock path is working.",
+    "numbers": ["PCI device 10de:20c2", "compute capability 8.0", "65,536 MiB per card", "256 GiB aggregate on four cards"],
+    "entities": ["NVIDIA CMP 170HX", "cmpunlocker", "GA100"],
+    "time_period": "measured 2026-08-30",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "club-170hxdocshardwaremd-at-main-pixelmlclub-170hx-github"
+  },
+  {
+    "claim": "The CMP 170HX has no NVLink, so every multi-card collective crosses PCIe and can dominate runtime; the card is explicitly not equivalent to a supported A100.",
+    "stance": "supports",
+    "stance_target": "the repo's claim that the fabric, not the compute, is the binding constraint on multi-card training",
+    "evidence_type": "empirical",
+    "scope_conditions": "Four-card CMP 170HX rig, any multi-card workload",
+    "quoted_support": "| No NVLink  | Multi-card collectives cross PCIe and can dominate runtime  | ... It does not make it equivalent to a supported A100",
+    "numbers": [],
+    "entities": ["NVLink", "PCIe", "NVIDIA A100", "NVIDIA CMP 170HX"],
+    "time_period": "2026-10-02",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "club-170hxdocshardwaremd-at-main-pixelmlclub-170hx-github"
+  },
+  {
+    "claim": "With the cmpunlocker link patch all four cards on the club's 4-card PLX host train PCIe Gen2 x16, and Gen3 is unreachable because the OPT_DISABLE_GEN3_SPEED fuse reads 1 on every card checked.",
+    "stance": "refutes",
+    "stance_target": "the repo's premise that the box is limited to PCIe Gen2 x4 — on this particular host the negotiated width is x16, so every communication number derived from x4 is 4x pessimistic for this rig",
+    "evidence_type": "empirical",
+    "scope_conditions": "4-card PLX host (dual-socket Broadwell Xeon E5-2686 v4, two PLX PEX 8747 switches, two cards per switch); cmpunlocker link patch applied; measured 2026-10-01/02",
+    "quoted_support": "**Update 2026-10-02 (measured):** the Gen1 ceiling below is the _stock_ driver's. With the cmpunlocker link patch all four cards on the 4-card PLX host train **Gen2 x16** ; Gen3 is blocked by the `OPT_DISABLE_GEN3_SPEED` fuse, which reads 1 on every card we checked.",
+    "numbers": ["Gen2 x16 negotiated", "OPT_DISABLE_GEN3_SPEED fuse = 1 on 4/4 cards", "5 GT/s"],
+    "entities": ["PCIe Gen2", "PCIe Gen3", "PLX PEX 8747", "cmpunlocker", "OPT_DISABLE_GEN3_SPEED"],
+    "time_period": "measured 2026-10-02",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "club-170hxdocshardwaremd-at-main-pixelmlclub-170hx-github"
+  },
+  {
+    "claim": "On the stock driver every card advertises LnkCap 2.5GT/s x16 (PCIe Gen1), and a card in a bifurcated slot training at x8 is at that slot's ceiling rather than a riser or passthrough fault.",
+    "stance": "neutral",
+    "stance_target": "the link-width question: Gen1 x16 is the stock advertised maximum, so a Gen1 link seen in a guest is a card/vBIOS capability, not a hypervisor bug",
+    "evidence_type": "empirical",
+    "scope_conditions": "Hypervisor-side lspci -vv on the four-card test node, stock driver, measured 2026-09-02",
+    "quoted_support": "Host-side `lspci -vv` on the hypervisor shows every CMP 170HX card advertising `LnkCap: Speed 2.5GT/s, Width x16`. PCIe Gen1 is the card's advertised maximum, so a Gen1 link seen in a guest is a card/vBIOS capability, not a hypervisor passthrough bug. One card trains at x8 instead of the advertised x16.",
+    "numbers": ["LnkCap 2.5 GT/s", "Width x16", "one card at x8"],
+    "entities": ["PCIe Gen1", "LnkCap", "PCIe bifurcation", "VFIO passthrough"],
+    "time_period": "measured 2026-09-02",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "club-170hxdocshardwaremd-at-main-pixelmlclub-170hx-github"
+  },
+  {
+    "claim": "The club's four-card rig had validated CUDA enumeration, a 16 GiB cross-window write/read smoke test and post-load health checks on three cards, but four-card workload performance remained untested at the time of writing.",
+    "stance": "neutral",
+    "stance_target": "the evidentiary base for any multi-card throughput claim on this hardware — capacity and enumeration are measured, aggregate multi-card throughput is not",
+    "evidence_type": "empirical",
+    "scope_conditions": "Ubuntu 22.04, Linux 6.8, driver 610.43.03, pinned unlocker; four-card open-frame chassis",
+    "quoted_support": "**Measured:** three cards passed CUDA enumeration, a 16 GiB cross-window write/read smoke test, an SM kernel, and post-load health checks ... Four-card workload performance remains untested.",
+    "numbers": ["3 of 4 cards validated", "16 GiB cross-window test", "256 GiB aggregate"],
+    "entities": ["CUDA", "CMP 170HX", "Ubuntu 22.04", "driver 610.43.03"],
+    "time_period": "2026-10-02",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "club-170hxdocshardwaremd-at-main-pixelmlclub-170hx-github"
+  }
+]

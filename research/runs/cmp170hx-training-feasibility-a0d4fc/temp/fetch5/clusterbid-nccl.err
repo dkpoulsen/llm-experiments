@@ -1,0 +1,4 @@
+[INIT].... → Crawl4AI 0.9.5 
+[FETCH]... ↓ https://clusterbid.com/blog/nccl-tuning-ring-tree-all-to-all-algorithms                              | ✓ | ⏱: 5.07s 
+[SCRAPE].. ◆ https://clusterbid.com/blog/nccl-tuning-ring-tree-all-to-all-algorithms                              | ✓ | ⏱: 0.02s 
+[COMPLETE] ● https://clusterbid.com/blog/nccl-tuning-ring-tree-all-to-all-algorithms                              | ✓ | ⏱: 5.11s 

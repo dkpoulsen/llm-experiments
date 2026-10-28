@@ -1,0 +1,44 @@
+[
+  {
+    "claim": "The upstream cmpunlocker restores full SM compute throughput, memory geometry (64 GB on 8 GB cards, 40 GB on 10 GB cards), PCIe Gen2 speeds, ECC DRAM and SRAM, full 64 GB BAR1, JTAG access, VFIO passthrough, GPU profiling and persistence across reboot — but does not list GPU-to-GPU P2P as a supported feature.",
+    "stance": "supports",
+    "stance_target": "the repo's hardware table for capacity and Gen2, and the 'no P2P' premise as applied to the upstream tool; P2P exists only in forks, so 'no P2P' is a tool-scope statement, not a hardware limit",
+    "evidence_type": "empirical",
+    "scope_conditions": "Linux x86-64, root, nvidia-open 610.xx.xx+ pre-installed, matching kernel headers, Secure Boot disabled; release v0.5 (2026-10-05), commit 2d10f89 (2026-10-08)",
+    "quoted_support": "| Full SM compute throughput (SS0/SS1)  | Working ✓  | | Memory geometry (64GB on 8GB cards, 40GB on 10GB cards)  | Working ✓  | | PCIe Gen 2 speeds  | Working ✓  | | Error-Correcting Code (ECC) DRAM and SRAM   | Working ✓  | | Full BAR1 Size (64GB)  | Working ✓  |",
+    "numbers": ["64 GB on 8 GB cards", "40 GB on 10 GB cards", "64 GB BAR1", "808 stars", "55 commits"],
+    "entities": ["amoghmunikote/cmpunlocker", "ECC", "BAR1", "PCIe Gen2", "VFIO"],
+    "time_period": "2026-10-08",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "github-amoghmunikotecmpunlocker-a-tool-to-unlobotomize-your-nvidia-card-github"
+  },
+  {
+    "claim": "The upstream tool lists ECC DRAM and SRAM as working, which contradicts club-170hx's 'ECC untested / upstream work in progress' and the Consensus-Protocol wiki's frontier listing — ECC availability is an unresolved contradiction in the corpus.",
+    "stance": "neutral",
+    "stance_target": "whether ECC is available on this box, which matters for any long training run where silent corruption would invalidate results",
+    "evidence_type": "empirical",
+    "scope_conditions": "Upstream cmpunlocker README feature table vs club-170hx §2 ('ECC | off | off | upstream work in progress (cmpunlocker #56) | untested')",
+    "quoted_support": "| Error-Correcting Code (ECC) DRAM and SRAM   | Working ✓  |",
+    "numbers": [],
+    "entities": ["ECC", "cmpunlocker", "cmpunlocker #56"],
+    "time_period": "2026-10-08",
+    "region": "global",
+    "confidence": "low",
+    "source_note_id": "github-amoghmunikotecmpunlocker-a-tool-to-unlobotomize-your-nvidia-card-github"
+  },
+  {
+    "claim": "The unlock is installed with sudo ./install.sh and an optional --profile=8gb or --profile=10gb flag to force the memory geometry, followed by a reboot; removal is ./remove.sh --yes plus a reboot.",
+    "stance": "neutral",
+    "stance_target": "the operational cost of standing up a five-card training box — the unlock is a driver-patch install, not a configuration toggle",
+    "evidence_type": "empirical",
+    "scope_conditions": "Linux x86-64, nvidia-open 610.xx.xx+, matching kernel headers, Secure Boot disabled, network access on first install (downloads matching stock open-gpu-kernel-modules sources)",
+    "quoted_support": "sudo ./install.sh --profile=8gb    # 8GB card → 64GB unlock\nsudo ./install.sh --profile=10gb   # 10GB card → 40GB unlock\nThen perform a reboot.",
+    "numbers": [],
+    "entities": ["cmpunlocker", "install.sh", "remove.sh", "memory profile"],
+    "time_period": "2026-10-08",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "github-amoghmunikotecmpunlocker-a-tool-to-unlobotomize-your-nvidia-card-github"
+  }
+]

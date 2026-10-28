@@ -1,0 +1,190 @@
+[
+  {
+    "claim": "The DSA indexer retains O(L^2) complexity and must run independently at every layer, so across an N-layer model total indexer cost is O(N*L^2) \u2014 at long context a significant fraction of the whole attention budget.",
+    "stance": "supports",
+    "stance_target": "The claim that the indexer, not the sparse attention operator, is the dominant long-context cost",
+    "evidence_type": "theoretical",
+    "scope_conditions": "DeepSeek Sparse Attention under MLA; k=2048 << L",
+    "quoted_support": "Despite these efficiency gains, the indexer itself still operates at O(L2): at every layer, it must independently score all preceding tokens to determine its own top-k set. Across a model with N layers, the total indexer cost is O(NL2), and at long context lengths this becomes a significant fraction of the total attention budget.",
+    "numbers": [
+      "O(L^2) per indexer",
+      "O(N*L^2) total",
+      "k=2048"
+    ],
+    "entities": [
+      "DSA",
+      "lightning indexer",
+      "MLA",
+      "top-k"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "indexcache-accelerating-sparse-attention-via-cross-layer"
+  },
+  {
+    "claim": "The indexer is roughly an order of magnitude cheaper per FLOP than main MLA because it uses few heads, low-rank projections and FP8 arithmetic \u2014 which is why indexer overhead is a latency problem rather than a raw-FLOP problem.",
+    "stance": "neutral",
+    "stance_target": "How to reason about indexer cost on hardware without FP8 tensor-core support",
+    "evidence_type": "theoretical",
+    "scope_conditions": "DSA indexer design",
+    "quoted_support": "The indexer is designed for efficiency: it uses few heads, low-rank projections, and FP8 arithmetic, making it an order of magnitude cheaper per-FLOP than the main Multi-head Latent Attention (MLA).",
+    "numbers": [
+      "~10x cheaper per FLOP than MLA",
+      "FP8 arithmetic",
+      "few heads",
+      "low-rank projections"
+    ],
+    "entities": [
+      "indexer",
+      "MLA",
+      "FP8"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "indexcache-accelerating-sparse-attention-via-cross-layer"
+  },
+  {
+    "claim": "DSA is introduced by two-stage continued pretraining: a short dense warm-up trains only the indexer via KL-divergence distillation against the aggregated full-attention distribution with all other parameters frozen, then a longer sparse training phase activates top-k selection and jointly optimizes the whole model with the indexer receiving distillation gradients on a detached computational graph.",
+    "stance": "supports",
+    "stance_target": "The repo's claim that the indexer needs a separate distillation loss and is not a drop-in",
+    "evidence_type": "empirical",
+    "scope_conditions": "DSA instantiated under MLA; two-staged continue pretraining",
+    "quoted_support": "First, a short dense warm-up trains only the indexer via KL-divergence distillation against the aggregated full attention distribution at each layer, while all other parameters are frozen. Then, a longer sparse training phase activates top-k selection and jointly optimizes the entire model, with the indexer receiving distillation gradients on a detached computational graph.",
+    "numbers": [
+      "two stages",
+      "dense warm-up then sparse training"
+    ],
+    "entities": [
+      "DSA",
+      "KL-divergence distillation",
+      "dense warm-up",
+      "detached computational graph"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "indexcache-accelerating-sparse-attention-via-cross-layer"
+  },
+  {
+    "claim": "IndexCache removes up to 75% of indexer computations on a 30B DSA model with negligible quality degradation, giving up to 1.82x prefill speedup and 1.48x decode speedup at 200K context.",
+    "stance": "supports",
+    "stance_target": "The claim that cross-layer index reuse is a large, cheap win at long context",
+    "evidence_type": "empirical",
+    "scope_conditions": "30B DSA model, nine long-context and reasoning benchmarks, 200K context length",
+    "quoted_support": "Experimental results on a 30B DSA model show that IndexCache can remove 75% of indexer computations with negligible quality degradation, achieving up to 1.82x prefill speedup and 1.48x decode speedup compared to standard DSA.",
+    "numbers": [
+      "75% of indexer computations removed",
+      "1.82x prefill speedup",
+      "1.48x decode speedup",
+      "200K context",
+      "30B parameters"
+    ],
+    "entities": [
+      "IndexCache",
+      "DSA",
+      "prefill",
+      "decode"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "indexcache-accelerating-sparse-attention-via-cross-layer"
+  },
+  {
+    "claim": "Training-free IndexCache uses a greedy search that selects which layers keep indexers by directly minimizing language modeling loss on a calibration set, requiring no weight updates.",
+    "stance": "supports",
+    "stance_target": "Whether cross-layer index sharing can be applied without retraining",
+    "evidence_type": "empirical",
+    "scope_conditions": "Training-free variant; calibration-set greedy search",
+    "quoted_support": "Training-free IndexCache applies a greedy search algorithm that selects which layers to retain indexers by directly minimizing language modeling loss on a calibration set, requiring no weight updates.",
+    "numbers": [],
+    "entities": [
+      "IndexCache",
+      "greedy search",
+      "calibration set"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "indexcache-accelerating-sparse-attention-via-cross-layer"
+  },
+  {
+    "claim": "Training-aware IndexCache's multi-layer distillation loss is gradient-equivalent to distilling against the averaged attention distribution of all layers an indexer serves (Proposition 1), which is why even simple interleaved Full/Shared patterns match full-indexer accuracy.",
+    "stance": "supports",
+    "stance_target": "The theoretical justification for cross-layer index sharing",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Proposition 1; multi-layer distillation loss Eq. (1)-(2)",
+    "quoted_support": "Proposition 1. grad_theta L_multi = grad_theta L_avg. ... Proposition 1 shows that multi-layer distillation is not merely a heuristic",
+    "numbers": [],
+    "entities": [
+      "IndexCache",
+      "multi-layer distillation",
+      "Proposition 1"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "indexcache-accelerating-sparse-attention-via-cross-layer"
+  },
+  {
+    "claim": "On production-scale GLM-5, removing 50% of indexer computations maintains comparable long-context and reasoning performance and delivers about 1.2x end-to-end speedup.",
+    "stance": "supports",
+    "stance_target": "That the cross-layer reuse result generalizes beyond the 30B model",
+    "evidence_type": "empirical",
+    "scope_conditions": "GLM-5 production model; preliminary experiments",
+    "quoted_support": "IndexCache removes 50% of indexer computations while maintaining comparable performance across both long-context and reasoning tasks, delivering ~1.2x end-to-end speedup.",
+    "numbers": [
+      "50% indexer removal",
+      "~1.2x end-to-end speedup"
+    ],
+    "entities": [
+      "GLM-5",
+      "IndexCache",
+      "Z.ai"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "indexcache-accelerating-sparse-attention-via-cross-layer"
+  },
+  {
+    "claim": "The cached index tensor is a temporary buffer overwritten at each Full layer and requires no additional GPU memory beyond what standard DSA already allocates.",
+    "stance": "supports",
+    "stance_target": "The memory cost of implementing cross-layer index reuse",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Figure 2 inference loop",
+    "quoted_support": "Note that Tcache is a temporary buffer holding only the current index tensor; it is overwritten at each F layer and requires no additional GPU memory beyond what standard DSA already allocates.",
+    "numbers": [],
+    "entities": [
+      "IndexCache",
+      "index tensor",
+      "GPU memory"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "indexcache-accelerating-sparse-attention-via-cross-layer"
+  },
+  {
+    "claim": "Decode gains from indexer removal (1.48x) exceed prefill gains (1.82x in relative terms but a different mechanism) because the decode phase runs a per-token indexer pass at every step, so indexer cost is paid once per generated token.",
+    "stance": "supports",
+    "stance_target": "Why indexer overhead matters more for decode than prefill",
+    "evidence_type": "empirical",
+    "scope_conditions": "30B DSA model at 200K context",
+    "quoted_support": "1.48x speedup. This is because the decode phase in DSA involves a per-token indexer pass",
+    "numbers": [
+      "1.48x decode speedup"
+    ],
+    "entities": [
+      "decode",
+      "indexer",
+      "DSA"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "indexcache-accelerating-sparse-attention-via-cross-layer"
+  }
+]

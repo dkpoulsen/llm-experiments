@@ -1,0 +1,72 @@
+[
+  {
+    "claim": "TileLang's sparse MLA backward is 'the sole hotspot of the GLM-5 DSA (DeepSeek Sparse Attention) training backward path' and is profiled on H200 (sm_90), with no sm_80 path or benchmark.",
+    "stance": "supports",
+    "stance_target": "cc-4's claim that the training-capable DSA backward is Hopper-or-newer",
+    "evidence_type": "empirical",
+    "scope_conditions": "TileLang PR #2592, merged 2026-07-22; ncu profiling on H200 sm_90; DQKV=576, DV=512, topk=2048, bf16",
+    "quoted_support": "This operator is the sole hotspot of the GLM-5 DSA (DeepSeek Sparse Attention) training backward path (SparseMLA.autograd.Function), computing sparse MLA gradients for the latent geometry (DQKV=576, DV=512, topk=2048). ncu profiling on H200 (sm_90) shows it is severely memory-pipe bound",
+    "numbers": [
+      "DQKV=576",
+      "DV=512",
+      "topk=2048",
+      "L1/TEX 81-83% SOL",
+      "DRAM <1%",
+      "occupancy 12.2%",
+      "~3.6x bwd speedup on sm_90"
+    ],
+    "entities": [
+      "TileLang",
+      "GLM-5",
+      "DSA",
+      "H200",
+      "sm_90"
+    ],
+    "time_period": "2026-07",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "exampledeepseek-v32-adaptive-threads-for-sparse-mla-backward-by-butterfingrz-pul"
+  },
+  {
+    "claim": "The kernel is memory-pipe bound rather than DRAM bound (L1/TEX ~81-83% SOL, DRAM <1%, occupancy pinned at ~12.2% by registers and shared memory), so its performance lever is in-flight cp.async bytes, not bandwidth.",
+    "stance": "neutral",
+    "stance_target": "What limits sparse-MLA backward throughput",
+    "evidence_type": "empirical",
+    "scope_conditions": "ncu on H200, default deepseek_v32 shape H=64, block_H=64",
+    "quoted_support": "L1/TEX ≈ 81–83% SOL, DRAM < 1%, achieved occupancy ≈ 12.2% (structurally pinned by registers + shared memory)",
+    "numbers": [
+      "L1/TEX 81-83% SOL",
+      "DRAM <1%",
+      "occupancy 12.2%"
+    ],
+    "entities": [
+      "ncu",
+      "cp.async",
+      "shared memory"
+    ],
+    "time_period": "2026-07",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "exampledeepseek-v32-adaptive-threads-for-sparse-mla-backward-by-butterfingrz-pul"
+  },
+  {
+    "claim": "Under tensor parallelism >= 2 the head count shrinks below block_H=64 and the 256-thread tier no longer applies, so the kernel's best configuration requires TP=1 (no attention-head split).",
+    "stance": "neutral",
+    "stance_target": "How the sparse-MLA backward interacts with TP on this box",
+    "evidence_type": "empirical",
+    "scope_conditions": "Applicability (Tensor Parallelism) section",
+    "quoted_support": "TP1 (no head split) benefits most ... TP ≥ 2: H shrinks, block_H < 64 forces the 128-thread fallback, so this lever no longer applies",
+    "numbers": [
+      "TP1: block_H=64",
+      "TP>=2: block_H<64"
+    ],
+    "entities": [
+      "tensor parallelism",
+      "block_H"
+    ],
+    "time_period": "2026-07",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "exampledeepseek-v32-adaptive-threads-for-sparse-mla-backward-by-butterfingrz-pul"
+  }
+]

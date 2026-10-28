@@ -1,0 +1,172 @@
+[
+  {
+    "claim": "DSA's dense warm-up stage freezes all model parameters except the lightning indexer and trains it with a KL-divergence loss against the L1-normalized, head-summed main attention distribution, for 1000 steps of 16 sequences of 128K tokens = 2.1B tokens at LR 1e-3.",
+    "stance": "supports",
+    "stance_target": "The repo's claim that the indexer needs a separate distillation loss against main attention",
+    "evidence_type": "empirical",
+    "scope_conditions": "DeepSeek-V3.2 continued pretraining; dense warm-up stage",
+    "quoted_support": "In this stage, we keep dense attention and freeze all model parameters except for the lightning indexer. ... For warm-up, we use a learning rate of 10^-3. We train the indexer for only 1000 steps, with each step consisting of 16 sequences of 128K tokens, resulting in a total of 2.1B tokens.",
+    "numbers": [
+      "1000 steps",
+      "16 sequences/step",
+      "128K tokens/sequence",
+      "2.1B tokens",
+      "LR 1e-3"
+    ],
+    "entities": [
+      "DSA",
+      "lightning indexer",
+      "KL divergence",
+      "dense warm-up"
+    ],
+    "time_period": "2025",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-v32-pushing-the-frontier-of-open"
+  },
+  {
+    "claim": "DSA's sparse training stage optimizes all parameters, keeps the indexer aligned to the main attention distribution but only over the selected token set, detaches the indexer input from the computational graph, and trains for 15000 steps of 480 sequences of 128K tokens = 943.7B tokens at LR 7.3e-6 with 2048 KV tokens selected per query.",
+    "stance": "supports",
+    "stance_target": "The scale of training needed to adapt a model to a sparse attention pattern",
+    "evidence_type": "empirical",
+    "scope_conditions": "DeepSeek-V3.2 sparse training stage",
+    "quoted_support": "It is worth noting that we detach the indexer input from the computational graph for separate optimization. The training signal of the indexer is from only L_I, while the optimization of the main model is according to only the language modeling loss. In this sparse training stage, we use a learning rate of 7.3 x 10^-6, and select 2048 key-value tokens for each query token. We train both the main model and the indexer for 15000 steps, with each step consisting of 480 sequences of 128K tokens, resulting in a total of 943.7B tokens.",
+    "numbers": [
+      "15000 steps",
+      "480 sequences/step",
+      "128K tokens/sequence",
+      "943.7B tokens",
+      "LR 7.3e-6",
+      "top-k 2048"
+    ],
+    "entities": [
+      "DSA",
+      "sparse training",
+      "detached computational graph",
+      "top-k 2048"
+    ],
+    "time_period": "2025",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-v32-pushing-the-frontier-of-open"
+  },
+  {
+    "claim": "The DSA lineage trains at 128K sequence length, not 32k: both the indexer warm-up (2.1B tokens) and the sparse training stage (943.7B tokens) use 128K-token sequences, and the model's context is extended to 128K before post-training.",
+    "stance": "refutes",
+    "stance_target": "Treating 32k as the natural training context for CSA2/DSA-style sparse attention",
+    "evidence_type": "empirical",
+    "scope_conditions": "DeepSeek-V3.2 continued pretraining to 128K",
+    "quoted_support": "tended to 128K, we perform continued pre-training followed by post-training to create DeepSeek- ... the distribution of training data is totally aligned with the 128K long context extension data",
+    "numbers": [
+      "128K training sequences",
+      "2.1B + 943.7B tokens"
+    ],
+    "entities": [
+      "DSA",
+      "128K context",
+      "DeepSeek-V3.2"
+    ],
+    "time_period": "2025",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-v32-pushing-the-frontier-of-open"
+  },
+  {
+    "claim": "The indexer's training signal comes only from its own KL loss while the main model is optimized only on the language modeling loss, with the indexer input detached \u2014 so the indexer and the backbone are trained as two separate objectives rather than jointly through the attention path.",
+    "stance": "supports",
+    "stance_target": "The repo's claim that the indexer is 'an extra loss term, not a drop-in'",
+    "evidence_type": "empirical",
+    "scope_conditions": "Sparse training stage; Eq. (4)",
+    "quoted_support": "we detach the indexer input from the computational graph for separate optimization. The training signal of the indexer is from only L_I, while the optimization of the main model is according to only the language modeling loss.",
+    "numbers": [],
+    "entities": [
+      "indexer",
+      "detached graph",
+      "language modeling loss",
+      "KL loss"
+    ],
+    "time_period": "2025",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-v32-pushing-the-frontier-of-open"
+  },
+  {
+    "claim": "DSA's index score is computed with a ReLU activation rather than softmax over the indexer heads, chosen for throughput, and the lightning indexer has few heads and a small head dimension.",
+    "stance": "neutral",
+    "stance_target": "The indexer's arithmetic shape, which determines whether it maps well onto a given GPU",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Section 2.1 DeepSeek Sparse Attention",
+    "quoted_support": "where H_I denotes the number of indexer heads ... activation function for throughput consideration. Given that the lightning indexer has a small",
+    "numbers": [],
+    "entities": [
+      "lightning indexer",
+      "ReLU",
+      "indexer heads"
+    ],
+    "time_period": "2025",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "deepseek-v32-pushing-the-frontier-of-open"
+  },
+  {
+    "claim": "DSA selects only the top-k key-value entries per query token, reducing core attention from O(L^2) to O(Lk) while the lightning indexer itself retains a complexity that grows with sequence length.",
+    "stance": "neutral",
+    "stance_target": "The split between core-attention savings and indexer cost",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Section 2.1",
+    "quoted_support": "Although the lightning indexer still has a complexity",
+    "numbers": [
+      "O(L^2) -> O(Lk)"
+    ],
+    "entities": [
+      "DSA",
+      "top-k",
+      "lightning indexer"
+    ],
+    "time_period": "2025",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-v32-pushing-the-frontier-of-open"
+  },
+  {
+    "claim": "DeepSeek-V3.2-Exp's training configuration was deliberately aligned with V3.1-Terminus so that the effect of introducing sparse attention could be isolated, and the two models score within noise of each other across reasoning and agentic benchmarks.",
+    "stance": "supports",
+    "stance_target": "The claim that sparse attention can be introduced with 'virtually identical model output quality'",
+    "evidence_type": "empirical",
+    "scope_conditions": "V3.2-Exp vs V3.1-Terminus benchmark table",
+    "quoted_support": "To rigorously evaluate the impact of introducing sparse attention, we deliberately aligned the training configurations of DeepSeek-V3.2-Exp with V3.1-Terminus. Across public benchmarks in various domains, DeepSeek-V3.2-Exp demonstrates performance on par with V3.1-Terminus.",
+    "numbers": [
+      "MMLU-Pro 85.0 vs 85.0",
+      "GPQA-Diamond 80.7 vs 79.9",
+      "AIME 2025 88.4 vs 89.3",
+      "SWE Verified 68.4 vs 67.8"
+    ],
+    "entities": [
+      "DeepSeek-V3.2-Exp",
+      "DeepSeek-V3.1-Terminus",
+      "DSA"
+    ],
+    "time_period": "2025",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-v32-pushing-the-frontier-of-open"
+  },
+  {
+    "claim": "The sparse training stage's KL target is renormalized over only the selected token set S_t, so the indexer is optimized to reproduce the attention distribution within the top-k it has already chosen \u2014 a self-referential target that cannot correct for tokens it never selects.",
+    "stance": "neutral",
+    "stance_target": "Whether the indexer distillation loss can recover from early selection mistakes",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Eq. (4); sparse training stage",
+    "quoted_support": "In this stage, we also keep aligning the indexer outputs to the main attention distribution, but considering only the selected token set S_t",
+    "numbers": [],
+    "entities": [
+      "indexer",
+      "KL loss",
+      "selected token set"
+    ],
+    "time_period": "2025",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "deepseek-v32-pushing-the-frontier-of-open"
+  }
+]

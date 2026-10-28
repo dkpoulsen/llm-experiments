@@ -1,0 +1,28 @@
+---
+title: "Tag: activation-memory"
+id: "_tag-activation-memory"
+type: index
+created: 2026-10-27T19:00:34.885167+00:00
+updated: 2026-10-27T19:00:34.885167+00:00
+---
+
+# Tag: activation-memory
+
+**3** notes.
+
+- [[agoq-activation-and-gradient-quantization-for]] — AGoQ: Activation and Gradient Quantization for — AGoQ (Lin et al., HIT Shenzhen + Huawei; arXiv 2605.00539, May 2026) combines two techniques for memory-efficient distributed LLM training: a layer-aware activation quantisation that assigns bit-widths per layer type and pipeline stage to reach near-4-bit activation storage (RMSNorm 4U -> 0.5U, SiLU & Multiply 12U -> 2U, attention stays at 5U; overall activation memory drops from 28U in Megatron-LM to 7.75U, an approximately three-fold reduction), and QuanGrad, an 8-bit (FP8) gradient representation used both for local accumulation and for a "precision-preserved FP8 All-Reduce" implemented as quantise -> reduce-scatter -> re-quantise -> all-gather.
+
+Reported results: up to 52% memory reduction and up to 1.34x training-speed improvement versus Megatron-LM (with and without ZeRO), DeepSpeed and COAT, on 8B-32B LLaMA models, with convergence loss on pretraining and comparable downstream accuracy. Gradient memory drops 75% versus COAT; activation memory drops a further 30% versus COAT.
+
+The most transferable result for this box is their commodity-bandwidth experiment: they explicitly re-ran the collective breakdown at 10 Gbps "to simulate commodity constraints" alongside their 200 Gbps primary testbed. At a 32 MB message under 10 Gbps the decomposed 8-bit all-reduce takes 432.36 ms versus 1,603.78 ms for the baseline - a 3.7x speedup (vs 3.4x at 200 Gbps, 39.17 ms vs 131.23 ms). That is the closest published analogue to the CMP box's ~0.75 GiB/s (~6 Gbps) NCCL fabric: the lower the bandwidth, the LARGER the relative win from halving the payload, which is the opposite of the usual "compression overhead dominates on slow links" intuition.
+
+Caveats: the primary testbed is 64x RTX A6000 over 200 Gb/s InfiniBand (PCIe Gen4-class per-GPU links), and the FP8 path is exercised on NVIDIA Pro 6000 GPUs "to support the FP8 format required by COAT" - again flagging that FP8 needs sm_89+/Hopper-class hardware. GA100 (sm_80) has no native FP8, so on the CMP 170HX the 8-bit path would need int8 or emulated FP8, and the paper does not measure that. `review`
+- [[coat-compressing-optimizer-states-and-activation-for-memory-efficient-fp8-traini]] — COAT: Compressing Optimizer states and Activation for Memory-Efficient FP8 Training — COAT (Xi, Cai, Zhu, Lu, Keutzer, Chen, Han; UC Berkeley / NVIDIA / MIT / Tsinghua; arXiv 2410.19313, NVlabs) is the FP8 training framework AGoQ benchmarks against. Two innovations: Dynamic Range Expansion, which shifts optimizer-state distributions to better fill the FP8 representable range and so cuts quantisation error; and Mixed-Granularity Activation Quantization, which combines per-tensor and per-group strategies for activation memory.
+
+Results: 1.54x end-to-end training-memory reduction versus BF16 with nearly lossless quality across LLM pretraining, fine-tuning and VLM training; 1.43x end-to-end training speedup versus BF16, on par with or better than Transformer Engine. It enables full-parameter training of large models on fewer GPUs and "facilitates doubling the batch size in distributed training settings". The worked example is Llama-2-13B on 8x80GB H100 under FSDP.
+
+Relevance here: COAT is the memory-side counterpart to the communication-side FP8 work, and its 1.54x memory reduction is the strongest published lever for fitting a larger trainable parameter count per card. But like FP8-LM it is Hopper-native - the paper explicitly ties FP8 to "the advent of Nvidia's H100 GPU" - so on GA100/sm_80 the memory savings would require emulation. Its "double the batch size" result is directly relevant to the repo's large-global-batch DDP strategy, since batch size is the only lever the repo has for amortising communication. `review`
+- [[memory-efficient-expert-routing-for-distributed-moe]] — Memory-Efficient Expert Routing for Distributed MoE — RelayMoE (Tarafder et al., William & Mary + BSC, arXiv 2610.07333): memory-efficient expert routing for distributed MoE training. Its diagnostic contribution is the most useful part for a 64 GB-card budget: peak memory in MoE training is set by the MoE block, not attention, because every intermediate buffer in the dispatch pipeline is scaled by top-k. Profiling a Qwen3-style model (top-8, 4 layers) at micro-batch 24 / 16384 tokens on 8x H100 with TP=SP=2, CP=4, EP=8 and full recompute, the MoE input activation is only 336 MiB per GPU but the top-k-expanded dispatch tensors are ~2.6 GiB each (8x expansion) and per-layer peak exceeds 42 GB during backward, with spikes to 51 GB against a 14 GB inter-spike baseline. RelayMoE replaces the single-shot all-to-all dispatcher with a ring that circulates expert weights or tokens, computes locally at each hop, and reconstructs expert intermediates hop-by-hop during backward so they can be freed. Results on 30B-57B production MoE models: 2x average single-layer speedup over Megatron-LM, up to 2.02x full-model throughput at the same memory budget, 3.8x average (7.6x peak) reduction in MoE execution memory, and up to 2.85x longer trainable sequence. Scope caveat: the ring relies on GPU-to-GPU peer-to-peer hops over NVLink 4.0 within a node and NDR InfiniBand across nodes — the exact capability the CMP 170HX box lacks, so the mechanism does not port, but the memory arithmetic does. `review`
+
+---
+*Auto-generated by hyperresearch. Do not edit manually.*

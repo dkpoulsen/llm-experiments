@@ -1,0 +1,168 @@
+[
+  {
+    "claim": "A 4x KV cache size reduction incurs no accuracy degradation from 7B parameters up, and a compressed model is more accurate than a smaller uncompressed model with the same cache size.",
+    "stance": "supports",
+    "stance_target": "The claim that KV compression can be obtained without architectural sparse attention",
+    "evidence_type": "empirical",
+    "scope_conditions": "Instruction-following and reasoning evaluations; Qwen2.5 model family from 7B up",
+    "quoted_support": "A 4x cache size reduction incurs no accuracy degradation from 7B parameters up, and a compressed model is more accurate than a smaller uncompressed model with the same cache size.",
+    "numbers": [
+      "4x cache reduction",
+      "no accuracy degradation from 7B up"
+    ],
+    "entities": [
+      "KV cache compression",
+      "Qwen2.5",
+      "7B"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "kv-kaizen-learning-context-adaptive"
+  },
+  {
+    "claim": "On Qwen2.5-14B at 16k context, 4x cache compression composed with eviction to one position in eight yields a 32x smaller decode-time cache while preserving accuracy \u2014 the two ratios multiply.",
+    "stance": "supports",
+    "stance_target": "How far post-hoc KV compression can go when composed with eviction",
+    "evidence_type": "empirical",
+    "scope_conditions": "Qwen2.5-14B, 16k context, long-context tasks",
+    "quoted_support": "On Qwen2.5-14B at 16k, a 4x compression due to our cache configuration plus eviction to one position in eight gives a 32x smaller cache at decode",
+    "numbers": [
+      "4x compression",
+      "8x eviction",
+      "32x smaller decode cache",
+      "14B model",
+      "16k context"
+    ],
+    "entities": [
+      "KV-Kaizen",
+      "Qwen2.5-14B",
+      "eviction",
+      "decode cache"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "kv-kaizen-learning-context-adaptive"
+  },
+  {
+    "claim": "The paper's framing is that these results support pre-training large models and compressing them only afterwards \u2014 i.e. substantial KV compression is a post-hoc operation, not a reason to adopt sparse attention during pretraining.",
+    "stance": "refutes",
+    "stance_target": "The premise that CSA2-style architectural KV compression is required to make long-context training affordable",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "Paper conclusion; Apple research",
+    "quoted_support": "Together, these findings support pre-training large models and compressing them only afterwards.",
+    "numbers": [],
+    "entities": [
+      "KV-Kaizen",
+      "post-hoc compression",
+      "pretraining"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "kv-kaizen-learning-context-adaptive"
+  },
+  {
+    "claim": "Applying any single compression axis uniformly across all layers limits achievable compression because it degrades accuracy; composing mild settings locally and adaptively across depth, precision and rank preserves accuracy at much higher compression.",
+    "stance": "supports",
+    "stance_target": "The claim that uniform KV compression (e.g. one global bit-width) is the wrong design",
+    "evidence_type": "empirical",
+    "scope_conditions": "Ablations across depth/precision/rank axes",
+    "quoted_support": "We observe that these interventions taken independently and uniformly over all layers limit achievable compression because they degrade accuracy. Crucially, composing them locally and adaptively to the context can instead preserve accuracy while achieving large memory savings.",
+    "numbers": [],
+    "entities": [
+      "depth",
+      "precision",
+      "rank",
+      "KV-Kaizen"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "kv-kaizen-learning-context-adaptive"
+  },
+  {
+    "claim": "The selector runs once at the start of prefill and its choice then holds for every generated token, so the compression decision costs one forward pass of a small selector rather than per-token overhead.",
+    "stance": "supports",
+    "stance_target": "The runtime cost of adaptive KV compression",
+    "evidence_type": "empirical",
+    "scope_conditions": "Inference procedure",
+    "quoted_support": "During inference, the selector runs once at the start of pre-fill, and its choice then holds for every generated token.",
+    "numbers": [
+      "one selector pass per request"
+    ],
+    "entities": [
+      "selector",
+      "prefill",
+      "KV-Kaizen"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "kv-kaizen-learning-context-adaptive"
+  },
+  {
+    "claim": "The selector chooses among 17 actions per layer (16 width-precision pairs plus an inherit/reuse action), and the budget can itself be an input so one selector serves several compression targets.",
+    "stance": "neutral",
+    "stance_target": "The design space of per-layer KV compression choices",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Action space definition; precision in {2,4,8,16} bits",
+    "quoted_support": "That gives the selector 17 actions per layer as illustrated in Figure 1.",
+    "numbers": [
+      "17 actions per layer",
+      "precision {2,4,8,16}",
+      "16 width-precision pairs"
+    ],
+    "entities": [
+      "selector",
+      "action space",
+      "KV-Kaizen"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "kv-kaizen-learning-context-adaptive"
+  },
+  {
+    "claim": "The theoretical maximal compression for a 48-layer model such as Qwen2.5-14B is 4108x (8x precision x 10.7 lowest rank x 48 depth), though all experiments target far lower factors.",
+    "stance": "neutral",
+    "stance_target": "The upper bound on post-hoc KV compression",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Table 5; 48-layer Qwen2.5-14B",
+    "quoted_support": "In theory, the maximal compression factor that could be attained for a 48 layers model such as Qwen2.5-14B could be in practice 8x (precision) times 10.7 (lowest rank), and depth 48, by reusing the first KV layer at all subsequent layers (Table 5). This would yield a maximal compression of 4108x, though all of our experiments target far lower factors.",
+    "numbers": [
+      "4108x theoretical maximum",
+      "8x precision",
+      "10.7x rank",
+      "48x depth"
+    ],
+    "entities": [
+      "Qwen2.5-14B",
+      "compression bound",
+      "MLA"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "kv-kaizen-learning-context-adaptive"
+  },
+  {
+    "claim": "Selectors trained jointly with the model reach the Pareto frontier of accuracy against cache size, beating learning-free and post-hoc baselines, and the model adapts to the cache it will be served under because selector and model are trained together.",
+    "stance": "supports",
+    "stance_target": "Whether adaptive compression needs training-time adaptation",
+    "evidence_type": "empirical",
+    "scope_conditions": "Supervised fine-tuning with the selector; instruction-following and reasoning tasks",
+    "quoted_support": "In evaluations on instruction following and reasoning tasks, our selectors reach the Pareto frontier of accuracy against cache size, against learning-free and post-hoc baselines. ... Since we train selector and model together, the model adapts to the cache it will be served under.",
+    "numbers": [],
+    "entities": [
+      "KV-Kaizen",
+      "Pareto frontier",
+      "selector training"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "kv-kaizen-learning-context-adaptive"
+  }
+]

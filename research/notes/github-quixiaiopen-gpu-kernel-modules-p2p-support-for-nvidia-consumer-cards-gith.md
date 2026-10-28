@@ -1,0 +1,847 @@
+---
+title: 'GitHub - QuixiAI/open-gpu-kernel-modules: P2P support for nvidia consumer
+  cards · GitHub'
+id: github-quixiaiopen-gpu-kernel-modules-p2p-support-for-nvidia-consumer-cards-gith
+tags:
+- cmp170hx-training-feasibility-a0d4fc
+- gap-cc-6
+- bar1-p2p
+- nccl
+- all-reduce
+- p2p-bandwidth-lever
+- measured
+- primary-source
+created: '2026-10-27T14:41:47.168187Z'
+updated: '2026-10-27T19:00:31.820059Z'
+source: https://github.com/QuixiAI/open-gpu-kernel-modules
+source_domain: github.com
+fetched_at: '2026-10-27T14:41:47.166904Z'
+fetch_provider: builtin
+status: review
+type: note
+tier: ground_truth
+content_type: code
+deprecated: false
+summary: 'QuixiAI/open-gpu-kernel-modules (3,609 words) — a fork that enables BAR1
+  P2P on NVIDIA consumer cards (RTX 3090 GA102, 4090 AD102, 5090) by forcing the GH100
+  BAR1-P2P HALs on, resizing BAR1 to cover the framebuffer, and defaulting RMPcieP2PType
+  to BAR1. [T2 community measurement + code, 8x RTX 3090, PCIe 4.0 x16.] This is the
+  strongest counter-evidence to cc-6''s ''P2P is a latency lever, not a bandwidth
+  lever'': on 8x RTX 3090 (EPYC Rome, four root complexes, PCIe 4.0 x16) direct peer
+  copies run at 23-26 GB/s versus ~2 GB/s per GPU through host staging, and ''NCCL
+  all-reduce bus bandwidth reaches 24.7 GB/s versus 2.7 GB/s on NCCL''s no-P2P SHM
+  transport — a 9x collective-fabric jump''. So when BAR1 covers the whole framebuffer
+  AND the link is wide, P2P IS a bandwidth lever. The gating mechanism is the same
+  one the CMP 170HX hits: kbusIsPcieBar1P2PMappingSupported_GH100 requires static
+  BAR1 spanning the framebuffer, so BAR1 must be resized (32 GB on a 3090; 64 GiB
+  on an unlocked 170HX). It also documents that the stock 610 driver already ships
+  native BAR1 P2P for supported chips, and that no userspace changes are needed (stock
+  610.57.04 userspace). Caveat: GA102/AD102 at Gen4 x16, not GA100 at Gen2 x4 — the
+  9x ratio does not transfer to a 2 GB/s link, and the club-170hx 4-card receipt measures
+  the CMP case directly (2 GPU +31%, 3 GPU -9%, TP4 -25 to -44%).'
+utility_score: 15.0
+---
+
+GitHub - QuixiAI/open-gpu-kernel-modules: P2P support for nvidia consumer cards · GitHub
+Skip to content
+You signed in with another tab or window.
+Reload
+to refresh your session.
+You signed out in another tab or window.
+Reload
+to refresh your session.
+You switched accounts on another tab or window.
+Reload
+to refresh your session.
+Dismiss alert
+main
+Branches
+Tags
+Go to file
+Code
+Open more actions menu
+Latest commit
+History
+111 Commits
+111 Commits
+Folders and files
+Name
+Name
+Last commit message
+Last commit date
+.github/
+ISSUE_TEMPLATE
+.github/
+ISSUE_TEMPLATE
+kernel-open
+kernel-open
+nouveau
+nouveau
+src
+src
+tools
+tools
+.gitignore
+.gitignore
+CODE_OF_CONDUCT.md
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
+CONTRIBUTING.md
+COPYING
+COPYING
+Makefile
+Makefile
+README.md
+README.md
+SECURITY.md
+SECURITY.md
+drain-on-last-client-close.md
+drain-on-last-client-close.md
+driver_improvement_findings.md
+driver_improvement_findings.md
+install.sh
+install.sh
+nv-compiler.sh
+nv-compiler.sh
+utils.mk
+utils.mk
+version.mk
+version.mk
+View all files
+Repository files navigation
+open-gpu-kernel-modules — P2P for GeForce (3090 / 4090 / 5090)
+This is
+QuixiAI / Eric Hartford's fork of NVIDIA's open GPU kernel
+modules
+(driver 610.57.04) that enables
+PCIe peer-to-peer (P2P) between
+consumer GeForce GPUs
+— RTX 3090 (GA102), RTX 4090 (AD102), and RTX 5090
+(GB202). It is inspired by and derived from
+George Hotz / tinygrad's P2P patch
+(later simplified by aikitoria), ported forward to the 610 driver series.
+It also fixes two things for unified-memory GPUs such as the DGX Spark
+(GB10), both verified on a Spark: freed GPU memory that stays invisible to
+the OS after a process exits, and slow GPU page faults on system-allocated
+memory (45x faster first touch, huge pages now granted). See
+Unified-memory GPUs
+.
+NVIDIA's driver refuses P2P on GeForce boards. On a multi-GPU box that
+means every byte exchanged between GPUs is staged through host RAM — and on
+a typical EPYC/Threadripper host, concurrent device-to-host writes collapse
+to a few GB/s aggregate no matter how many x16 links you have. With this
+fork, GPUs DMA into each other directly over PCIe through BAR1:
+```
+$ nvidia-smi topo -p2p r
+        GPU0    GPU1    GPU2    GPU3    GPU4    GPU5    GPU6    GPU7
+ GPU0   X       OK      OK      OK      OK      OK      OK      OK
+ ...                                    (previously: GNS everywhere)
+```
+What it's worth: real LLM serving numbers
+Qwen3.8-Flash-Next-FP8 (125B-A6B MoE) served with tensor parallelism
+across
+8x RTX 3090
+(EPYC Rome, PCIe 4.0 x16), exact 1,000-token
+prompts / 2,000-token completions, identical model, config, and sampling
+— the only change is this driver plus the setup steps below:
+Concurrency
+Stock driver (no P2P)
+This fork (P2P)
+Speedup
+1
+109.6 tok/s
+148.8 tok/s
++36%
+8
+409.7 tok/s
+647.9 tok/s
++58%
+Under the hood: direct peer copies run at
+23–26 GB/s
+across the root
+complex (PCIe 4.0 x16 line rate) versus ~2 GB/s per GPU through host
+staging, and NCCL all-reduce bus bandwidth reaches
+24.7 GB/s
+versus
+2.7 GB/s on NCCL's no-P2P SHM transport — a 9x collective-fabric jump
+that the serving numbers above cash in. Getting there takes three
+ingredients — the patched modules, a full-size BAR1, and one NCCL
+setting — all covered below; a P2P matrix showing OK is the start, not
+the finish line.
+How it works
+The 565-era tinygrad patch hand-built page tables to alias peer framebuffer
+through BAR1. The 610 driver already ships NVIDIA's
+native BAR1 P2P
+implementation
+end-to-end (external PTE building with the
+`SYS_NONCOH`
+aperture and BAR1 DMA addressing in
+`nv_gpu_ops`
+,
+`UVM_GPU_LINK_PCIE_BAR1`
+in
+`nvidia-uvm`
+, and a
+`PCIE_BAR1`
+connection type in the P2P API) — it is
+simply never selected for GeForce. This fork is therefore a small,
+surgical set of force-enables (one commit, four source files):
+`kernel-open/nvidia/nv-pci.c`
+— always attempt the resizable-BAR resize,
+so BAR1 grows to cover all of the framebuffer and static BAR1 mapping
+auto-enables. (On desktop boards with ReBAR enabled this succeeds or is
+already done by firmware; on server boards the in-place resize fails
+and
+`tools/resize-bar1.sh`
+finishes the job — see below.)
+`src/nvidia/src/kernel/gpu/bif/kernel_bif.c`
+— force the P2P read/write
+capabilities (
+`p2pOverride = 0x11`
+, bypassing the chipset allowlist;
+bits 9:8 = 0 deliberately leave P2P
+atomics
+disabled, since the chipset
+was never vetted for them — use
+`NVreg_RegistryDwords="ForceP2P=0x211"`
+to allow atomics at your own risk) and
+default the PCIe P2P type to BAR1 (the modern replacement for the old
+`FORCE_P2P_TYPE_BAR1P2P`
+regkey, and exactly what
+`kbusIsPcieBar1P2PMappingSupported_GH100`
+checks).
+`src/nvidia/generated/g_kern_bus_nvoc.c`
+— route pre-Hopper chips to the
+chip-independent GH100 BAR1-P2P HAL implementations. Because these are
+the
+default
+HAL entries, this covers every pre-Hopper die (all of
+Turing, Ampere, and Ada — see
+Which GPUs are covered
+); GB202 already uses
+the GH100 entries natively.
+`src/nvidia/src/kernel/gpu/bus/arch/pascal/kern_bus_gp100.c`
+— dispatch
+the
+`_PCIE_BAR1`
+connection type to the BAR1-P2P create/remove HALs,
+mirroring the GH100 dispatch.
+No userspace changes: the modules pair with the stock 610.57.04 userspace
+driver and GSP firmware.
+Which GPUs are covered
+The patch is not GPU-model-specific: it reroutes the
+default
+(pre-Hopper)
+HAL entries and the shared pre-Hopper P2P dispatch, so it covers
+every
+chip the open kernel modules support that doesn't already have native BAR1
+P2P
+— that is, all of Turing, Ampere, and Ada, not just the flagship
+dies. We audited the full chain: the capability check
+(
+`kbusIsPcieBar1P2PMappingSupported_GH100`
+), the mapping create/remove
+functions (pure refcounting plus IOMMU mappings, no Hopper register
+access), the P2P-caps plumbing (
+`_kp2pCapsGetStatusOverPcieBar1`
+), and the
+UVM side (
+`UVM_GPU_LINK_PCIE_BAR1`
+) are all chip-independent; the static
+BAR1 machinery it depends on (
+`kbusIsStaticBar1Supported_TU102`
+and
+friends) is implemented for Turing and newer. Hopper and Blackwell use
+NVIDIA's own GH100 entries natively and are untouched.
+What actually gates a given card is
+hardware, not code
+: static BAR1
+(and therefore BAR1 P2P) requires BAR1 to cover the whole framebuffer.
+Ampere (RTX 30xx / GA10x) and Ada (RTX 40xx / AD10x)
+: ReBAR-capable;
+works as described below. Verified on 8x RTX 3090.
+Blackwell (RTX 50xx / GB20x)
+: native GH100 path, force-enabled by
+the regkey defaults; ReBAR-capable.
+Turing (RTX 20xx / GTX 16xx / TU10x–TU11x)
+: the code path is fully
+wired, but Turing vBIOSes predate Resizable BAR, so the config-space
+ReBAR capability is absent and both the driver resize and
+`tools/resize-bar1.sh`
+will report no ReBAR capability. Community UEFI
+drivers that enable ReBAR on Turing at the strap level exist (e.g.
+NVStrapsReBar
+, built on
+xCuri0/ReBarUEFI); with BAR1 covering the framebuffer, the same static
+BAR1 + BAR1 P2P path should light up. Untested by us — reports welcome.
+Pascal / Volta and older
+: out of scope — the open kernel modules
+(GSP-based) don't support them at all.
+Requirements
+A 610.57.04 userspace driver install (check
+`nvidia-smi`
+; the kernel
+modules must match the userspace version exactly).
+Kernel headers for your running kernel.
+BAR1 must end up covering the whole framebuffer
+(32 GB on a 3090).
+This is not cosmetic: BAR1-P2P maps peer memory
+through
+the peer's
+BAR1 aperture. With the stock 256 MiB BAR1,
+`nvidia-smi topo -p2p r`
+still reports OK and plain
+`cudaMemcpyPeer`
+works (transient mappings),
+but
+NCCL hangs at its first collective
+— even with only 2 GPUs —
+because its persistent peer mappings don't fit. How to get the large
+BAR1 depends on your board; see
+Getting the large BAR1
+below.
+Kernel command line: add
+`iommu=pt`
+(or disable the IOMMU). With the
+IOMMU in translated mode we measured peer copies collapsing to
+0.9 GB/s on some pairs; with
+`iommu=pt`
+every pair ran at 23–26 GB/s.
+`pci=realloc`
+is also recommended on server boards.
+Linux x86_64 (aarch64 builds too; see NVIDIA's upstream docs for
+cross-compilation variables).
+Install
+```
+git clone https://github.com/QuixiAI/open-gpu-kernel-modules
+cd open-gpu-kernel-modules
+./install.sh
+```
+`install.sh`
+does:
+`make modules -j$(nproc)`
+→ sign every
+`.ko`
+with the
+MOK when Secure Boot is on (aborts if there is no key or it is not
+enrolled: unsigned modules would be refused at boot and the box would
+come up GPU-less) →
+`rmmod`
+(aborts if
+`nvidia`
+is still loaded) →
+`make modules_install`
+→
+`depmod`
+→
+`modprobe`
+→ verify the running
+version is the one just built →
+`nvidia-smi`
+.
+Secure Boot: Ubuntu keeps a MOK at
+`/var/lib/shim-signed/mok/MOK.{priv,der}`
+(created by
+`update-secureboot-policy --new-key`
+). Enrol it once with
+`sudo mokutil --import /var/lib/shim-signed/mok/MOK.der`
+, reboot, and
+choose
+Enroll MOK
+in the blue MokManager screen.
+`install.sh`
+checks
+`mokutil --test-key`
+before it unloads anything.
+Two gotchas we hit on a real box, so you don't have to:
+`rmmod`
+fails with "Module nvidia is in use".
+Anything holding
+`/dev/nvidia*`
+keeps the old modules loaded.
+`install.sh`
+now aborts
+here instead of installing over a live driver (earlier versions carried
+on and left the
+old
+driver active with an identical version string).
+Stop every GPU process
+and
+`nvidia-persistenced`
+first:
+```
+sudo systemctl stop nvidia-persistenced
+sudo fuser -k /dev/nvidia*        # or stop your serving/compute jobs
+sudo rmmod nvidia_drm nvidia_modeset nvidia_uvm nvidia   # loaded subset
+```
+A DKMS driver install shadows this one.
+`modules_install`
+puts the
+patched modules in
+`kernel/drivers/video/`
+, but modprobe prefers
+`updates/dkms/`
+. If
+`modinfo -n nvidia`
+points at
+`/lib/modules/$(uname -r)/updates/dkms/`
+, move the DKMS copies aside:
+```
+sudo mkdir -p /root/nvidia-dkms-backup
+sudo mv /lib/modules/$(uname -r)/updates/dkms/nvidia*.ko.zst /root/nvidia-dkms-backup/
+sudo depmod -a
+sudo modprobe nvidia nvidia_uvm nvidia_modeset
+sudo systemctl start nvidia-persistenced
+```
+Then get BAR1 to full size (next section) and verify.
+Getting the large BAR1
+Consumer boards (desktop BIOS)
+Enable
+Above 4G Decoding
+and
+Resizable BAR
+in BIOS setup and
+reboot. The firmware resizes BAR1 at POST, the windows are sized to
+match, and the driver's own resize at probe is a no-op. Done.
+Server boards (no "Resizable BAR" BIOS item)
+Server firmware (tested: Gigabyte MZ22-G20, EPYC Rome, 8x RTX 3090)
+usually has no ReBAR toggle. It enumerates each GPU at the boot-time
+256 MiB BAR1 and sizes every bridge window to match, so after boot you'll
+see the driver fail like this in
+`dmesg`
+:
+```
+nvidia 0000:c3:00.0: BAR 1 [mem size 0x800000000 64bit pref]: can't assign; no space
+```
+Three things have to line up:
+Above 4G Decoding: Enabled
+(usually already is).
+A large 64-bit MMIO aperture.
+On AMD EPYC the item is
+Prefetchable MMIO Above 4G Size
+(Chipset → Fabric Resource, or
+AMD CBS → DF Common Options → Memory Addressing → MMIO High Size).
+You need at least
+`num_GPUs x max_BAR`
+per root complex the GPUs live
+behind; set it to the maximum (ours: 2 TB per NBIO). Verify from
+Linux — each root bridge should declare a huge window:
+```
+$ dmesg | grep "root bus resource \[mem 0x"
+pci_bus 0000:c0: root bus resource [mem 0x10090200000-0x2bf53ffffff window]  # ~1.7 TB: good
+```
+Re-enumerate the GPUs with the big BAR.
+Even with a huge
+aperture, the firmware-sized 800 MiB bridge windows can't be regrown
+in place: the driver's resize at probe fails, and so does
+`echo 15 > /sys/bus/pci/devices/.../resource1_resize`
+(ENOSPC),
+because live sibling devices pin the existing windows. The fix is to
+program the Resizable BAR control register directly, drop the GPU
+subtrees, and rescan — on re-enumeration the GPUs advertise the
+32 GB BAR natively and the kernel builds fresh windows that fit.
+`tools/resize-bar1.sh`
+does the whole dance (stop GPU users → unload
+driver → program ReBAR on every NVIDIA GPU → remove each GPU root
+port → rescan → reload driver):
+```
+sudo ./tools/resize-bar1.sh
+...
+== BAR1 sizes now ==
+    Total                                          : 32768 MiB   (x8)
+```
+The ReBAR register resets at reboot and the firmware goes back to
+256 MiB, so run it every boot:
+```
+sudo cp tools/resize-bar1.sh /usr/local/sbin/
+sudo cp tools/nvidia-resize-bar1.service /etc/systemd/system/
+sudo systemctl daemon-reload && sudo systemctl enable nvidia-resize-bar1
+```
+Unified-memory GPUs (DGX Spark / GB10): the memory pool fix
+The fork also carries two changes that have nothing to do with P2P and
+everything to do with GPUs that have no framebuffer of their own. On a
+DGX Spark (GB10) every
+`cudaMalloc`
+is system memory:
+`cudaMemGetInfo`
+total equals
+`MemTotal`
+, and weights, KV cache and CUDA graphs all come out
+of the same 121.7 GiB LPDDR5X pool as the CPU, the desktop and the OS.
+The problem: memory that nobody owns after a process exits
+Since driver 590 the open kernel module keeps freed system pages in
+per-node, per-page-order
+pools
+instead of returning them to Linux.
+The pools exist so the next allocation in the same process can skip the
+buddy allocator and reuse pre-zeroed pages (a 16 GiB
+`cudaMalloc`
+is
+0.10 s from a warm pool versus 0.35 s cold). The catch is that nothing
+empties them when the process that freed the pages goes away. The only
+release paths are the kernel's memory-pressure shrinker and a manual
+`echo 2 > /proc/sys/vm/drop_caches`
+.
+On a discrete GPU that is harmless: the pools only ever hold pinned host
+buffers. On a unified-memory GPU they hold the model. Measured on a Spark
+running the stock 610.43.02 driver, with the desktop up and
+`nvidia-persistenced`
+holding the device:
+```
+MemAvailable before:            107.0 GiB
+run: torch.empty(64 GiB, device="cuda").fill_(1); exit
+MemAvailable 10 s after exit:    51.7 GiB     nvidia-smi: no processes
+```
+Those 55 GiB are in none of the
+`/proc/meminfo`
+buckets.
+`free`
+shows
+them as used,
+`MemAvailable`
+is down by that amount, and any user-space
+check that trusts
+`MemAvailable`
+(vLLM's startup check does) fails on the
+next engine start:
+"Free memory on device cuda:0 (66.47/121.69 GiB) on
+startup is less than desired GPU memory utilization"
+. NVIDIA's own Spark
+troubleshooting page gives
+`drop_caches`
+as the workaround; the developer
+forum thread reporting it as a 590 regression was answered with
+"drivers past 580 are unsupported on Spark".
+The fix: trim the pools when a client closes
+`kernel-open/nvidia/nv-vm.c`
+gains
+`nv_trim_page_pools(retain_pages)`
+,
+built on the same move-and-free primitive the shrinker uses (now shared as
+`nv_mem_pool_reclaim()`
+): dirty pages first, then clean, pool mutex dropped
+before the pages go back to the kernel, so it runs safely alongside the
+scrubber worker and the shrinker. It walks pools from the largest page
+order down and keeps entries only up to a watermark.
+The trigger is
+any client file close
+, not "the last client is gone":
+on any box with a desktop or
+`nvidia-persistenced`
+, the device never goes
+idle, so a hook on the usage count reaching zero would never fire. The trim
+runs from both
+`nvidia_close_callback`
+(the per-GPU file) and
+`nvidia_ctl_close`
+(the control file, which is what actually owns an RM
+client's allocations), after the RM has torn the client down and with no
+driver locks held.
+One new module parameter controls it:
+```
+NVreg_SystemMemoryPoolRetainMB   default 0
+```
+`0`
+returns everything to the OS on every client close.
+`MemAvailable`
+is truthful again; the cost is that the next process pays the cold
+allocation path (about 22 ms per GiB instead of 6).
+`N`
+keeps up to N MiB pooled, largest page orders first. Use this if
+something on the box allocates and frees during serving (CUDA graph
+capture churn) and
+`nvidia-smi`
+polling keeps draining its warm pool.
+`-1`
+(stored as
+`0xFFFFFFFF`
+) disables the trim and restores the old
+behaviour. Module parameters parse as signed integers, so write
+`-1`
+.
+`NVreg_EnableSystemMemoryPools=0`
+(the no-source-change workaround, which
+disables pool creation entirely) still works and composes with this; with
+no pools the trim is a no-op. The shrinker stays registered, so
+`drop_caches`
+and memory pressure keep working too.
+Measured
+(DGX Spark, driver 610.43.02 built with the patch, desktop
+session and
+`nvidia-persistenced`
+running;
+`MemAvailable`
+before the test
+process, then 10 s after a process that allocated and touched 64 GiB on
+the GPU exited):
+Configuration
+Before
+10 s after exit
+stock 610.43.02
+119.2 GiB
+55.0 GiB
+64 GiB unaccounted, no process in
+`nvidia-smi`
+patched,
+`RetainMB=0`
+(default)
+119.0 GiB
+119.1 GiB
+all returned
+patched,
+`RetainMB=4096`
+119.2 GiB
+114.9 GiB
+4.3 GiB kept, as configured
+patched,
+`RetainMB=-1`
+119.0 GiB
+54.4 GiB
+old behaviour, as intended
+patched,
+`EnableSystemMemoryPools=0`
+118.8 GiB
+119.2 GiB
+composes, no oops
+Twenty allocate-32-GiB / free / exit cycles against a second process
+holding 16 GiB and a host memory hog produced no kernel warnings.
+Also on this branch: GPU page faults on system-allocated memory
+When the GPU is the first to touch pageable memory on a Spark (an mmap'd
+model file,
+`cudaMallocManaged`
+, HMM),
+`nvidia-uvm`
+serviced the faults
+through the kernel's
+`migrate_vma`
+path one 4 KiB page at a time, even
+though on an integrated GPU there is nothing to migrate to. That meant
+0.43 GiB/s first-touch (about 140 s for a 60 GB model), never a
+transparent huge page, and afterwards 16 M random accesses/s against
+3500 M/s for the same kernel on
+`cudaMalloc`
+memory. The fix in
+`kernel-open/nvidia-uvm/uvm_ats_faults.c`
+populates the range in place
+through
+`handle_mm_fault()`
+on integrated GPUs, which honours THP. It is
+gated on the GPU being integrated and is inert on discrete boards.
+Measured
+(same box, stock vs patched
+`nvidia-uvm`
+, 4 GiB anonymous
+`mmap`
+buffer first touched by the GPU, then read by identical CUDA
+kernels; the
+`cudaMalloc`
+reference is 256 GB/s stream and 3300 M random
+accesses/s):
+stock
+patched
+GPU first touch, 4 KiB pages
+0.42 GiB/s
+1.19 GiB/s
+GPU first touch,
+`MADV_HUGEPAGE`
+0.44 GiB/s, 0 MiB THP
+19.6 GiB/s, 4096 MiB THP
+random 4 KiB-page access afterwards
+17 M acc/s
+207 M acc/s
+streaming read
+169 GB/s
+168 GB/s
+Streaming through ATS is unchanged (it never was a fault problem); what
+changes is that the GPU now gets huge pages exactly as a CPU first touch
+does, and pays 45x less to fault memory in. The remaining gap to the
+`cudaMalloc`
+pool is translation through the CPU page tables, so for
+weights and KV that are read at random, copying into
+`cudaMalloc`
+memory
+is still the right call;
+`mmap`
+is now merely slow rather than
+unusable.
+The full measurements, and the A/B kit for both changes, are in
+`driver_improvement_findings.md`
+.
+Installing on a Spark
+Do
+not
+use
+`install.sh`
+from this tree on a Spark unless its user space
+is also 610.57.04: the Ubuntu Spark image ships 610.43.02 user space and
+NVIDIA's kernel and user components must match exactly. Apply the two
+Spark commits to the packaged source instead and let DKMS own it:
+```
+sudo cp -r /usr/src/nvidia-610.43.02 /usr/src/nvidia-spark-610.43.02
+cd /usr/src/nvidia-spark-610.43.02
+git -C ~/open-gpu-kernel-modules diff 7493f4cd..HEAD -- \
+    kernel-open/nvidia/nv-vm.c kernel-open/nvidia/nv.c \
+    kernel-open/common/inc/nv-proto.h kernel-open/nvidia-uvm/uvm_ats_faults.c \
+    kernel-open/nvidia/nv-reg.h | sudo patch -p2
+sudo tee dkms.conf >/dev/null <<'EOF'
+PACKAGE_NAME="nvidia-spark"
+PACKAGE_VERSION="610.43.02"
+MAKE[0]="make -j$(nproc) modules KERNEL_UNAME=${kernelver} KERNELRELEASE="
+CLEAN="make clean KERNEL_UNAME=${kernelver} KERNELRELEASE="
+BUILT_MODULE_NAME[0]="nvidia"         DEST_MODULE_LOCATION[0]="/updates/dkms"
+BUILT_MODULE_NAME[1]="nvidia-uvm"     DEST_MODULE_LOCATION[1]="/updates/dkms"
+BUILT_MODULE_NAME[2]="nvidia-modeset" DEST_MODULE_LOCATION[2]="/updates/dkms"
+BUILT_MODULE_NAME[3]="nvidia-drm"     DEST_MODULE_LOCATION[3]="/updates/dkms"
+BUILT_MODULE_NAME[4]="nvidia-peermem" DEST_MODULE_LOCATION[4]="/updates/dkms"
+AUTOINSTALL="yes"
+EOF
+sudo dkms add -m nvidia-spark -v 610.43.02
+sudo dkms build -m nvidia-spark -v 610.43.02
+sudo dkms install --force -m nvidia-spark -v 610.43.02   # --force: same version string as the packaged modules
+```
+Then reboot (or stop the display manager, unload and reload the driver).
+`grep SystemMemoryPoolRetainMB /proc/driver/nvidia/params`
+proves the
+patched
+`nvidia.ko`
+is running. The
+`KERNELRELEASE=`
+at the end of the make
+line matters: DKMS 3.x passes that variable itself, which switches NVIDIA's
+Makefile into its "called from Kbuild" mode and the build fails on
+`/Kbuild`
+. Revert with
+`sudo dkms remove -m nvidia-spark -v 610.43.02 --all`
+;
+the packaged modules are untouched underneath.
+NCCL on many-GPU PCIe boxes
+Two settings decide whether NCCL actually uses the fast path:
+`NCCL_P2P_LEVEL=SYS`
+— by default NCCL only uses P2P between GPUs
+under the same PCIe switch and falls back to its SHM transport for
+pairs whose path crosses the CPU ("SYS" paths). On a multi-root-complex
+box that silently caps you near SHM speed.
+Do
+not
+set
+`NCCL_P2P_DISABLE=1`
+(remove it if you added it while
+the box had no P2P).
+Measured on 8x RTX 3090 (EPYC Rome, four root complexes, PCIe 4.0 x16),
+all-reduce bus bandwidth at 84 MB payloads:
+Configuration
+busbw
+small-AR latency
+No P2P (NCCL SHM transport)
+2.7 GB/s
+—
+P2P, default
+`NCCL_P2P_LEVEL`
+4.2 GB/s
+41 us
+P2P,
+`NCCL_P2P_LEVEL=SYS`
+24.7 GB/s
+41 us
+Verify
+```
+# BAR1 should be ~32 GiB (not 256 MiB) after the resize:
+nvidia-smi -q -i 0 | grep -A3 "BAR1 Memory"
+
+# The P2P read matrix should be all OK:
+nvidia-smi topo -p2p r
+
+# And from PyTorch:
+python -c "import torch; print(torch.cuda.can_device_access_peer(0, 1))"
+
+# The real acid test — an actual NCCL collective (hangs if BAR1 is small):
+NCCL_P2P_LEVEL=SYS torchrun --nproc-per-node=2 - <<'EOF'
+import torch, torch.distributed as dist, os
+dist.init_process_group("nccl")
+torch.cuda.set_device(int(os.environ["RANK"]))
+x = torch.ones(1 << 20, device="cuda")
+dist.all_reduce(x)
+print("all_reduce OK:", x[0].item() == dist.get_world_size())
+EOF
+```
+A quick bandwidth check (adjust devices to a pair on your box):
+```
+python - <<'EOF'
+import time, torch
+a = torch.randn(2**25, device="cuda:0")   # 128 MiB
+b = torch.empty_like(a, device="cuda:1")
+for _ in range(3): b.copy_(a)
+torch.cuda.synchronize(0); torch.cuda.synchronize(1)
+t0 = time.perf_counter()
+for _ in range(10): b.copy_(a, non_blocking=True)
+torch.cuda.synchronize(0); torch.cuda.synchronize(1)
+print(f"{a.numel()*4*10/(time.perf_counter()-t0)/1e9:.1f} GB/s")
+EOF
+```
+Expect roughly PCIe line rate (~20+ GB/s on Gen4 x16) between peers.
+Rollback
+The stock modules are whatever your distro/DKMS installed; if you moved
+them aside per gotcha 2, restore with:
+```
+sudo mv /root/nvidia-dkms-backup/nvidia*.ko.zst /lib/modules/$(uname -r)/updates/dkms/
+sudo depmod -a && sudo reboot
+```
+Building manually
+```
+make modules -j$(nproc)
+sudo make modules_install -j$(nproc)
+sudo depmod
+```
+The modules must be used with GSP firmware and userspace components from
+the matching 610.57.04 release. To install the userspace driver without
+its own kernel modules:
+`sh ./NVIDIA-Linux-[...].run --no-kernel-modules`
+.
+For everything else (supported architectures, kernel compatibility, the
+full module set), see
+NVIDIA's upstream repository
+— this fork tracks it with a single commit on top.
+Credits
+George Hotz / tinygrad
+— the original 565.57.01 P2P patch that
+proved consumer-GPU P2P was a driver policy, not a hardware limit.
+aikitoria
+— the simplified port this fork's commit is based on.
+QuixiAI / Eric Hartford
+— the 610.57.04 port: dropped the manual
+PTE/aperture hacks in favor of the driver's now-native BAR1-P2P path,
+extended coverage to GA102/AD102/GB202, and validated on 8x RTX 3090.
+Disclaimer
+This modifies driver behavior NVIDIA explicitly disables on GeForce
+hardware. It works on the boards listed above with ReBAR-capable
+platforms; anything else is uncharted. No warranty — validate P2P
+correctness on your own workload (a bandwidth test plus an all-reduce
+correctness check is a good minimum).
+About
+P2P support for nvidia consumer cards
+Resources
+Readme
+License
+Code of conduct
+Code of conduct
+Contributing
+Contributing
+Security policy
+Security policy
+Activity
+Custom properties
+Stars
+22
+stars
+Watchers
+1
+watching
+Forks
+4
+forks
+Report repository
+Releases
+Packages
+Contributors
+Languages
+You can’t perform that action at this time.

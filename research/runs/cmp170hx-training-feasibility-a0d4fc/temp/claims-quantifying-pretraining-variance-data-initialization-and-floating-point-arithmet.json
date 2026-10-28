@@ -1,0 +1,91 @@
+[
+  {
+    "claim": "At 184M parameters and 3.7B tokens, the measured seed-to-seed standard deviation of final validation loss is at most 0.004 nats (<=0.14% relative), roughly 25x below the 3.5%-relative noise floor the pipeline borrowed from the scaling-law-estimation literature.",
+    "stance": "refutes",
+    "stance_target": "the committed position that published architecture deltas are below a 3.5%-relative noise floor at small scale",
+    "evidence_type": "empirical",
+    "scope_conditions": "23 runs of a 12-layer d=1024 16-head nanodo transformer on C4, 28,055 steps (~3.7B tokens, 20 tokens/param), bf16, TPU with bitwise determinism verified; 5 init seeds, 5 data seeds, optimizer and FP-arithmetic perturbations",
+    "quoted_support": "At the final step, the 23 runs span the range [2.941, 2.953]-a maximum deviation of 0.4% from the overall mean of 2.946. Within-group standard deviations are <=0.004 for every category; FP arithmetic is even tighter at 0.001.",
+    "numbers": [
+      "final loss range 2.941-2.953",
+      "max deviation 0.4%",
+      "within-group SD <=0.004 nats",
+      "FP-arithmetic SD 0.001 nats",
+      "184M parameters",
+      "3.7B tokens",
+      "23 runs"
+    ],
+    "entities": [
+      "nanodo",
+      "C4",
+      "TPU",
+      "AdamW"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "quantifying-pretraining-variance-data-initialization-and-floating-point-arithmet"
+  },
+  {
+    "claim": "The ordering of floating-point operations (induced by sharding/parallelism configuration) produces functional divergence within 20% of the divergence produced by changing the data or initialisation seed, even though aggregate validation loss is nearly identical.",
+    "stance": "neutral",
+    "stance_target": "whether a single-seed A/B can attribute a loss delta to architecture rather than numerics",
+    "evidence_type": "empirical",
+    "scope_conditions": "same 184M model, bf16 vs float32, different sharding topologies, per-token symmetric KL divergence",
+    "quoted_support": "The variance induced by the ordering of floating point operations is within 20% of the variance from changing the data or initialization seed, viewed from both parameter space and function space.",
+    "numbers": [
+      "within 20% of data/init-seed variance",
+      "final mean KL ~0.23 (data seed), ~0.21 (init seed), ~0.19 (FP arithmetic)"
+    ],
+    "entities": [
+      "bfloat16",
+      "sharding",
+      "KL divergence"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "quantifying-pretraining-variance-data-initialization-and-floating-point-arithmet"
+  },
+  {
+    "claim": "Aggregate validation loss cannot distinguish which perturbation produced a model: the 23 runs span 0.4% while their per-token predictive distributions differ by ~0.2 nats of symmetric KL, so loss is a low-noise but low-resolution discriminator.",
+    "stance": "supports",
+    "stance_target": "the design implication that a loss-only A/B at small scale has a very low noise floor but may still be insensitive to architecture",
+    "evidence_type": "empirical",
+    "scope_conditions": "184M, 3.7B tokens, C4",
+    "quoted_support": "As a practical takeaway: given a pair of trained models, standard evaluation metrics like validation loss cannot distinguish whether the runs differed by data seed, initialization seed, or floating point arithmetic. By contrast, inspectable differences in weight distance or prediction KL divergence reveal clear, category-specific signatures.",
+    "numbers": [
+      "0.4% loss spread",
+      "~0.2 nats per-token KL"
+    ],
+    "entities": [
+      "validation loss",
+      "KL divergence"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "quantifying-pretraining-variance-data-initialization-and-floating-point-arithmet"
+  },
+  {
+    "claim": "The measured loss spread is at a single budget (3.7B tokens, 20 tokens/param) and a single model family, so it bounds the noise floor at 184M/3.7B but does not establish how the spread changes with token budget or at 500M/9B.",
+    "stance": "neutral",
+    "stance_target": "the extrapolation of the 0.004-nat floor to the box's planned 500M/9B run",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "personal blog, not peer-reviewed; one architecture, one dataset",
+    "quoted_support": "Training on C4 for 28,055 steps (~3.7B tokens, Chinchilla-optimal at 20 tokens per parameter) in bfloat16.",
+    "numbers": [
+      "3.7B tokens",
+      "20 tokens/parameter",
+      "184M parameters"
+    ],
+    "entities": [
+      "C4",
+      "Chinchilla"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "quantifying-pretraining-variance-data-initialization-and-floating-point-arithmet"
+  }
+]

@@ -1,0 +1,63 @@
+[
+ {
+  "claim": "On a 4x CMP 170HX rig at Gen2 x4, the measured PCIe transfer rate is 800 MB/s at Gen1 and 1.6 GB/s at Gen2.",
+  "stance": "supports",
+  "stance_target": "the fabric ceiling used in cc-2's arithmetic: a Gen2 x4 link on this hardware tops out near 1.6 GB/s, so a 5-rank ring all-reduce cannot exceed ~1.6 GB/s busbw and ~1.0 GB/s algbw",
+  "evidence_type": "empirical",
+  "scope_conditions": "4x CMP 170HX (GA100, 70 SM, 64 GB each, 150 W), PCIe Gen2 x4, no NVLink, cards on a single x16-to-4x4 M2 bifurcation adapter",
+  "quoted_support": "I personally don't see an issue with x4 PCIE - the transfer rate is 800MB/s at Gen 1 and 1.6GB/s at Gen 2.",
+  "numbers": [
+   "800 MB/s at Gen1 x4",
+   "1.6 GB/s at Gen2 x4"
+  ],
+  "entities": [
+   "CMP 170HX",
+   "PCIe Gen2 x4",
+   "PCIe Gen1 x4"
+  ],
+  "time_period": "reported 2026",
+  "region": "global",
+  "confidence": "medium",
+  "source_note_id": "i-tested-the-cmp170hx"
+ },
+ {
+  "claim": "The same rig serves DeepSeek V4-Flash 0731 Q4_K_XL at ~29 tok/s generation and ~450 tok/s prefill on 4 cards at 1M context, with layer-split pipeline parallelism and no tensor parallelism.",
+  "stance": "neutral",
+  "stance_target": "the practical serving envelope of a 4-card Gen2 x4 box, useful as a sanity check on the report's throughput band",
+  "evidence_type": "empirical",
+  "scope_conditions": "4x CMP 170HX at Gen2 x4, llama.cpp -sm layer, f16 KV",
+  "quoted_support": "4 card ... DeepSeek V4-Flash 0731 Q4_K_XL - 13B MoE 29 ~450 1M",
+  "numbers": [
+   "29 tok/s generation",
+   "~450 tok/s prefill",
+   "1M context",
+   "4 cards"
+  ],
+  "entities": [
+   "DeepSeek V4-Flash",
+   "llama.cpp",
+   "layer-split PP"
+  ],
+  "time_period": "reported 2026",
+  "region": "global",
+  "confidence": "medium",
+  "source_note_id": "i-tested-the-cmp170hx"
+ },
+ {
+  "claim": "The report contains no NCCL or all-reduce measurement, so it bounds the link rate but does not settle NCCL's collective efficiency at 5 ranks.",
+  "stance": "neutral",
+  "stance_target": "the gap cc-2 is trying to fill",
+  "evidence_type": "anecdotal",
+  "scope_conditions": "llama.cpp serving report only",
+  "quoted_support": "I personally don't see an issue with x4 PCIE - the transfer rate is 800MB/s at Gen 1 and 1.6GB/s at Gen 2.",
+  "numbers": [],
+  "entities": [
+   "NCCL",
+   "all-reduce"
+  ],
+  "time_period": "reported 2026",
+  "region": "global",
+  "confidence": "high",
+  "source_note_id": "i-tested-the-cmp170hx"
+ }
+]

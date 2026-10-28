@@ -1,0 +1,64 @@
+[
+  {
+    "claim": "Attention-module-only (fwd-only) throughput for Llama3-8B shapes on 8xL20 PCIe falls from 454.93 iters/s at 8K to 62.75 at 32K to 5.48 at 128K - a 7.25x per-token attention-cost rise from 8K to 32K and 11.5x from 32K to 128K.",
+    "stance": "neutral",
+    "stance_target": "the attention-only component of the long-context cost, which is larger than the full-step ratio because non-attention FLOPs do not grow",
+    "evidence_type": "empirical",
+    "scope_conditions": "8xL20 PCIe, Llama3-8B shapes (32 heads x 128), bs=1, group_num=4, ulysses-degree 2 with lb-ring, forward only",
+    "quoted_support": "4 1 8K 32 128 2 415.5 454.93 ; 4 1 32K 32 128 2 44.348 62.754 ; 4 1 128K 32 128 2 3.399 5.476",
+    "numbers": [
+      "454.93 iters/s at 8K",
+      "62.75 at 32K",
+      "5.48 at 128K",
+      "7.25x 8K->32K",
+      "11.5x 32K->128K"
+    ],
+    "entities": [
+      "USP",
+      "L20 PCIe",
+      "Llama3-8B"
+    ],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "usp-a-unified-sequence-parallelism-approach-for"
+  },
+  {
+    "claim": "USP achieves 47% MFU on two 8xA800 nodes for Llama3-8B, and notes that Megatron-LM's printed MFU overstates efficiency at long sequences because it does not discount causal-masking waste.",
+    "stance": "neutral",
+    "stance_target": "the MFU ceiling and the accounting convention used by long-context systems papers",
+    "evidence_type": "empirical",
+    "scope_conditions": "two 8xA800 nodes, Llama3-8B, 1.6 Tbps RDMA",
+    "quoted_support": "We achieved 47% MFU on two 8xA800 nodes using SP for the LLAMA3-8B ... We have adjusted the MFU computation in Megatron-LM to account only for effective computations under causal masking. As a result, the MFU is notably lower when training with long sequences compared to the MFU figures printed by Megatron-LM.",
+    "numbers": [
+      "47% MFU",
+      "8xA800",
+      "Llama3-8B"
+    ],
+    "entities": [
+      "USP",
+      "A800",
+      "Megatron-LM"
+    ],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "usp-a-unified-sequence-parallelism-approach-for"
+  },
+  {
+    "claim": "The USP measurement is attention-module-only and forward-only, so its 7.25x ratio is an upper bound on the full training-step ratio and cannot be used directly as a per-token training cost multiplier.",
+    "stance": "neutral",
+    "stance_target": "whether the USP ratio can substitute for a full-step measurement",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "Table 3/4 are labelled 'fwd-only' attention benchmarks",
+    "quoted_support": "Table 3: Throughput (iters/sec) of SP-Unified on 8xL20 PCIe fwd-only (Ring-Degree x Ulysses-Degree=8)",
+    "numbers": [],
+    "entities": [
+      "USP"
+    ],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "usp-a-unified-sequence-parallelism-approach-for"
+  }
+]

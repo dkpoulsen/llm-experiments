@@ -1,0 +1,16 @@
+{
+  "ok": true,
+  "data": {
+    "note_id": "nccl-tuning-guide-ring-tree-and-all-to-all-algorithms-for-optimal-multi-gpu-comm",
+    "title": "NCCL Tuning Guide: Ring, Tree, and All-to-All Algorithms for Optimal Multi-GPU Communication at Scale | ClusterBid",
+    "url": "https://clusterbid.com/blog/nccl-tuning-ring-tree-all-to-all-algorithms",
+    "domain": "clusterbid.com",
+    "provider": "crawl4ai",
+    "path": "research/notes/nccl-tuning-guide-ring-tree-and-all-to-all-algorithms-for-optimal-multi-gpu-comm.md",
+    "word_count": 371,
+    "assets": [],
+    "raw_file": null
+  },
+  "vault": "/home/dkp/.thinkrail/worktrees/llm-experiments/workspace-1",
+  "timestamp": "2026-10-27T10:47:18.252948+00:00"
+}

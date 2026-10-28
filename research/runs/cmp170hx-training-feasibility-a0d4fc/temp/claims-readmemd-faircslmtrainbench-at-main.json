@@ -1,0 +1,205 @@
+[
+  {
+    "claim": "For a 505.5M-parameter dense decoder-only model on a single A100 80GB PCIe, the measured per-token training cost at 32k context is 2.19x the cost at 4k, not the 3.5-4.4x that the 6N+12LHQT FLOP formula implies.",
+    "stance": "refutes",
+    "stance_target": "the committed position that the 32k/4k wall-clock penalty equals the FLOPs ratio (4.39x for a 494-500M/28L/HQ2048 model)",
+    "evidence_type": "empirical",
+    "scope_conditions": "single A100 80GB PCIe, batch-saturated best config per length (bs=8 at 4k, bs=1 at 32k), eager PyTorch 2.8.0 + OLM, torch.compile, no activation checkpointing, no gradient accumulation, BF16 autocast with FP32 params/grads/Adam states",
+    "quoted_support": "L=4096: batch_size=8 tokens_per_step=32768 median_step_time_ms=1246.0856323242188 tokens_per_second=26296.7481126322 achieved_tflops=124.43079283512454 model_flops_utilization_pct=39.88166437023222 ; L=32768: batch_size=1 tokens_per_step=32768 median_step_time_ms=2732.8538818359375 tokens_per_second=11990.395907294678 achieved_tflops=199.31210368911326 model_flops_utilization_pct=63.882084515741425",
+    "numbers": [
+      "26296.7 tok/s at 4k",
+      "11990.4 tok/s at 32k",
+      "2.193x per-token cost ratio",
+      "MFU 39.88% at 4k",
+      "MFU 63.88% at 32k",
+      "1.602x MFU uplift",
+      "FLOPs ratio 3.513x",
+      "505,516,800 parameters"
+    ],
+    "entities": [
+      "A100 80GB PCIe",
+      "SLMTrainBench",
+      "FlashAttention",
+      "MFU"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "readmemd-faircslmtrainbench-at-main"
+  },
+  {
+    "claim": "The 32k/4k per-token cost ratio is remarkably stable across small-model sizes on A100 PCIe (2.19-2.27x for 150M-500M) and on H100 HBM3 (2.31-2.36x), while the FLOPs ratio falls from 4.19x at 150M to 3.51x at 500M - so the MFU uplift, not the FLOPs ratio, sets the wall-clock penalty.",
+    "stance": "refutes",
+    "stance_target": "the assumption that a single FLOPs-derived multiplier can convert 4k throughput to 32k throughput",
+    "evidence_type": "statistical",
+    "scope_conditions": "A100 80GB PCIe and H100 80GB HBM3, 150M/250M/350M/500M models, 4k vs 32k, best batch-saturated config",
+    "quoted_support": "A100 80GB PCIe 150M 4k=61870.3 (32.87%) 32k=28054.2 (62.42%) ratio=2.205x flopsratio=4.188x uplift=1.899x ; 250M ratio=2.267x uplift=1.789x ; 350M ratio=2.234x uplift=1.710x ; 500M ratio=2.193x uplift=1.602x ; H100 80GB HBM3 150M ratio=2.311x ; 250M ratio=2.358x ; 350M ratio=2.354x ; 500M ratio=2.334x",
+    "numbers": [
+      "2.19-2.27x on A100",
+      "2.31-2.36x on H100",
+      "FLOPs ratio 4.19x at 150M",
+      "FLOPs ratio 3.51x at 500M",
+      "MFU uplift 1.50-1.90x"
+    ],
+    "entities": [
+      "A100",
+      "H100",
+      "SLMTrainBench"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "readmemd-faircslmtrainbench-at-main"
+  },
+  {
+    "claim": "The mechanism behind the sub-FLOPs wall-clock penalty is that attention runs at much higher MFU than the rest of the training step: a two-component fit to the measured 500M A100 curve puts attention at ~73% of peak and the non-attention remainder at ~21%, so raising attention's share from 36% at 4k to 82% at 32k lifts blended MFU from 39.9% to 63.9%.",
+    "stance": "supports",
+    "stance_target": "the corpus critic's hypothesis that the 4k baseline is launch/overhead-bound at ~40% MFU while the 32k run amortizes better",
+    "evidence_type": "empirical",
+    "scope_conditions": "derived by solving a two-component MFU model against the measured 500M A100 points; attention share computed from the dataset's own achieved_tflops and tokens_per_second",
+    "quoted_support": "flops/token at 4k = 4.732e9 (6N=3.033e9, attention=1.699e9, share 35.9%); flops/token at 32k = 1.662e10 (attention=1.359e10, share 81.8%); solving share*A+(1-share)*L = MFU gives A=73.4%, L=21.1%",
+    "numbers": [
+      "attention MFU ~73%",
+      "non-attention MFU ~21%",
+      "attention share 35.9% at 4k",
+      "attention share 81.8% at 32k",
+      "L*H*Q = 34,560"
+    ],
+    "entities": [
+      "FlashAttention",
+      "MFU",
+      "A100"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "readmemd-faircslmtrainbench-at-main"
+  },
+  {
+    "claim": "The 1B model on A100 PCIe cannot run 32k (OOM) but measures 15,757 tok/s at 4k (MFU 42.61%) and 10,920 tok/s at 16k (MFU 55.42%), a 1.44x per-token cost ratio for a 4x sequence-length increase.",
+    "stance": "neutral",
+    "stance_target": "the scaling of the long-context penalty with model size",
+    "evidence_type": "empirical",
+    "scope_conditions": "995,135,232-parameter model, A100 80GB PCIe, single GPU, 4k and 16k only (32k OOM)",
+    "quoted_support": "NVIDIA A100 80GB PCIe 1B L=4096 tps=15757.0 mfu=42.61% ; L=16384 tps=10919.5 mfu=55.42%",
+    "numbers": [
+      "15,757 tok/s at 4k",
+      "10,920 tok/s at 16k",
+      "1.443x ratio",
+      "MFU 42.61% -> 55.42%"
+    ],
+    "entities": [
+      "A100",
+      "1B model"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "readmemd-faircslmtrainbench-at-main"
+  },
+  {
+    "claim": "The benchmark's protocol is a steady-state model-step measurement (AdamW zeroing, BF16-autocast forward, shifted-token CE, backward, FP32 AdamW update) with activation checkpointing and gradient accumulation disabled, so it measures the compute-scaling component of the long-context penalty and not distributed-training or dataloader effects.",
+    "stance": "neutral",
+    "stance_target": "the transferability of the measured ratio to a real multi-GPU training run",
+    "evidence_type": "empirical",
+    "scope_conditions": "eager PyTorch 2.8.0 + OpenLanguageModel, torch.compile, synthetic tokens resident on GPU, 20 timed steps after adaptive warmup",
+    "quoted_support": "Each timed step performs: 1. AdamW gradient/state zeroing; 2. BF16-autocast forward propagation; 3. shifted-token cross-entropy; 4. backward propagation; and 5. an AdamW optimizer update with FP32 parameters, gradients, and optimizer state. The runs use eager PyTorch 2.8.0 and OpenLanguageModel (OLM), with torch.compile, activation checkpointing, and gradient accumulation disabled.",
+    "numbers": [
+      "20 timed steps",
+      "2,963 configurations",
+      "context lengths 512-32,768",
+      "seeds 11 and 22"
+    ],
+    "entities": [
+      "PyTorch",
+      "OLM",
+      "AdamW"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "readmemd-faircslmtrainbench-at-main"
+  },
+  {
+    "claim": "The measurements are highly stable: robust relative jitter is 0.09-0.13% on the 500M A100 rows, so the 2.19x ratio is not a timing artefact.",
+    "stance": "supports",
+    "stance_target": "the reliability of the measured ratio",
+    "evidence_type": "statistical",
+    "scope_conditions": "20 timed steps after adaptive warmup, median step time",
+    "quoted_support": "measured_robust_relative_jitter=0.0009352728150119708 (4k) and 0.001313162442732093 (32k)",
+    "numbers": [
+      "0.094% jitter at 4k",
+      "0.131% jitter at 32k"
+    ],
+    "entities": [
+      "SLMTrainBench"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "readmemd-faircslmtrainbench-at-main"
+  },
+  {
+    "claim": "The dataset's MFU is computed with exactly the PaLM formula the committed position uses (6N + 12LHS FLOPs per token), so the measured MFU rise from 39.88% at 4k to 63.88% at 32k is a direct measurement that the attention term does NOT convert to wall-clock at the same rate as the linear term.",
+    "stance": "refutes",
+    "stance_target": "the committed position's implicit assumption that the 6N+12LHQT FLOPs ratio equals the wall-clock ratio",
+    "evidence_type": "empirical",
+    "scope_conditions": "SLMTrainBench protocol metadata, benchmark-data.json",
+    "quoted_support": "\"mfuFormula\": \"6N + 12LHS FLOPs per token\"",
+    "numbers": [
+      "6N + 12LHS",
+      "MFU 39.88% at 4k",
+      "MFU 63.88% at 32k"
+    ],
+    "entities": [
+      "PaLM FLOPs formula",
+      "MFU"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "readmemd-faircslmtrainbench-at-main"
+  },
+  {
+    "claim": "Both sides of the comparison are batch-saturated at ~95% VRAM (bs=8 at 4k with bs=16 OOM; bs=1 at 32k with bs=2 OOM) and the two seeds agree to within 0.3%, so the 2.19x ratio is not an artefact of an under-filled 4k baseline.",
+    "stance": "supports",
+    "stance_target": "the validity of the measured ratio as a like-for-like comparison",
+    "evidence_type": "statistical",
+    "scope_conditions": "A100 80GB PCIe, 500M model, seeds 11 and 22",
+    "quoted_support": "bs=8 status=complete tps=26215.5712 mfu=39.758 vram%=95.45 ; bs=16 status=oom ... CUDA out of memory ; bs=1 status=complete tps=11990.3959 mfu=63.882 vram%=95.57 ; bs=2 status=oom",
+    "numbers": [
+      "bs=8 at 4k (bs=16 OOM)",
+      "bs=1 at 32k (bs=2 OOM)",
+      "95.45% and 95.57% VRAM",
+      "seed spread 0.3% at 4k, 0.2% at 32k"
+    ],
+    "entities": [
+      "A100",
+      "SLMTrainBench"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "readmemd-faircslmtrainbench-at-main"
+  },
+  {
+    "claim": "OPEN QUESTION the drafter must carry: the benchmark does not state whether its attention is causal. If the SDPA kernel is causal it executes only ~half the 12LHS attention FLOPs the MFU formula counts, which would make the measured 63.88% MFU at 32k an understatement of hardware utilization and would supply a second, independent reason the conventional FLOPs ratio overstates wall-clock.",
+    "stance": "neutral",
+    "stance_target": "the mechanism behind the sub-FLOPs wall-clock ratio",
+    "evidence_type": "theoretical",
+    "scope_conditions": "PyTorch scaled_dot_product_attention with FLASH_ATTENTION backend; protocol says 'shifted-token cross-entropy' but does not state is_causal",
+    "quoted_support": "\"selected_sdpa_backend\": \"FLASH_ATTENTION\" ; \"mfuFormula\": \"6N + 12LHS FLOPs per token\" ; \"trainingStep\": \"BF16-autocast forward, shifted-token cross-entropy, backward, and fused AdamW update\"",
+    "numbers": [
+      "6N + 12LHS counts full quadratic attention",
+      "causal kernels execute ~half"
+    ],
+    "entities": [
+      "FlashAttention",
+      "causal masking"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "low",
+    "source_note_id": "readmemd-faircslmtrainbench-at-main"
+  }
+]

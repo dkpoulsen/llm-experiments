@@ -1,0 +1,58 @@
+[
+  {
+    "claim": "Capacity is per SKU and not interchangeable: the 8 GB card (10de:20c2) unlocks to 64 GB and the 10 GB card (10de:2082) unlocks to 40 GB, and an 80 GB configuration for 10 GB cards was built, tested and rejected as unstable.",
+    "stance": "supports",
+    "stance_target": "the repo's 64 GB-per-card premise, while bounding it to the 8 GB SKU — a 10 GB SKU pool would deliver only 200 GB across five cards, not 320 GB",
+    "evidence_type": "empirical",
+    "scope_conditions": "CMP 170HX 8 GB SKU 10de:20c2 and 10 GB SKU 10de:2082; wiki current as of 2026-07-31",
+    "quoted_support": "**Capacity is per SKU and is not interchangeable.** The 8 GB card (`10de:20c2`) unlocks to **64 GB**. The 10 GB card (`10de:2082`) unlocks to **40 GB**. The 80 GB configuration for 10 GB cards was built, tested, and rejected as unstable.",
+    "numbers": ["64 GB on 8 GB SKU", "40 GB on 10 GB SKU", "80 GB rejected as unstable"],
+    "entities": ["10de:20c2", "10de:2082", "CMP 170HX SKU"],
+    "time_period": "2026-07-31",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "github-consensus-protocolcmp170hx-cmp-170hx-technical-wiki-silicon-firmware-the"
+  },
+  {
+    "claim": "PCIe link speed and link width are separate problems: Gen1 to Gen2 is a software unlock shipped in cmpunlocker master since 2026-07-29 so any unlocked card runs Gen2, but going beyond x4 width requires hand-soldering 24 AC coupling capacitors, and neither unlock achieves the other.",
+    "stance": "supports",
+    "stance_target": "the repo's 'PCIe Gen2 x4' premise — it is the correct default unlocked state, and the width ceiling is a hardware population issue rather than a firmware one",
+    "evidence_type": "empirical",
+    "scope_conditions": "All CMP 170HX cards; cmpunlocker master since 2026-07-29; capacitor mod on 12 of 16 lanes",
+    "quoted_support": "**PCIe link speed and link width are separate problems.** Gen1 to Gen2 is a software unlock, shipped in cmpunlocker `master` since 2026-07-29, so any card with the unlock installed runs Gen2. Going beyond x4 width requires hand soldering 24 AC coupling capacitors. Neither one achieves the other.",
+    "numbers": ["24 AC coupling capacitors", "Gen2 unlock shipped 2026-07-29"],
+    "entities": ["PCIe Gen2", "PCIe link width", "cmpunlocker", "AC coupling capacitors"],
+    "time_period": "2026-07-31",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "github-consensus-protocolcmp170hx-cmp-170hx-technical-wiki-silicon-firmware-the"
+  },
+  {
+    "claim": "The wiki is a 55-page, roughly 278,000-word technical reference built from two public Discord servers (26,123 messages, 2026-06-22 to 2026-07-28), 1,121 archived attachments and 17 branches of the unlock tool, with claims adjudicated against shipping source code and checked by four independent audit methods.",
+    "stance": "neutral",
+    "stance_target": "the evidentiary quality of the community hardware corpus — this is the largest single body of CMP 170HX knowledge, and it is a source hub rather than a primary measurement",
+    "evidence_type": "historical",
+    "scope_conditions": "Wiki current as of 2026-07-31; docs/ tree is the source of truth; no individuals named, confidence marked throughout, unresolved questions labelled rather than guessed",
+    "quoted_support": "55 pages, roughly 278,000 words. Current as of **2026-07-31**. ... Sources: two public Discord servers (26,123 messages, 2026-06-22 to 2026-07-28), 1,121 archived attachments, 17 branches of the unlock tool, and external references. Claims were extracted, adjudicated against shipping source code, and checked by four independent audit methods.",
+    "numbers": ["55 pages", "~278,000 words", "26,123 Discord messages", "1,121 attachments", "17 branches"],
+    "entities": ["Consensus-Protocol/cmp170hx", "Discord", "cmpunlocker"],
+    "time_period": "2026-06-22 to 2026-07-31",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "github-consensus-protocolcmp170hx-cmp-170hx-technical-wiki-silicon-firmware-the"
+  },
+  {
+    "claim": "The wiki's frontier section tracks PCIe Gen3/Gen4, NVLink, ECC, 80 GB and P2P as the unsolved problems, which is where the hardware limits that constrain training topology are documented.",
+    "stance": "neutral",
+    "stance_target": "the set of hardware capabilities the repo's feasibility argument depends on, and which of them remain genuinely unavailable",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "docs/frontier/ in Consensus-Protocol/cmp170hx as of 2026-07-31",
+    "quoted_support": "| `frontier/`  | Status board and the unsolved problems: PCIe Gen3/Gen4, NVLink, ECC, 80 GB, P2P  |",
+    "numbers": [],
+    "entities": ["PCIe Gen3", "NVLink", "ECC", "P2P", "80 GB"],
+    "time_period": "2026-07-31",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "github-consensus-protocolcmp170hx-cmp-170hx-technical-wiki-silicon-firmware-the"
+  }
+]

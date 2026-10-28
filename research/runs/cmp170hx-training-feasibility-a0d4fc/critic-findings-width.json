@@ -1,0 +1,334 @@
+{
+  "critic_type": "width",
+  "vault_tag": "cmp170hx-training-feasibility-a0d4fc",
+  "draft_path": "research/notes/final_report_cmp170hx-training-feasibility-a0d4fc.md",
+  "query_file_path": "research/runs/cmp170hx-training-feasibility-a0d4fc/query.md",
+  "generated": "2026-10-27T17:40:00Z",
+  "corpus_stats": {
+    "vault_notes": 225,
+    "vault_claims": 1371,
+    "draft_citations": 59,
+    "uncited_notes": 166
+  },
+  "summary": {
+    "critical": 2,
+    "major": 6,
+    "minor": 0,
+    "most_damaging": "w-01",
+    "headline": "The draft's only sentence about the data pipeline ('the part of the plan that is already right') is inverted: the vault's primary source on sequence composition measures the repo's exact default — random interleaved packing with document-boundary masking off — as the worst of four configurations, and code, which is 15% of the repo's mix, is the domain that suffers most. Two further whole clusters are uncited: the seven-note gradient-compression cluster (the query names bf16_compress_hook and the repo lists it as an open question) and the two-note 5-GPU odd-rank NCCL penalty cluster (the query's hardware premise is exactly five cards)."
+  },
+  "findings": [
+    {
+      "id": "w-01",
+      "severity": "critical",
+      "location": "## 7. Verdict — the data-pipeline paragraph ('The data pipeline is the part of the plan that is already right.')",
+      "issue": "The draft cites [[analysing-the-impact-of-sequence-composition]] only for BM25Chunk's downstream gains (+11.6% ICL, +9.8% knowledge memorisation) and then concludes the pipeline is 'already right'. That citation indicts the repo's design rather than endorsing it. The repo's data-pipeline.md sets 'Document-boundary masking is **off** by default, matching standard packed-LM training' and interleaves documents across three sources at random weights — that is MIXChunk, the baseline the paper measures as the worst of four configurations. The paper's headline result is that intra-document causal masking (INTRADoc) beats MIXChunk by 0.762 PPL average at 2K (8.410 vs 9.172) and 0.986 at 8K (8.079 vs 9.065), and that code is the domain most damaged by cross-document distraction: 'both BM25Chunk and INTRADoc obtain significantly lower PPLs on GitHub, where INTRADoc improves over UNIChunk in both the 2K (-1.3 PPL) and 8K (-2.0) models... This phenomenon could imply that code pre-training is more adversely affected by the distraction of unrelated context.' Stack-Edu is 15% of the repo's mix. The cost of the fix is measured: 'we observe a 4.0% efficiency degradation on intra-document causal masking in our implementation.' The draft also writes 'Packing to 32k sequences with cu_seqlens boundaries is standard and not cosmetic', which implies boundary-aware packing is happening; the repo stores cu_seqlens so masking *can* be enabled later, but it is off. Net: the report's verdict on the one repo document it calls correct is the opposite of what the corpus supports.",
+      "evidence": [
+        {
+          "note_id": "analysing-the-impact-of-sequence-composition",
+          "tier": "T3",
+          "claim": "Table 1: 2K avg PPL MIXChunk 9.172 / UNIChunk 8.831 / BM25Chunk 8.550 / INTRADoc 8.410; 8K avg PPL MIXChunk 9.065 / UNIChunk 8.851 / BM25Chunk 8.289 / INTRADoc 8.079. GitHub column: 2K MIXChunk 5.531 -> INTRADoc 4.252; 8K MIXChunk 7.496 -> INTRADoc 5.010."
+        },
+        {
+          "note_id": "analysing-the-impact-of-sequence-composition",
+          "tier": "T3",
+          "claim": "Quote: 'INTRADoc improves over UNIChunk in both the 2K (-1.3 PPL) and 8K (-2.0) models... code pre-training is more adversely affected by the distraction of unrelated context.'"
+        },
+        {
+          "note_id": "analysing-the-impact-of-sequence-composition",
+          "tier": "T3",
+          "claim": "Quote: 'we observe a 4.0% efficiency degradation on intra-document causal masking in our implementation.'"
+        },
+        {
+          "note_id": "analysing-the-impact-of-sequence-composition-on-language-model-pre-training-acl",
+          "tier": "T3",
+          "claim": "Venue record for the same paper (ACL 2024) — corroborates the primary source is peer-reviewed, not a preprint."
+        }
+      ],
+      "recommendation": "Replace the 'already right' verdict with a masking verdict. Suggested insert after the token-count sentence: 'The pipeline is right about token supply and wrong about packing. The repo's default — random interleaved documents with document-boundary masking off — is the MIXChunk baseline, which the only systematic study of sequence composition measures as the worst of four configurations: intra-document masking beats it by 0.76 PPL average at 2K and 0.99 at 8K, and by 1.3 and 2.0 PPL on code specifically, the domain the paper finds most damaged by cross-document distraction. Code is 15% of this mix. The repo already stores cu_seqlens per shard, so the fix is a kernel flag, not a re-tokenisation; it costs a measured 4% of step time. Turn boundary masking on before the first run, or the code slice is being trained on a configuration the literature has already falsified.' Then correct 'Packing to 32k sequences with cu_seqlens boundaries is standard and not cosmetic' to say the offsets are stored but masking is off by default."
+    },
+    {
+      "id": "w-02",
+      "severity": "critical",
+      "location": "## 3. The DDP Overhead Model at 1M-Token Batches — missing subsection on bf16 gradient compression",
+      "issue": "The query names bf16_compress_hook as an entity and asks whether the overhead model holds 'with bf16 gradient compression'; the repo asserts 'Batch shape: ~1M-token global batches plus bf16_compress_hook to hide the slow fabric' and lists 'Does the 0.75 GiB/s all-reduce hold with bf16_compress_hook, and at what message size?' as open question 2. The draft cites only the mechanism note ([[pytorch-ddp-comm-hooks-default_hookspy-bf16fp16-compress-hooks]]) and bakes bf16 gradients into the payload ('2.0 GB bf16 grads') without ever giving a verdict on whether the hook is load-bearing. Seven notes in the vault address exactly this and none is cited. The cluster's consensus is that compression pays *more*, not less, on slow fabrics — the opposite of the usual intuition — but the draft's own corrected compute window makes the hook worth only ~3% at 32k, so the repo's claim is right for the wrong reason. That inversion is the finding.",
+      "evidence": [
+        {
+          "note_id": "ddp-on-a-pcie-only-4x-rtx-a6000-no-nvlink-plain-ddp-gave-2x-bf16-gradient-compre",
+          "tier": "T2",
+          "claim": "4x RTX A6000, every pair PHB (host bridge), no NVLink, PCIe Gen3 x16. 124M model: plain DDP 1.99x, bf16 gradients 2.65x, accumulate-4 3.20x, both 3.54x. 355M: 1.91x / 2.72x / 3.10x / 3.66x. Mechanism: 'DDP all-reduces fp32 gradients: about 500 MB per step for the 124M model. At 2.9 GB/s of algorithm bandwidth that is roughly 170 ms of communication against a 130 ms compute step' — i.e. a ~131% overhead regime, which is the repo's short-context premise, not the corrected 6.6%."
+        },
+        {
+          "note_id": "agoq-activation-and-gradient-quantization-for",
+          "tier": "T3",
+          "claim": "Commodity-bandwidth re-run at 10 Gbps 'to simulate commodity constraints': 8-bit all-reduce 432.36 ms vs 1,603.78 ms baseline at 32 MB = 3.7x, against 3.4x at 200 Gbps. 'The lower the bandwidth, the LARGER the relative win from halving the payload.' Caveat: FP8 path needs sm_89+; GA100 has no native FP8."
+        },
+        {
+          "note_id": "powersgd-practical-low-rank",
+          "tier": "T3",
+          "claim": "Other compressors' speedups 'vanish with a fast network and highly optimized communication backend' — compression only pays when the network is the bottleneck, 'which is exactly the PCIe Gen2 x4 case'. 120x compression, 54%/90% comm-time cut, 1.5x time-to-accuracy at rank 16."
+        },
+        {
+          "note_id": "zipccl-efficient-lossless-data-compression-of",
+          "tier": "T3",
+          "claim": "Bit-exact BF16 exponent compression, 1.31x all-gather / 1.36x all-to-all; benefit is bandwidth-saturation dependent, so '1.3x is a floor rather than a ceiling' on a ~1 GB/s fabric. Critical caveat: 'Reduce-Scatter was NOT worth compressing on their platform' — a DDP/FSDP gradient path does not automatically inherit the gain."
+        },
+        {
+          "note_id": "communication-efficient-distributed-training",
+          "tier": "T3",
+          "claim": "CERAR on 8x A100 PCIe (31.5 GB/s): all-reduce time -46 to -47%, Pythia-1.4B end-to-end -17.3% (3.79 h -> 3.14 h). On 4x H200 NVLink the same scheme is 33.2-33.9% SLOWER. 'The win is explicitly a low-bandwidth-fabric phenomenon.'"
+        }
+      ],
+      "recommendation": "Add a short subsection to §3 ('Does the bf16 hook pay?') with the verdict: at the corrected 56.3 s compute window and 3.7 s all-reduce, halving the payload saves ~1.85 s, i.e. ~3% of step time — the hook is not load-bearing at 32k/1M. It was load-bearing only under the repo's own premise (36% overhead -> 18%). The vault's measured analogue (+33% from the hook on 4x A6000 PCIe) corresponds to a 131% overhead regime (170 ms comm vs 130 ms compute), which is the short-context case, not the 32k case. State the cluster's counter-intuitive consensus explicitly: compression pays more, not less, on slow fabrics (AGoQ 3.7x at 10 Gbps vs 3.4x at 200 Gbps; CERAR -17.3% on PCIe vs +33% slower on NVLink; PowerSGD's 'compression only pays when the network is the bottleneck'). Then the repo's 'bf16_compress_hook to hide the slow fabric' is right for the wrong reason: it is insurance against the short-context/Gen1-x4 case, not a lever at 32k. Add a fifth pre-flight measurement: a 5-rank all_reduce_perf at 1 MB / 100 MB / 1 GB with and without bf16_compress_hook, which is exactly repo open question 2 and settles the message-size dependence the entity spec asks for."
+    },
+    {
+      "id": "w-03",
+      "severity": "major",
+      "location": "## 2. Training Topologies on a No-P2P PCIe Fabric (or ## 3, alongside the busbw derivation) — missing odd-rank paragraph",
+      "issue": "The query's hardware premise is exactly five cards, and the draft's entire communication model assumes a clean five-rank ring: 'a ring all-reduce's busbw is 2(n-1)/n times its algbw, which at five ranks is exactly 1.6'. The vault holds two notes, one tagged 5-gpu-penalty, that say five ranks are pathological on PCIe — and neither is cited. A primary interconnect study warns against 5-GPU setups outright; an NCCL maintainer attributes the penalty to offset alignment and gives the fix. The draft never engages the odd-rank problem, so its 6.6% overhead figure rests on an ideal-ring assumption the corpus explicitly flags as violated at exactly this rank count.",
+      "evidence": [
+        {
+          "note_id": "evaluating-modern-gpu-interconnect-pcie",
+          "tier": "T3",
+          "claim": "Li et al. (PNNL, IEEE TPDS, arXiv 1903.04611), the canonical PCIe/NVLink/NVSwitch interconnect evaluation: 'the NUMA effects appear quite significant with 5 GPUs, implying that there may be a congestion when forming a NCCL ring among 5 GPUs. One should avoid adopting 5 GPUs in their application setup.' Also: PCIe latency is uniform across pairs (no NUMA effect in latency) but an 'anti-locality' bandwidth effect appears for messages >64 KB; NCCL collective bandwidth saturates at ~16 MB on PCIe."
+        },
+        {
+          "note_id": "why-is-the-bandwidth-utilization-of-7-gpus-much-lower-than-that-of-6-8-gpus-for",
+          "tier": "T2",
+          "claim": "NVIDIA/nccl-tests issue #97. Reporter measured all-gather at a fixed 10,660,224-element total across 4/5/6/7/8 GPUs and found 'the bandwidth utilization of 5, 7 GPUs will be much lower than others'. NCCL maintainer sjeaugey: 'With 5 or 7 GPUs the alignment of the offsets is probably not great (e.g. 4 or 8 bytes instead of 16 bytes, or even down to 1 byte if using a int8 datatype). That means NCCL cannot use optimized 16 bytes loads and stores and performance is lower. If you run again on a size which is a multiple of 16x5 or 16x7 you should see good performance.' The note adds that the penalty is payload-shape dependent and can be engineered away by padding buckets to 16-byte multiples."
+        }
+      ],
+      "recommendation": "Add one paragraph to §2 after the busbw derivation: 'Five ranks is an odd count, and both a primary interconnect study and an NCCL maintainer flag 5-rank PCIe rings as pathological. Tartan's evaluation warns outright that \"one should avoid adopting 5 GPUs in their application setup\" because of ring-formation congestion; the NCCL maintainer attributes the effect to offset alignment and gives the remedy — bucket sizes that are multiples of 16x5 = 80 bytes. The 1.6x busbw factor used throughout this report is the ideal ring factor and assumes no alignment penalty, so the 6.6% overhead is a floor, not a point estimate.' Add to the pre-flight list: pad DDP gradient buckets to 16x5-byte multiples and run the 5-rank all_reduce_perf at bucket-aligned sizes, not just at 1 MB / 100 MB / 1 GB."
+    },
+    {
+      "id": "w-04",
+      "severity": "major",
+      "location": "## 7. Verdict — the experiment program / 'Four measurements' list (missing batch-shape paragraph)",
+      "issue": "The repo plans a fixed 1M-token global batch from step 0 with 'warmup ~1% of steps' on the LR schedule. The draft never mentions critical batch size, batch-size warmup, or LR scaling — yet the vault holds nine notes on exactly this, three of them fetched for this run. The measured result is that a fixed large batch from step 0 ends with worse loss than the small-batch control even though it uses 75% fewer steps, and that batch-size warmup recovers the loss with 43% fewer gradient steps. At 1M tokens the repo is 17x below the plateau CBS, so token efficiency is safe late in training; but CBS is near zero at initialisation, so a 1M batch at step 0 is far above CBS. That is a convergence risk in the experiment program, not a communication cost, and the draft is silent on it.",
+      "evidence": [
+        {
+          "note_id": "critical-batch-size-revisited-a-simple-empirical",
+          "tier": "T3",
+          "claim": "Merrill et al., NeurIPS 2025 (OLMo 1B and 7B, 4,096-token documents): 'CBS starts near 0 at initialization, rises rapidly and plateaus around 4,096 documents (~16.8M tokens)'; batch-size warmup (start small, double as CBS doubles, square-root LR scaling) 'beats the original run by 0.0166 loss after pretraining (0.0053 after mid-training) with 43% fewer gradient steps, while a fixed 4,096-document batch from step 0 uses 75% fewer steps but ends with worse loss than the small-batch control.' The note's own run-specific summary: 'a 1M-token global batch is roughly 17x below the measured CBS at plateau, so token efficiency is safe late in training, but CBS is near 0 at initialization - starting at 1M tokens without batch-size warmup or LR compensation is the real risk.'"
+        },
+        {
+          "note_id": "accurate-large-minibatch-sgd",
+          "tier": "T3",
+          "claim": "Goyal et al. (2017): 'warmup is mandatory, and the rule is derived for SGD with momentum on vision, not for Adam on LLM pretraining (Merrill et al. 2025 argue Adam needs square-root scaling instead).' Linear LR scaling is the mechanism the repo relies on when it says large global batches are the only lever."
+        },
+        {
+          "note_id": "an-empirical-model-of-large-batch-training",
+          "tier": "T3",
+          "claim": "McCandlish et al. (2018) gradient-noise-scale framework: 'the framework the repo's large-global-batches rule implicitly assumes, and the paper Merrill et al. (2025) test and reject as a proxy under Adam; its evidence base is small-scale and pre-LLM.'"
+        }
+      ],
+      "recommendation": "Add a paragraph to §7 after the wall-clock discussion: 'The batch plan is a convergence risk the report has not priced. At 1M tokens the repo sits 17x below the measured critical batch size at plateau (~16.8M tokens), so token efficiency is safe for most of the run. But CBS is near zero at initialisation, so a 1M-token batch at step 0 is far above it. The measured consequence is not subtle: a fixed large batch from step 0 ends with worse loss than the small-batch control even though it uses 75% fewer steps, while batch-size warmup — start small, double when CBS doubles, scale LR by square root — beat OLMo 1B by 0.0166 loss with 43% fewer gradient steps. The repo has LR warmup (~1% of steps) but no batch-size warmup, and the linear LR-scaling rule it may be leaning on is an SGD-on-vision result, not an Adam-on-LLM one. Add batch-size warmup to the run plan, or the 9B-token A/B is comparing two runs that both left loss on the table.'"
+    },
+    {
+      "id": "w-05",
+      "severity": "major",
+      "location": "## 7. Verdict — the pre-flight paragraph ('A fifth is not about performance at all. ECC is off on these cards...') and ## Source Tensions (missing sixth dispute)",
+      "issue": "The draft states 'ECC is off on these cards' as a settled fact and cites only club-170hx. The vault holds an explicit, unresolved contradiction that the corpus itself flags as live: the upstream unlock tool lists ECC DRAM+SRAM as Working, club-170hx lists it as off/untested/upstream-in-progress, the 170th-Street spec sheet says disabled, and dl4rce says neither unlock delivers ECC. The newest receipt resolves it temporally — cmpunlocker v0.5 (2026-10-05/06) enabled ECC for the first time at a measured <=0.3% perf cost, verified at integration level only because no fault-injection tooling exists. The draft's one-line 'ECC is off' is stale by one release, and it misses the actual pre-flight requirement: enable ECC, then deploy the counter-snapshot cron, then run memtest_vulkan. For a 3-7 day run on cards with a reported ~50% field-failure rate above 8 GiB, that is the difference between a silent bit-flip and a caught one.",
+      "evidence": [
+        {
+          "note_id": "github-amoghmunikotecmpunlocker-a-tool-to-unlobotomize-your-nvidia-card-github",
+          "tier": "T2",
+          "claim": "README 'What Gets Unlocked' table lists 'Error-Correcting Code (ECC) DRAM and SRAM | Working ✓'. The note's own annotation: 'ECC is listed as Working here, which contradicts club-170hx's \"ECC untested / upstream work in progress\" and the Consensus-Protocol wiki's frontier listing — so ECC availability is a live contradiction in the corpus, not a settled fact.'"
+        },
+        {
+          "note_id": "club-170hxdocscmp170hx-understandingmd-at-main-pixelmlclub-170hx-github",
+          "tier": "T2",
+          "claim": "Unlock table row: 'ECC | off | off | upstream work in progress (cmpunlocker #56) | untested'; frontier list: 'ECC | upstream in progress; untested'."
+        },
+        {
+          "note_id": "full-specifications-170th-street",
+          "tier": "T2",
+          "claim": "Spec sheet: 'ECC disabled'."
+        },
+        {
+          "note_id": "cmp-170hx-inference-labdocsunlock-and-modsmd-at-main-dl4rcecmp-170hx-inference-l",
+          "tier": "T2",
+          "claim": "'Neither delivers PCIe Gen3/Gen4, NVLink, ECC, or native FP8/FP4.'"
+        },
+        {
+          "note_id": "readme_enmd",
+          "tier": "T2",
+          "claim": "2026-10-06 Phase 3: 'ECC mode N/A -> Enabled, four-layer integration verification; perf cost |delta| <= 0.3% on all four workloads'. Verification detail: reporting (full counter set exposed) / control (nvidia-smi -e 0 = Not Supported, statically forced) / hardware (SEC2 payload FBPA writes confirmed in dmesg) / load (per-GPU 1 GB pattern x20 copy bit-verify PASS). Rigor note: 'fault-injection tooling is unavailable, so this is integration-level verification; a 5-minute ECC counter snapshot cron is deployed and we are watching for silent bit-flips that never trigger ECC.' Ops: 'cmp-ecc-snapshot every 5 minutes (root cron): aggregate correctable growth = early HBM weak-row warning, uncorrectable > 0 = ERROR.'"
+        },
+        {
+          "note_id": "lessonsmd",
+          "tier": "T2",
+          "claim": "'independent reports put field failure around 50% among buyers, with faults appearing only above the 8 GiB region a mining rig would touch — a strict pre-purchase QC gate (memtest_vulkan, vram-gate allocating ~61 GiB) is mandatory, not optional.'"
+        }
+      ],
+      "recommendation": "Replace 'ECC is off on these cards' with the temporal resolution and make it a two-part pre-flight: 'ECC was off or N/A through cmpunlocker v0.4; v0.5 (2026-10-05) enables DRAM+SRAM ECC at a measured <=0.3% throughput cost, verified at integration level only — no fault-injection tooling exists, so the verification is \"the counters move and the copy pattern bit-verifies\", not \"a flip was corrected\". Enable it before the first long run, deploy the 5-minute cmp-ecc-snapshot cron (aggregate correctable growth is an early weak-row warning; any uncorrectable count is a stop), and run memtest_vulkan over the full 64 GB, not just the 8 GiB a mining rig would touch.' Then add a sixth Source Tension: 'ECC availability is a live contradiction in the corpus' — amoghmunikote 'Working ✓' vs club-170hx 'untested / upstream in progress' vs 170th Street 'disabled' vs dl4rce 'neither delivers ECC', resolved by the v0.5 release date rather than by any of the four sources being wrong."
+    },
+    {
+      "id": "w-06",
+      "severity": "major",
+      "location": "## 5. Engram and Frozen Memory — after 'Freezing is nonetheless the right choice here'",
+      "issue": "The query's third explicit claim is about frozen Engram tables, and the vault holds twelve uncited notes on it, including the wave-2 gap-fetch [[delta-n-gram-forward-only-continual-writing]] that was commissioned specifically to fill coverage gap 6 ('Frozen-table evidence is thin on the \"does it help at 0.9B\" question'). The draft cites four Engram notes and none of these. Three things are missing and each changes the verdict's confidence: (a) Delta N-gram corroborates the memory math but undercuts the capability claim — frozen memory is not free capacity, paraphrase fails, long chains erode, and the only working frozen-writer recipe was trained under EP4, the topology this box rules out; (b) LongCat's allocation law caps N-gram embedding at 50% of total parameters and finds embedding scaling fails to beat adding experts at low ratios, while the repo's design puts 93% of parameters in the frozen table; (c) the drift result is the strongest positive evidence for freezing and the draft does not use it.",
+      "evidence": [
+        {
+          "note_id": "delta-n-gram-forward-only-continual-writing",
+          "tier": "T3",
+          "claim": "Wave-2 gap fetch, described in its own note as 'the strongest counter-datapoint to the run's frozen-table optimism'. Supports the memory math: 'a frozen table costs its bf16 rows and nothing else (no fp32 master, no m/v, no grad)' — a 4,075,681-parameter writer against a 48-layer 512-expert backbone, forward-only writes, 'It carries no optimizer state.' Contradicts the fabric: 'the writer was trained on four H200 GPUs with expert parallelism 4 and data parallelism 4... EP4 is exactly the topology the CMP 170HX's no-P2P Gen2 x4 fabric rules out, so reproducing this recipe on the box would require re-deriving the writer training under pure DDP.' Undercuts the capability claim: 'Frozen memory is NOT free capacity: on a 0.6B prototype the forward writer keeps 16/16 facts after a second write where online gradient writes keep 2-4/16, but the binding is tied to the trained question form — a paraphrased question stays at the empty-memory 2/16 level'; 'four writes leave 60/64 facts answerable, sixteen writes leave 46/64 right after their own write but only 19 at the end.'"
+        },
+        {
+          "note_id": "scaling-embeddings-outperforms-scaling-experts-in-language",
+          "tier": "T3",
+          "claim": "Meituan LongCat-Flash-Lite: 'allocates 31.4B of its 68.5B parameters (46%) to N-gram Embedding and trains them FROM SCRATCH jointly with the backbone - they are not frozen.' Allocation law: 'N-gram Embedding should be introduced only once the number of experts exceeds its sweet spot - at low parameter ratios embedding scaling fails to beat simply adding experts'; 'allocate no more than 50% of the total parameter budget to N-gram Embedding, with the crossover slightly above a ratio of 20 where embeddings are ~50% of total - consistent with Engram's U-shaped law.' The repo's design is 12.29B frozen of 13.21B total = 93%, far above the cap."
+        },
+        {
+          "note_id": "representation-drift-in-continual-learning",
+          "tier": "T3",
+          "claim": "The strongest positive evidence for freezing, uncited: 'updating only the N-gram memory changes the base model's representations of general math and code inputs by 26%/15% relative RMS, against 64%/35% for merged LoRA and 97%/39% for shared LoRA... this drift DOES NOT GROW with the number of tasks — it reaches 25% after the first task and stays there for all seven.' Mechanism: 'an input whose addressed rows were never rewritten is bit-for-bit unchanged at every layer and in every logit.' Cost: N-gram memory 'acquires new tasks more weakly and its stored tasks interfere with one another, losing as much old-task NLL as shared LoRA.'"
+        }
+      ],
+      "recommendation": "Add a paragraph to §5 after the sign-flip argument, titled something like 'What the frozen-table literature actually says'. Three sentences: (1) The memory math is corroborated — Delta N-gram demonstrates a frozen table that costs its bf16 rows and nothing else, with a 4.1M-parameter forward-only writer and no optimizer state, which is exactly the repo's premise. (2) The capability claim is weaker than the draft implies — frozen memory is not free capacity: the binding is tied to the trained question form (a paraphrase falls back to empty-memory accuracy), long write chains erode, and the only working frozen-writer recipe was trained under EP4, so reproducing it here means re-deriving the writer training under pure DDP. (3) The allocation law is a design constraint the repo violates: LongCat caps N-gram embedding at 50% of total parameters and finds embedding scaling fails to beat adding experts below the crossover; the repo's 12.29B frozen / 0.92B trainable is 93% in the table. Then use the drift result as the affirmative case for freezing that the draft currently lacks: updating only the table moves base-model representations 26%/15% relative RMS against 64%/35% for merged LoRA, and the drift does not grow with task count."
+    },
+    {
+      "id": "w-07",
+      "severity": "major",
+      "location": "## 2. Training Topologies on a No-P2P PCIe Fabric — the topology enumeration and the comparison table",
+      "issue": "The draft enumerates five topology families (DDP, ZeRO-2, FSDP, PP, TP, EP) and concludes 'DDP only should be restated as data-parallel only'. Sequence parallelism — the canonical sixth topology at 32k context, and the standard alternative to activation checkpointing for long sequences — is entirely absent, and the vault holds five notes on it, all tagged sequence-parallelism and fetched for this run. The query asks 'whether DDP is the only viable training topology at 1M-token global batches', so a reader would expect SP to be ruled in or out explicitly. The honest verdict is that SP is out for the same availability reason as EP — its per-layer all-to-all is the collective this fabric cannot run, and no SP implementation is measured on a no-P2P PCIe fabric — but the draft never says so, leaving the topology space incomplete.",
+      "evidence": [
+        {
+          "note_id": "deepspeed-ulysses-system-optimizations-for-enabling",
+          "tier": "T3",
+          "claim": "Sequence parallelism via all-to-all on the head dimension: 'Communication reduction of over 10x compared to existing systems, resulting in throughput improvements of up to 2.5x, and sustained throughput of over 175 TFlops/GPU (over 54% of hardware peak)'. Measured on up to 256 A100s. Crucially for the regime: 'Also reports a 1.3B GPT convergence run at 32K on 8 A100s with SP degree 4' — a 32k training run with SP, exactly the context length under assessment."
+        },
+        {
+          "note_id": "usp-a-unified-sequence-parallelism-approach-for",
+          "tier": "T3",
+          "claim": "USP (ring + Ulysses), 47% MFU on two 8x A800 nodes for Llama3-8B. Table 3 gives attention-module-only throughput on 8x L20 PCIe at 8K/32K/128K: best config 8K=454.93, 32K=62.75, 128K=5.48 iters/s — per-token attention cost rises 7.25x from 8K to 32K. The only SP note measured on a PCIe host, and it is attention-module-only, not a training step."
+        },
+        {
+          "note_id": "loongtrain-efficient-training-of-long-sequence-llms",
+          "tier": "T3",
+          "claim": "Head-context parallelism (2D-attention): up to 2.88x MFU vs Megatron-CP and 1.49-1.53x vs DS-Ulysses; end-to-end MFU 0.360-0.518 at 128K-1M on 64 GPUs. Ring-Attention's MFU is 'less than 10%' at 128K for MHA."
+        },
+        {
+          "note_id": "ring-attention-with-blockwise",
+          "tier": "T3",
+          "claim": "Blockwise ring-passing over K/V blocks: 7B at 256k on 8x A100, 30B at 2048k on TPUv4-1024. Architectural claim only — the extracted Table 4 lost its numeric cells, so this note cannot supply an MFU-vs-context curve."
+        }
+      ],
+      "recommendation": "Add a paragraph to §2 after the PP/ZeRO-2 subsection, and a seventh row to the corrected-comparison table: 'Sequence parallelism is the sixth topology and the one this report has not priced. It shards the sequence dimension across ranks and exchanges attention state per layer — Ulysses by all-to-all on the head dimension, Ring Attention by P2P ring passes of K/V blocks. At 32k it is the standard alternative to activation checkpointing, and the vault holds five notes on it. The verdict is the same as EP's, for the same reason: SP's per-layer all-to-all is the collective this fabric cannot run, no SP implementation is measured on a no-P2P PCIe host, and Ulysses' measured 32k convergence run used 8x A100 NVLink. SP is out on availability, not on cost — and the report should say so rather than leave the topology space looking complete when it is not.' If the draft prefers to keep the table at six rows, add the sentence to the paragraph that introduces the table ('Five ways to split a training job across five cards') instead."
+    },
+    {
+      "id": "w-08",
+      "severity": "major",
+      "location": "## 7. Verdict — the data-pipeline paragraph, operational half (shares location with w-01)",
+      "issue": "The same paragraph's operational claims are also wrong, and the vault has the receipts. (a) The repo's pipeline step 1 is 'Download the three sources from Hugging Face', but Stack-Edu ships only SWHIDs — 167M rows / 17.5 GB of metadata — and contents must be hydrated from Software Heritage's S3 bucket; the card's own script takes ~6 hours on a 16-core instance. That is an unbudgeted wall-clock and disk cost for the 1.35B-token code slice. (b) The 125B-token Stack-Edu figure is SmolLM2-tokenizer tokens, not Qwen3-tokenizer tokens as the repo assumes, so the 1.35B target and the 'realized mix within +/-1%' acceptance criterion cannot be checked without a Qwen3 tokenizer pass — which is exactly the repo's own open question 3. (c) The repo's checkpoint line ('500M params x 2 B = 1 GB') contradicts its own 16 B/param accounting elsewhere in research.md; a resumable checkpoint carries bf16 weights + fp32 master + Adam m + v = 14 B/param, so 500M params is ~7 GB and the 0.92B recipient is ~12.9 GB. (d) The dataloader acceptance criterion ('>=150k tok/s per GPU') is a unit error: 150k/GPU x 5 = 750k tok/s aggregate, which is 5-7x the box's own 20-27k tok/s centre and would train 9B tokens in under four hours. The repo's bandwidth-budget line makes the same error in the other direction ('100k tok/s x 4 B = 400 KB/s per GPU, 2 MB/s total' — 100k tok/s is the aggregate, so 400 KB/s total).",
+      "evidence": [
+        {
+          "note_id": "huggingfacetbstack-edu-datasets-at-hugging-face",
+          "tier": "T2",
+          "claim": "'The repo holds only SWHIDs (blob_id), NOT file contents — 167,063,359 rows / 17.5 GB of metadata. Actual code must be pulled from Software Heritage's public S3 bucket (bucket softwareheritage, key content/<blob_id>, gzip), and the card's own script takes ~6 hours on a 16-core AWS us-east-1 instance to download.' Also: 'the 125B figure is SmolLM2-tokenizer tokens, not Qwen3-tokenizer tokens as the run's pipeline assumes.' Per-language counts under the SmolLM2 tokenizer: Java 42.1B, Python 21.8B, Cpp 16.0B, Markdown 14.0B, C 11.1B, JavaScript 11.1B, SQL 9.62B, PHP 9.07B, C# 8.87B, Shell 3.13B, TypeScript 3.03B, Swift 1.83B, Go 1.80B, Rust 1.75B, Ruby 1.61B."
+        },
+        {
+          "note_id": "smollm2-when-smol-goes-big",
+          "tier": "T3",
+          "claim": "Stack-Edu '~125B tokens across 15 languages' under the SmolLM2 tokenizer; FineMath4+ = 10B tokens / 6.7M docs; FineMath3+ = 34B / 21.4M docs. Also the ablation shape the repo's 9B budget should be read against: 1.7B params, 2k context, ~2M-token global batch, 350B tokens per ablation, LR 3e-4 cosine."
+        },
+        {
+          "note_id": "published-as-a-conference-paper-at-iclr-2018",
+          "tier": "T3",
+          "claim": "Mixed Precision Training (ICLR 2018): fp32 master copy is required alongside bf16 weights, so optimizer state is not optional in a resumable checkpoint."
+        },
+        {
+          "note_id": "published-as-a-conference-paper-at-iclr-2022",
+          "tier": "T3",
+          "claim": "8-Bit Optimizers via Block-Wise Quantization (ICLR 2022): Adam's first and second moments are the dominant per-parameter state; block-wise quantization matches 32-bit at 1.5B."
+        },
+        {
+          "note_id": "adafactor-adaptive-learning-rates-with-sublinear-memory-cost",
+          "tier": "T3",
+          "claim": "Adafactor keeps only per-row and per-column sums of the second moment, so state is proportional to n + m rather than nm — the only route that makes a checkpoint materially smaller than 14 B/param."
+        }
+      ],
+      "recommendation": "Rewrite the operational half of the data-pipeline paragraph as four corrections, not an endorsement: (1) 'Stack-Edu is not a Hugging Face download. The repo holds SWHIDs only — 167M rows and 17.5 GB of metadata — and contents come from Software Heritage's S3 bucket; the card's own hydration script takes about six hours on a 16-core instance. Budget the wall time and the disk before the 2.2 TB free on the box is committed.' (2) 'The 125B figure is SmolLM2-tokenizer tokens, not Qwen3-tokenizer tokens, so the 1.35B target and the +/-1% acceptance criterion cannot be verified without a Qwen3 tokenizer pass — which is the repo's own open question 3.' (3) 'The checkpoint line understates by about 7x: a resumable checkpoint carries bf16 weights plus fp32 master plus Adam m and v, 14 B/param, so 500M params is ~7 GB and the 0.92B recipient is ~12.9 GB, not 1 GB. At Gen2 x4 that is ~9 s per write, not 0.5 s, and it happens every N steps.' (4) 'The dataloader criterion is a unit error: 150k tok/s per GPU x 5 ranks is 750k tok/s aggregate, 5-7x the box's own 20-27k tok/s centre. The target should be ~150k tok/s aggregate (30k/GPU), and the bandwidth-budget line should read 400 KB/s total, not per GPU.'"
+    }
+  ],
+  "bloat": {
+    "b1_content_dilution": "none filed — the draft is 53.5 KB, inside the 45-55 KB top-performer band, and the argumentative register carries its length. No meta-narration, no repeated thesis paragraphs.",
+    "b2_section_repetition": "none filed — the exec summary commits to the two-errors-cancel thesis and the Verdict section converts it into per-claim verdicts plus a lever ranking; phrase overlap is well under 50%.",
+    "formatting_defect_not_a_width_finding": "The draft contains a duplicated H2 heading ('## Training Topologies' appears twice in succession, with the first instance glued to the preceding paragraph by a missing newline: '...[[readmemd]].## Training Topologies'). Worth fixing in the same patch pass, but it is a formatting artifact, not a coverage gap."
+  },
+  "unused_note_clusters": [
+    {
+      "cluster": "gradient compression on slow fabrics",
+      "note_ids": [
+        "powersgd-practical-low-rank",
+        "agoq-activation-and-gradient-quantization-for",
+        "zipccl-efficient-lossless-data-compression-of",
+        "communication-efficient-distributed-training",
+        "ddp-on-a-pcie-only-4x-rtx-a6000-no-nvlink-plain-ddp-gave-2x-bf16-gradient-compre",
+        "geofp8-geometry-aware-fp8-gradient"
+      ],
+      "why_it_matters": "Six notes, zero citations. The query names bf16_compress_hook as an entity and the repo lists the hook as open question 2."
+    },
+    {
+      "cluster": "sequence parallelism",
+      "note_ids": [
+        "deepspeed-ulysses-system-optimizations-for-enabling",
+        "usp-a-unified-sequence-parallelism-approach-for",
+        "loongtrain-efficient-training-of-long-sequence-llms",
+        "ring-attention-with-blockwise"
+      ],
+      "why_it_matters": "Four notes, zero citations. The query asks whether DDP is the only viable topology; SP is the canonical sixth topology at 32k. (ProLong, [[how-to-train-long-context-language-models-effectively]], is a fifth adjacent uncited note — an FSDP long-context recipe with measured 64K throughput and a minibatch-reordering requirement, not an SP paper.)"
+    },
+    {
+      "cluster": "critical batch size / warmup / LR scaling",
+      "note_ids": [
+        "critical-batch-size-revisited-a-simple-empirical",
+        "an-empirical-model-of-large-batch-training",
+        "accurate-large-minibatch-sgd",
+        "revisiting-small-batch-training-for"
+      ],
+      "why_it_matters": "Four notes, zero citations. The repo plans a fixed 1M-token batch from step 0; CBS is near zero at init."
+    },
+    {
+      "cluster": "5-GPU odd-rank / NUMA",
+      "note_ids": [
+        "evaluating-modern-gpu-interconnect-pcie",
+        "why-is-the-bandwidth-utilization-of-7-gpus-much-lower-than-that-of-6-8-gpus-for"
+      ],
+      "why_it_matters": "Two notes, zero citations, one tagged 5-gpu-penalty. The query's hardware premise is exactly five cards."
+    },
+    {
+      "cluster": "frozen vs trained memory tables",
+      "note_ids": [
+        "delta-n-gram-forward-only-continual-writing",
+        "representation-drift-in-continual-learning",
+        "scaling-embeddings-outperforms-scaling-experts-in-language",
+        "engramedit-decoupled-knowledge-updates",
+        "ultramemv2-memory-networks-scaling-to-120b",
+        "dr-robert-li-engram-a-critical-analysis-of-conditional-memory-as-a-sparsity-axis"
+      ],
+      "why_it_matters": "Six notes, zero citations, including the wave-2 gap fetch commissioned to fill coverage gap 6."
+    },
+    {
+      "cluster": "ECC availability",
+      "note_ids": [
+        "github-amoghmunikotecmpunlocker-a-tool-to-unlobotomize-your-nvidia-card-github",
+        "readme_enmd",
+        "full-specifications-170th-street",
+        "cmp-170hx-inference-labdocsunlock-and-modsmd-at-main-dl4rcecmp-170hx-inference-l"
+      ],
+      "why_it_matters": "Four notes, one cited (club-170hx only). The corpus flags ECC as a live contradiction; the newest receipt says it is now enableable at <=0.3% cost."
+    },
+    {
+      "cluster": "data-pipeline operational constraints",
+      "note_ids": [
+        "huggingfacetbstack-edu-datasets-at-hugging-face",
+        "smollm2-when-smol-goes-big",
+        "the-fineweb-datasets-decanting-the-web-for-the",
+        "huggingfacetbsmollm-corpus-datasets-at-hugging-face",
+        "huggingfacetbfinemath-datasets-at-hugging-face-2"
+      ],
+      "why_it_matters": "Five notes, two cited (fineweb-edu and finemath cards, for token counts only). The Stack-Edu hydration job and the tokenizer mismatch are in the uncited two."
+    }
+  ]
+}

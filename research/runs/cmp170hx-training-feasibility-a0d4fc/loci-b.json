@@ -1,0 +1,306 @@
+{
+  "analyst_id": "b",
+  "angle": "Deliberately not a mechanical read of the 13 fight clusters. Three seams the graph does not cover: (1) the repo's five 'open questions to settle by measurement' (only #1 and #5 are in the graph; #2, #3, #4 are mine); (2) places where the corpus is univocal but the repo is wrong; (3) arithmetic-tier numbers in goal-and-requirements.md / research.md / data-pipeline.md / experiments/01-dense-baseline.md that nobody has checked. Every locus below carries a re-derivation of a load-bearing repo number.",
+  "loci": [
+    {
+      "name": "allreduce-rate-ceiling-and-definition",
+      "flavor": "convergent",
+      "composite_score": 0.90,
+      "score_breakdown": {"decision_relevance": 1.0, "evidence_gap": 0.95, "answerability": 0.9, "novelty_vs_graph": 0.6},
+      "one_line": "What does the repo's 0.75 GiB/s all-reduce actually measure (algbw, busbw, or aggregate), and is it even physically reachable on Gen2 x4 with no P2P? The answer moves the DDP overhead constant from 3.6e5 to 5.4e5 tokens and the headline from ~20% to ~27-32%.",
+      "rationale": "The repo's entire 'large batches are the only lever' conclusion rests on one number: 'NCCL all-reduce across 5 GPUs ~0.75 GiB/s' (research.md §1, measured by the user), which feeds the overhead model `3.6e5 / global_batch_tokens`. Nobody has checked whether that number is reachable on the stated fabric. Re-derivation from corpus measurements: pcie-subsystemmd measures Gen2 x4 at 1.68 GB/s send / 1.71 GB/s receive; communication-efficient-distributed-training states ring all-reduce's normalized per-worker load is 2(N-1)/N (= 1.6 at N=5); efficient-expert-parallel-communication states that with no P2P 'every byte traverses PCIe bus twice'. So a 2.0 GB payload (1B trainable x 2 B bf16) needs 3.2 x 2.0 = 6.4 GB of PCIe traffic per rank, i.e. 3.81 s at 1.68 GB/s, i.e. a payload-rate ceiling of 0.525 GB/s = 0.489 GiB/s. The repo's 0.75 GiB/s (0.805 GB/s) is 1.53x above that ceiling. Three readings are possible and they disagree by 3.4x: (a) if 0.75 is NCCL *busbw*, then alg_bw = 0.503 GB/s, the 2 GB payload takes 3.98 s, overhead is 53.6% at theoretical peak (not 36%) and the constant is 5.4e5 (not 3.6e5); (b) if 0.75 is *algbw*, the number is impossible on Gen2 x4 no-P2P and the fabric must be better than the repo assumes (x8/x16 cap mod, or P2P secretly active) — which overturns the premise rather than the arithmetic; (c) if 0.75 is the *aggregate* across 5 GPUs, per-rank is 0.15 GiB/s and overhead is 168%. The corpus itself is split on the achievable rate: readmemd and club-170hxdocsbenchmarksmd report NCCL SHM all-reduce busbw of 3.69-4.24 GB/s at 256 MiB on a 3-card rig, while lessonsmd and deepseek-v4-cmp170hxsettingsmd report ~1.0 GB/s bus bandwidth on 4-5 card rigs — a 4x spread that cannot both be Gen2 x4. demystifying-nccl supplies the mechanism (ring is 2k-1 non-pipelined steps, LL caps at 25-50% of peak, LL128 is disabled on PCIe), and environment-variables-nccl-2323-documentation confirms NCCL_PROTO is not user-settable safely. The repo's own open question #2 ('Does the 0.75 GiB/s all-reduce hold with bf16_compress_hook, and at what message size?') and coverage-gaps.md gap #2 ('No source measures NCCL all-reduce at the repo's 0.75 GiB/s across 5 GPUs') both say this is unresolved. Note the partial overlap with contradiction-graph cluster 13 (nccl-075-misconfiguration-vs-structural): that cluster concludes 0.75 is 'plausible as an end-to-end training number'. This locus shows it is not plausible as a payload rate under the repo's own stated fabric, which corrects the cluster rather than restating it.",
+      "key_arithmetic": "ring per-rank 1.6 x S; host-staged 3.2 x S; ceiling = 1.68/3.2 = 0.525 GB/s = 0.489 GiB/s; repo 0.805 GB/s = 1.53x ceiling; busbw reading -> 3.98 s -> 53.6% overhead at 810 TFLOPS, 27% at 55% MFU; constant 5.4e5 not 3.6e5; aggregate reading -> 168%.",
+      "corpus_evidence": [
+        "pcie-subsystemmd",
+        "communication-efficient-distributed-training",
+        "efficient-expert-parallel-communication",
+        "demystifying-nccl-an-in-depth-analysis-of-gpu",
+        "readmemd",
+        "club-170hxdocsbenchmarksmd-at-main-pixelmlclub-170hx-github",
+        "lessonsmd",
+        "deepseek-v4-cmp170hxsettingsmd-at-317dac12bbd7f401f0538c76161bc7186086fb65-allov",
+        "environment-variables-nccl-2323-documentation",
+        "pytorch-ddp-comm-hooks-default_hookspy-bf16fp16-compress-hooks"
+      ],
+      "suggested_starting_urls": [
+        "https://github.com/NVIDIA/nccl-tests",
+        "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/env.html",
+        "https://github.com/NVIDIA/nccl",
+        "https://github.com/PixelML/club-170hx/blob/main/docs/BENCHMARKS.md",
+        "https://github.com/Consensus-Protocol/cmp170hx/blob/main/docs/hardware/pcie-subsystem.md"
+      ],
+      "suggested_searches": [
+        "nccl-tests all_reduce_perf algbw vs busbw definition which column is payload rate",
+        "NCCL ring all-reduce 2(N-1)/N bytes per rank derivation",
+        "NCCL SHM host-staged transport bandwidth penalty PCIe no P2P",
+        "CMP 170HX 5 GPU NCCL all-reduce benchmark Gen2 x4 bf16_compress_hook",
+        "NCCL busbw formula all-reduce 2(N-1)/N explained"
+      ]
+    },
+    {
+      "name": "moe-ddp-payload-total-vs-active",
+      "flavor": "convergent",
+      "composite_score": 0.94,
+      "score_breakdown": {"decision_relevance": 1.0, "evidence_gap": 0.8, "answerability": 0.9, "novelty_vs_graph": 1.0},
+      "one_line": "The repo's claim that 'DDP overhead depends only on batch size, not model size' is false for MoE: gradient payload scales with total trainable params while compute scales with active params, so a 7B-total/1B-active model pays 235-360% DDP overhead at 1M tokens, not 36%.",
+      "rationale": "research.md headline #3 states 'DDP's overhead depends only on batch size, not model size — compute and gradient payload both scale with params.' That invariance holds only when total = active, i.e. for dense models. The repo's own experiment axis is a sparse MoE 'up to 7B total / ~1B active' (goal-and-requirements.md), and scalable-training-of-mixture-of-experts-models-with states the defining property of MoE: 'per-token FLOPs scale only with active parameters while communication volume scales with top-k', calling MoE 'fundamentally communication-bound unless parallelism is designed specifically for this parameter-compute asymmetry. This is not a matter of degree; it is a qualitative difference from dense models.' deepseek-v3-technical-report gives the concrete gap (671B total / 37B active, 18x) and notes even on NVLink+IB the compute-to-communication ratio is ~1:1. DDP all-reduces the full gradient buffer regardless of activation sparsity (zero-3-vs-fsdp-memory-efficiency-for-llm-training-lyceum: 'Plain DDP replicates parameters, gradients and optimizer state on every GPU'). So for 7B trainable at bf16 the payload is 14 GB; host-staged ring traffic is 3.2 x 14 = 44.8 GB; at 1.68 GB/s that is 26.7 s against 7.41 s of compute (6 x 1e9 x 1e6 / 810e12) — 360% overhead, or 235% even at the repo's own optimistic 0.75 GiB/s. The deeper error is definitional: the repo collapses three different parameter counts — 'total' (goal doc: 7B), 'active' (goal doc: ~1B), and 'trainable' (research.md §6: '<= ~1.5B trainable, rest frozen') — into one budget. If the 6B frozen are MoE experts, freezing them defeats the MoE axis; if they are Engram memory tables, then the MoE is only ~1B total and '7B total' is mostly memory. The repo never states the split, and the DDP feasibility of the MoE arm flips entirely on it. This is not in the contradiction graph: cluster 7 (ep-ruled-out-vs-degraded) is about EP all-to-alls, not about DDP's gradient payload for a sparse model.",
+      "key_arithmetic": "MoE 7B total / 1B active: payload 14 GB; host-staged ring 44.8 GB -> 26.7 s; compute 7.41 s; overhead 360% (235% at repo's 0.75 GiB/s). Dense 1B: payload 2 GB -> 3.98 s -> 54%. Ratio 7x, exactly the total/active ratio.",
+      "corpus_evidence": [
+        "scalable-training-of-mixture-of-experts-models-with",
+        "deepseek-v3-technical-report",
+        "zero-3-vs-fsdp-memory-efficiency-for-llm-training-lyceum",
+        "megablocks-efficient-sparse-training-with-mixture-of-experts",
+        "conditional-memory-via-scalable-lookup",
+        "multi-head-latentmoe-and-head-parallel",
+        "qwen3-technical-report"
+      ],
+      "suggested_starting_urls": [
+        "https://arxiv.org/abs/2412.19437",
+        "https://github.com/NVIDIA/Megatron-LM",
+        "https://huggingface.co/docs/transformers/main/en/perf_train_gpu_many",
+        "https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html"
+      ],
+      "suggested_searches": [
+        "DDP gradient all-reduce buffer size total parameters MoE inactive experts",
+        "mixture of experts data parallel gradient synchronization total vs active parameters",
+        "MoE training communication volume scales with total parameters not active parameters",
+        "DeepSeek-V3 671B total 37B active data parallel gradient size",
+        "Megatron-Core MoE data parallel dense layers expert parallel MoE layers why"
+      ]
+    },
+    {
+      "name": "attention-flop-share-at-32k",
+      "flavor": "convergent",
+      "composite_score": 0.89,
+      "score_breakdown": {"decision_relevance": 0.9, "evidence_gap": 0.9, "answerability": 0.85, "novelty_vs_graph": 1.0},
+      "one_line": "The repo's 6-FLOPs/param/token model omits attention's quadratic term, which at 32k is 52-72% of a step's FLOPs for a 0.5-1B model — so compute time is 2.1-3.5x the estimate, the DDP overhead denominator is wrong by the same factor, and the predicted 80-120k tok/s at 32k is 2-3x optimistic.",
+      "rationale": "research.md §2 and experiments/01-dense-baseline.md both build the throughput and overhead model on '6 FLOPs/param/token' (training-compute-optimal-large-language-models: FLOPs(N,D) = 6ND). That formula counts only linear-layer FLOPs. flashattention-fast-and-memory-eﬃcient-exact-attention states self-attention is quadratic in sequence length, and at 32k the quadratic term dominates for small models. Using the corpus's own architecture anchors — qwen3-technical-report gives Qwen3-0.6B as 28 layers, 16 Q / 8 KV heads, head_dim 128, 32K context — attention FLOPs per sequence are 4 x S^2 x d_q x L = 2.46e14 at S=32768, against 1.18e14 linear FLOPs: attention is 68% of the step and total FLOPs are 3.09x the 6ND estimate. For the repo's 1B-active/24-layer/2048-hidden assumption the ratio is 2.07x (attention 52%). Consequences nobody has traced: (i) the DDP overhead denominator is 2-3.5x too small, so the '36% at theoretical peak' is really 11-17% before the ring correction and ~26% after it — the two errors partially cancel, which is why the headline '~20%' may look right by accident while the model has no predictive power for 2M tokens or a different model size; (ii) the predicted 80-120k tok/s at 32k is 2.1-3.1x optimistic: the 32k/4k per-token FLOP ratio for the 494M baseline is 2.68x, so 140k tok/s at ~4k becomes ~52k at 32k, and ~39k after the 30-40% full-checkpointing recompute cost that memory-efficient-llm-training quantifies; (iii) it sets a hard ceiling on the CSA2 payoff: if attention is 52-72% of step FLOPs at 32k, a 2x attention speedup saves 26-36% of step time — a much larger prize than research.md §4's 'modest win' framing implies, but longcat-sparse-attention-taming-the-lightning-via measures token-granular sparse attention at 0.83x total at 32K, so the realized win is granularity-dependent (native-sparse-attention-hardware-aligned-and-natively gets 6.3x fwd / 3.4x bwd at 32k for block-granular on A100). This FLOP-share ceiling is not in the contradiction graph: cluster 8 argues about measured speedups without ever computing what fraction of the step attention is.",
+      "key_arithmetic": "Qwen3-0.6B at 32k: attention 2.46e14 vs linear 1.18e14 -> 68% attention, 3.09x 6ND. 494M baseline: 72% attention, 3.54x 6ND. 1B-active/24L/2048: 52% attention, 2.07x 6ND. 32k/4k per-token FLOP ratio 2.68x -> 140k tok/s becomes ~52k, ~39k with +35% checkpointing; repo predicts 80-120k.",
+      "corpus_evidence": [
+        "flashattention-fast-and-memory-eﬃcient-exact-attention",
+        "qwen3-technical-report",
+        "training-compute-optimal-large-language-models",
+        "longcat-sparse-attention-taming-the-lightning-via",
+        "native-sparse-attention-hardware-aligned-and-natively",
+        "memory-efficient-llm-training",
+        "hysparse2-hybrid-sparse-attention",
+        "moba-mixture-of-block-attention-for"
+      ],
+      "suggested_starting_urls": [
+        "https://arxiv.org/abs/2205.14135",
+        "https://arxiv.org/abs/2001.08361",
+        "https://huggingface.co/Qwen/Qwen3-0.6B/blob/main/config.json",
+        "https://github.com/Dao-AILab/flash-attention"
+      ],
+      "suggested_searches": [
+        "attention FLOPs fraction of total training FLOPs long context 32k small model",
+        "6ND FLOPs formula attention quadratic term correction training compute",
+        "Qwen3-0.6B config hidden size num attention heads head_dim num layers",
+        "training throughput tokens per second 32k context vs 4k context scaling",
+        "activation checkpointing recompute overhead percent full checkpointing"
+      ]
+    },
+    {
+      "name": "memory-budget-recheck",
+      "flavor": "convergent",
+      "composite_score": 0.92,
+      "score_breakdown": {"decision_relevance": 1.0, "evidence_gap": 0.85, "answerability": 0.9, "novelty_vs_graph": 0.8},
+      "one_line": "Re-derive the 64 GB budget from the cited papers: the frozen table is 12B params (24 GB), not 6B (12 GB); the LM-head logits at 32k x 151,669 vocab are 10-20 GB and are omitted entirely; so the 1B-trainable design lands at 52-53 GB (not 31 GB) and the 1.5B-trainable design at 61 GB (not 38 GB) — marginal, not 'over 25 GB of headroom'.",
+      "rationale": "This is the direct test of the query's third claim, and the repo's memory table has three unchecked terms. (1) Frozen table size: memory-grafting-scaling-language-model reports 'the top 1M most frequent n-grams per order' across 3 orders = 3M entries per grafted layer, 'roughly 12 GB of frozen memory per layer' for Qwen3.5-35B-A3B, and 'approximately 12B frozen grafting memory' for a 0.92B-trainable recipient. research.md §3 transcribes this as '33M entries per grafted layer (top 11M n-grams per order)' while keeping 'roughly 12 GB of frozen memory per layer' — but 33M entries x 2048 dims x 2 B = 135 GB/layer, a 10x internal inconsistency. dr-robert-li-engram-a-critical-analysis-of-conditional-memory-as-a-sparsity-axis independently uses 3e6 slots, corroborating the paper. Two grafted layers at the paper's size are 24 GB = 12B frozen params, so research.md §5's '6B frozen = 12 GB' is half the cited recipe. (2) Logits: the repo's activation estimate is '32,768 tokens x 2048 hidden x 2 B x 24 layers ~ 3.2 GB', which counts only checkpoint-boundary hidden states. The LM head at 32k tokens x the Qwen3 vocabulary of 151,669 (qwen3-technical-report notes it 'materially enlarges the embedding and output-projection memory footprint') produces 9.94 GB of bf16 logits and ~19.9 GB if the softmax upcasts to fp32. llmq-efficient-lower-precision-pretraining lists 'chunked logits/attention workspace' as one of the techniques required to fit a 7B model on a 16 GB card, confirming this is a known, load-bearing term. (3) Revised totals: 1B trainable (16 GB) + 12B frozen (24 GB) + 3.2 GB activations + 9.9 GB logits = 53.1 GB, leaving ~11 GB on a 64 GB card, not 25+; the 1.5B-trainable variant is 24 + 24 + 3.2 + 9.9 = 61.1 GB and is marginal-to-OOM. Two further corpus findings tighten it: fullyshardeddataparallel-pytorch-213-documentation warns that mixing frozen and non-frozen params requires use_orig_params=True and 'causes higher-than-expected gradient memory usage', and behind-the-scenes-of-distributed-training-and-why-your-gpu-wiring-matters-as-muc measures FSDP's actual peak at 29 GB against a 22 GB naive estimate (+32%). Finally, if the frozen tables are offloaded rather than VRAM-resident (as the paper's own recipe does), pooling-engram-conditional-memory-in-large's 5 KB/token/layer figure implies 5 KB x 2 layers x ~135k tok/s = 1.35 GB/s of lookup traffic — 80% of the 1.68 GB/s Gen2 x4 link, competing directly with the DDP all-reduce. Overlap note: contradiction-graph clusters 9 and 10 argue about whether frozen tables are legitimate and whether a cheaper optimizer fits 7B; this locus is the arithmetic re-derivation, not that fight.",
+      "key_arithmetic": "Paper: 3M entries x 2048 x 2B = 12.3 GB/layer; 2 layers = 24.6 GB = 12.3B frozen params. Repo's 33M entries -> 135 GB/layer. Logits 32768 x 151669 x 2B = 9.94 GB (fp32 19.88 GB). 1B trainable + 12B frozen: 16 + 24 + 3.2 + 9.9 = 53.1 GB (repo claims 28 GB). 0.92B + 12B: 51.9 GB (repo claims 31 GB). 1.5B + 12B: 61.1 GB (repo claims 35 GB). Offloaded lookup: 5 KB x 2 layers x 135k tok/s = 1.35 GB/s = 80% of the 1.68 GB/s link.",
+      "corpus_evidence": [
+        "memory-grafting-scaling-language-model",
+        "dr-robert-li-engram-a-critical-analysis-of-conditional-memory-as-a-sparsity-axis",
+        "pooling-engram-conditional-memory-in-large",
+        "tf-engram-a-train-free-engram-with-ssd-backed-memory-for",
+        "qwen3-technical-report",
+        "llmq-efficient-lower-precision-pretraining",
+        "fullyshardeddataparallel-pytorch-213-documentation",
+        "behind-the-scenes-of-distributed-training-and-why-your-gpu-wiring-matters-as-muc",
+        "memory-efficient-mixed-precision-optimizers",
+        "engram-conditional-memory-via-n-gram-lookups-vllm"
+      ],
+      "suggested_starting_urls": [
+        "https://arxiv.org/abs/2605.20948",
+        "https://arxiv.org/abs/2601.07372",
+        "https://github.com/NVIDIA/liger-kernel",
+        "https://pytorch.org/docs/stable/fsdp.html",
+        "https://huggingface.co/Qwen/Qwen3-0.6B/blob/main/config.json"
+      ],
+      "suggested_searches": [
+        "Memory Grafting frozen Engram table entries per layer hidden dimension GB per layer",
+        "fused linear cross entropy logits memory 32k tokens 150k vocabulary",
+        "chunked cross entropy training memory LLM long context",
+        "FSDP use_orig_params frozen parameters gradient memory penalty",
+        "Engram table offload PCIe bandwidth per token per layer training"
+      ]
+    },
+    {
+      "name": "token-budget-and-architecture-effect-size",
+      "flavor": "dialectical",
+      "composite_score": 0.86,
+      "score_breakdown": {"decision_relevance": 0.9, "evidence_gap": 0.85, "answerability": 0.8, "novelty_vs_graph": 1.0},
+      "one_line": "The 9B-token budget is 3-39x below every published ablation at comparable scale, and the corpus disagrees on whether architecture changes per-token efficiency at all — so the MoE/Engram/CSA2 arms may be under-trained and their deltas uninterpretable.",
+      "rationale": "The whole experiment program is 9B-token runs (data-pipeline.md, experiments/01-dense-baseline.md), and the repo never asks whether that budget can resolve the axes it plans to compare. The corpus's published ablation budgets at the same scale are far larger: memory-grafting-scaling-language-model trains 0.92B for 50B tokens and 2.8B for 100B; periodic-weak-spots trains a Qwen3-0.6B backbone for 100B tokens; analysing-the-impact-of-sequence-composition trains 1.3B for 150B; smollm2-when-smol-goes-big uses 350B tokens per ablation at 1.7B; moba-mixture-of-block-attention-for uses 30B tokens at 1.5B for its 32K hybrid; native-sparse-attention-hardware-aligned-and-natively uses 260-270B at 27B. training-compute-optimal-large-language-models puts the compute-optimal frontier at 8.0B tokens for 400M and 20.2B for 1B, so 9B is Chinchilla-optimal for ~450M but 45% of optimal for the repo's 1B-active MoE. At 100k tok/s, 9B is 25 h, 100B is 11.6 days, 150B is 17.4 days and 350B is 40.5 days — five arms at 100B each is ~58 GPU-days, a feasibility constraint the repo never states. The dialectic is about whether that matters: cramming-training-a-language-model-on-a finds 'per-token training efficiency depends strongly on model size, but not transformer type... architecture modifications only improve outcomes insofar as they raise throughput at constant parameter count', which predicts the axes will be indistinguishable at 9B; over-tokenized-transformer-vocabulary-is-generally-worth-scaling finds the opposite for a memory axis — OE-12.8M at 400M matches a 2.5x larger baseline and gives a 5.7x training-loss speedup on OLMo2-1B; and memory-grafting-scaling-language-model reports that at 0.92B vanilla Engram actually *underperforms* MoE (45.03 vs 45.62) and grafting only recovers +0.21 to +1.36 points after 50B tokens, while conditional-memory-via-scalable-lookup reports +3.4 MMLU / +5.0 BBH for Engram-27B after 262B tokens. So the measured effect size of the memory axis ranges from -0.6 to +5 points depending on scale, table design and token budget, and the repo's operating point (0.9-1B, 9B tokens) sits where the literature's effect is smallest and can be negative. Not in the contradiction graph at all.",
+      "key_arithmetic": "9B = 25 h at 100k tok/s; 100B = 11.6 d; 150B = 17.4 d; 350B = 40.5 d; five arms at 100B = ~58 GPU-days. Chinchilla: 400M -> 8.0B tokens, 1B -> 20.2B tokens, so 9B is 45% of optimal for 1B active.",
+      "corpus_evidence": [
+        "training-compute-optimal-large-language-models",
+        "memory-grafting-scaling-language-model",
+        "periodic-weak-spots",
+        "analysing-the-impact-of-sequence-composition",
+        "smollm2-when-smol-goes-big",
+        "moba-mixture-of-block-attention-for",
+        "native-sparse-attention-hardware-aligned-and-natively",
+        "cramming-training-a-language-model-on-a",
+        "over-tokenized-transformer-vocabulary-is-generally-worth-scaling",
+        "conditional-memory-via-scalable-lookup",
+        "arxiv230516264v5-cscl-28-jun-2025"
+      ],
+      "opposing_positions": [
+        {
+          "position": "Architecture does not change per-token efficiency at fixed parameter count; only throughput matters, so a 9B-token comparison of MoE/Engram/CSA2 against a dense control will land within noise.",
+          "sources": ["cramming-training-a-language-model-on-a"]
+        },
+        {
+          "position": "Memory-axis changes are first-order quality levers even at small scale: input-vocabulary scaling at 400M matches a 2.5x larger model and gives a 5.7x loss speedup at 1B.",
+          "sources": ["over-tokenized-transformer-vocabulary-is-generally-worth-scaling"]
+        },
+        {
+          "position": "The memory axis's benefit is scale- and budget-dependent and can be negative at ~1B: vanilla Engram underperforms MoE at 0.92B, grafting recovers only +0.2 to +1.4 points after 50B tokens, while Engram-27B gains +3.4 MMLU only after 262B tokens.",
+          "sources": ["memory-grafting-scaling-language-model", "conditional-memory-via-scalable-lookup"]
+        }
+      ],
+      "suggested_starting_urls": [
+        "https://arxiv.org/abs/2203.15556",
+        "https://arxiv.org/abs/2402.13991",
+        "https://arxiv.org/abs/2605.20948",
+        "https://arxiv.org/abs/2502.02737"
+      ],
+      "suggested_searches": [
+        "minimum token budget architecture ablation 0.5B parameters scaling law detect difference",
+        "how many tokens to detect architecture difference small language model ablation",
+        "SmolLM2 ablation 350B tokens per ablation configuration",
+        "Engram vs MoE benchmark delta at 1B scale tokens trained",
+        "data-constrained scaling repeated epochs small token budget quality"
+      ]
+    },
+    {
+      "name": "ecc-and-vram-integrity",
+      "flavor": "dialectical",
+      "composite_score": 0.84,
+      "score_breakdown": {"decision_relevance": 0.85, "evidence_gap": 0.95, "answerability": 0.75, "novelty_vs_graph": 1.0},
+      "one_line": "Is ECC actually enabled after the unlock, and do the cards survive a 30-50 GB training footprint? The corpus contradicts itself on ECC, reports ~50% field failure above 8 GiB, and the repo's pre-flight checks neither.",
+      "rationale": "The repo's pre-flight (goal-and-requirements.md 'Check plans against the hardware first', experiments/01-dense-baseline.md Step 0) checks exactly two things: negotiated link width and PWRBRK#. It never checks ECC or the >8 GiB VRAM region — and both are contested or alarming in the corpus. ECC is an explicit unresolved contradiction: github-amoghmunikotecmpunlocker-a-tool-to-unlobotomize-your-nvidia-card-github lists 'Error-Correcting Code (ECC) DRAM and SRAM — Working' as a feature the unlock restores, while github-bayleycmpunlocker-a-cmpunlocker-fork-with-working-p2p-on-sys-4028gr-trt2 says the unlock restores compute, memory geometry, Gen2 and BAR1 'but not NVLink or ECC', cmp-170hx-inference-labdocsunlock-and-modsmd-at-main-dl4rcecmp-170hx-inference-l says 'Neither one is PCIe Gen3/Gen4, NVLink, ECC, or native FP8/FP4', specifications-cmp-170hx-documentation and full-specifications-170th-street both list ECC as Disabled, and github-consensus-protocolcmp170hx-cmp-170hx-technical-wiki-silicon-firmware-the tracks ECC in its 'unsolved problems' frontier section. The corpus note itself flags this: 'ECC availability is an unresolved contradiction in the corpus.' Separately, lessonsmd reports 'Independent reports put field failure around 50% among buyers, with faults appearing only above the 8 GiB region a mining rig would ever touch — the cards pass nvidia-smi and die only under a large model's full memory footprint', with a ~61 GiB vram-gate allocation and ~10 min memtest_vulkan per card as the detection method. performancemd's HBM bandwidth spread of 1305.86-1600 GB/s with 'no methodology reconciles the range' is a possible symptom. The stakes are exactly the repo's stated purpose: a 25-hour run at 30-50 GB/card on cards with no ECC and a reported 50% failure rate above 8 GiB risks silent corruption that would show up as loss-curve noise and invalidate the 'keep results comparable' premise. The repo's own 1-GPU smoke test at ~31 GB would exercise the region, but it is framed as a throughput/dataloader check, not a memory-integrity gate. Not in the contradiction graph; the decomposition's PWRBRK# entity covers the power brake only.",
+      "key_arithmetic": "5 cards x ~50% failure above 8 GiB -> expected ~2-3 suspect cards per box; a 32k training step at 30-50 GB/card sits entirely in the failure region; memtest_vulkan ~10 min/card = ~50 min for a full pre-flight.",
+      "corpus_evidence": [
+        "github-amoghmunikotecmpunlocker-a-tool-to-unlobotomize-your-nvidia-card-github",
+        "github-bayleycmpunlocker-a-cmpunlocker-fork-with-working-p2p-on-sys-4028gr-trt2",
+        "cmp-170hx-inference-labdocsunlock-and-modsmd-at-main-dl4rcecmp-170hx-inference-l",
+        "specifications-cmp-170hx-documentation",
+        "full-specifications-170th-street",
+        "github-consensus-protocolcmp170hx-cmp-170hx-technical-wiki-silicon-firmware-the",
+        "lessonsmd",
+        "performancemd",
+        "club-170hxdocscmp170hx-understandingmd-at-main-pixelmlclub-170hx-github"
+      ],
+      "opposing_positions": [
+        {
+          "position": "ECC DRAM and SRAM are restored by the unlock and are listed as a working feature of the upstream cmpunlocker.",
+          "sources": ["github-amoghmunikotecmpunlocker-a-tool-to-unlobotomize-your-nvidia-card-github"]
+        },
+        {
+          "position": "ECC is not restored: the unlock delivers compute, memory geometry, Gen2 and BAR1 but explicitly not ECC, and the spec sheets list ECC as Disabled.",
+          "sources": ["github-bayleycmpunlocker-a-cmpunlocker-fork-with-working-p2p-on-sys-4028gr-trt2", "cmp-170hx-inference-labdocsunlock-and-modsmd-at-main-dl4rcecmp-170hx-inference-l", "specifications-cmp-170hx-documentation", "full-specifications-170th-street"]
+        },
+        {
+          "position": "ECC availability is untested / an open frontier problem, so neither claim is established.",
+          "sources": ["github-consensus-protocolcmp170hx-cmp-170hx-technical-wiki-silicon-firmware-the", "club-170hxdocscmp170hx-understandingmd-at-main-pixelmlclub-170hx-github"]
+        }
+      ],
+      "suggested_starting_urls": [
+        "https://github.com/amoghmunikote/cmpunlocker",
+        "https://github.com/bayley/cmpunlocker",
+        "https://github.com/GpuZilla/memtest_vulkan",
+        "https://docs.nvidia.com/deploy/nvidia-smi/index.html",
+        "https://github.com/Consensus-Protocol/cmp170hx"
+      ],
+      "suggested_searches": [
+        "CMP 170HX ECC enabled after unlock nvidia-smi ecc-mode query",
+        "memtest_vulkan CMP 170HX VRAM errors above 8GB region",
+        "GA100 ECC disabled HBM2e silent corruption training loss curve",
+        "CMP 170HX field failure rate high VRAM region buyers report",
+        "nvidia-smi query ECC mode current pending enabled"
+      ]
+    }
+  ],
+  "skip_loci": [
+    {
+      "slug": "sequence-composition-packing",
+      "reason": "Real repo-vs-corpus error (data-pipeline.md says 'document-boundary masking is off by default, matching standard packed-LM training', while analysing-the-impact-of-sequence-composition finds random concatenation MIXChunk is the worst variant, INTRADoc the best, and code the most harmed domain at -1.3/-2.0 PPL — the repo's mix is 15% code). But it is orthogonal to the query's four named claims and is a data-pipeline methodology issue, not a training-feasibility one. Flag it as a draft caveat rather than spend a depth slot on it."
+    },
+    {
+      "slug": "logits-memory-standalone",
+      "reason": "Folded into memory-budget-recheck rather than run separately: the 9.94 GB bf16 / 19.88 GB fp32 logits term is the largest single omission in the repo's 3.2 GB activation estimate and belongs in the same re-derivation as the frozen-table size."
+    },
+    {
+      "slug": "fsdp-1.5-vs-2-multiplier",
+      "reason": "Covered by contradiction-graph cluster 4 (fsdp-multiplier-1.5-vs-2); analyst a owns it. Note for the draft that goal-and-requirements.md says 1.5x while research.md says 2x — the repo contradicts itself."
+    },
+    {
+      "slug": "pp-viability-for-training",
+      "reason": "Covered by contradiction-graph cluster 6 (ddp-only-vs-pp-viable). Note for the draft that research.md's PP row counts only one-directional activation traffic (16 GB) and omits the backward activation-gradient return, which doubles it to ~32 GB and raises PP's overhead from ~2.9x to ~5.5x."
+    },
+    {
+      "slug": "csa2-pays-off-at-32k",
+      "reason": "Covered by contradiction-graph cluster 8 (csa2-32k-pays-vs-disappoints). My attention-flop-share-at-32k locus supplies the missing ceiling that bounds it (attention is 52-72% of step FLOPs at 32k, so a 2x attention win is worth 26-36% of step time) without re-running the same fight."
+    },
+    {
+      "slug": "link-width-x4-vs-x16",
+      "reason": "Covered by contradiction-graph cluster 1; analyst a owns it. My allreduce-rate-ceiling locus consumes its output (1.68 GB/s measured Gen2 x4) rather than re-litigating it."
+    },
+    {
+      "slug": "p2p-patch-availability",
+      "reason": "Covered by contradiction-graph cluster 2. Note that my allreduce locus's reading (b) — 0.75 GiB/s only reachable if P2P is secretly active — depends on this cluster's resolution."
+    },
+    {
+      "slug": "compute-162-vs-42-tflops",
+      "reason": "Covered by contradiction-graph cluster 3. Note for the draft that research.md lists fp16 178 TFLOPS > bf16 162 TFLOPS, which is physically impossible on GA100 (identical tensor-core rates); one of the two measurements is mislabelled."
+    },
+    {
+      "slug": "bf16-compress-hook-saving",
+      "reason": "Covered by contradiction-graph cluster 14. Note that the hook is load-bearing for my loci: without it DDP all-reduces in fp32 (4 B/elem), doubling every payload I computed."
+    },
+    {
+      "slug": "five-gpu-numa-penalty",
+      "reason": "Covered by contradiction-graph cluster 12 (five-gpus-fine-vs-pathological)."
+    },
+    {
+      "slug": "critical-batch-size-warmup",
+      "reason": "Covered by contradiction-graph cluster 11 (large-batch-free-vs-cbs-binds)."
+    },
+    {
+      "slug": "eight-bit-adam-fits-7b",
+      "reason": "Covered by contradiction-graph cluster 10 (7b-fits-with-cheaper-optimizer)."
+    },
+    {
+      "slug": "frozen-vs-trained-tables",
+      "reason": "Covered by contradiction-graph cluster 9 (frozen-engram-capacity-vs-training-trap). My memory-budget-recheck is the arithmetic of the frozen design, not the legitimacy fight."
+    },
+    {
+      "slug": "pwrbrk-power-brake",
+      "reason": "Covered by contradiction-graph cluster 3 and decomposition sub-Q2. My ecc-and-vram-integrity locus covers the adjacent gap (ECC status + >8 GiB failure region) that the repo's PWRBRK#-only pre-flight misses."
+    },
+    {
+      "slug": "dataloader-throughput-unit-error",
+      "reason": "data-pipeline.md's acceptance criterion 'Dataloader sustains >=150k tok/s per GPU' is 5-7.5x above the box's 100k tok/s total target, and its bandwidth table says '400 KB/s per GPU, 2 MB/s total' for a 100k tok/s box rate (which would be 80 KB/s per GPU). Real but too small to carry a depth slot; flag as a draft caveat."
+    },
+    {
+      "slug": "checkpoint-size-understated",
+      "reason": "data-pipeline.md's 'Checkpoint write (500M params x 2 B) = 1 GB, ~0.5 s' omits optimizer state: a real checkpoint is 500M x 12 B + 1 GB = ~7 GB, and for the 1B-trainable design ~26 GB. Not a bottleneck at 2 GB/s, so not load-bearing; flag as a draft caveat."
+    },
+    {
+      "slug": "no-sync-gradient-precision",
+      "reason": "The repo accumulates 6 micro-steps of bf16 gradients in bf16 before the all-reduce; published-as-a-conference-paper-at-iclr-2018 requires fp32 accumulation for mixed precision. bf16's 8-bit exponent makes underflow less likely than fp16, and no corpus source measures bf16 accumulation loss at 6 steps, so this is speculative rather than a real locus."
+    }
+  ]
+}

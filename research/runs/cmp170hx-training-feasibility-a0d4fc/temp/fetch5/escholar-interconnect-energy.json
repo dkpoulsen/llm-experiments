@@ -1,0 +1,6 @@
+{
+  "ok": false,
+  "error": "BrowserContext.set_extra_http_headers: Target page, context or browser has been closed",
+  "error_code": "FETCH_ERROR",
+  "timestamp": "2026-10-27T10:47:18.665063+00:00"
+}

@@ -1,0 +1,58 @@
+[
+  {
+    "claim": "no_sync() suppresses the per-micro-batch AllReduce during gradient accumulation, and a PyTorch maintainer confirms the pattern 'looks like correct usage'.",
+    "stance": "supports",
+    "stance_target": "the repo's claim that no_sync is the primary mechanism for accumulating gradients to large global batches under DDP",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "PyTorch DDP, gradient accumulation over 4 micro-batches of 64 to emulate batch 256",
+    "quoted_support": "This looks like correct usage.",
+    "numbers": ["micro-batch 64", "accumulation 4", "effective batch 256"],
+    "entities": ["DDP", "no_sync", "gradient accumulation", "rvarm1"],
+    "time_period": "2023-2024",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "gradient-accumulation-with-ddp-no_sync-interface-distributed-pytorch-forums-2"
+  },
+  {
+    "claim": "optimizer.step() must run after gradients are allreduced, otherwise the model can become out of sync across ranks.",
+    "stance": "supports",
+    "stance_target": "the correctness constraint on any no_sync-based accumulation loop",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "DDP with gradient accumulation",
+    "quoted_support": "Also, I think as typical practice, optimizer.step() should be done after gradients are allreduced, otherwise the model may become out of sync across ranks.",
+    "numbers": [],
+    "entities": ["optimizer.step", "DDP", "AllReduce"],
+    "time_period": "2023",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "gradient-accumulation-with-ddp-no_sync-interface-distributed-pytorch-forums-2"
+  },
+  {
+    "claim": "Accumulated gradients are summed, not averaged, so the loss must be normalized by the accumulation factor (1/4 in the thread) to match a true large batch.",
+    "stance": "supports",
+    "stance_target": "the claim that no_sync accumulation changes gradient semantics unless the user rescales the loss",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "Gradient accumulation over 4 micro-batches under DDP",
+    "quoted_support": "Additionally, you should normalize the loss by a factor of 1/4 since the gradient is summed.",
+    "numbers": ["1/4 normalization"],
+    "entities": ["gradient accumulation", "loss normalization", "DDP"],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "gradient-accumulation-with-ddp-no_sync-interface-distributed-pytorch-forums-2"
+  },
+  {
+    "claim": "The thread's original snippet was buggy: calling optimizer.zero_grad() and optimizer.step() on the sync iteration uses only that micro-batch's gradient rather than the accumulated one.",
+    "stance": "refutes",
+    "stance_target": "the naive no_sync accumulation loop that zeroes gradients inside the sync step",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "DDP no_sync accumulation loop as posted",
+    "quoted_support": "You execute optimizer.zero_grad() followed by loss.backward(), and then optimizer.step(). This means that you are using the gradient every four batches instead of accumulating it.",
+    "numbers": [],
+    "entities": ["no_sync", "zero_grad", "optimizer.step"],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "gradient-accumulation-with-ddp-no_sync-interface-distributed-pytorch-forums-2"
+  }
+]

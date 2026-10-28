@@ -1,0 +1,67 @@
+[
+  {
+    "claim": "On a 10x RTX 3090 host with GPU-to-GPU P2P reported as CNS (Chipset Not Supported) by nvidia-smi topo -p2p r, DeepSpeed ZeRO-2 outperforms plain DDP at every GPU count, so ZeRO-2 does not pay a communication penalty on a host-staged PCIe fabric.",
+    "stance": "refutes",
+    "stance_target": "cc-3's hypothesis that ZeRO-2's reduce-scatter+all-gather costs >50% step-time overhead versus DDP on a no-P2P PCIe fabric",
+    "evidence_type": "empirical",
+    "scope_conditions": "10x RTX 3090 24GB, Supermicro X12DPG-OA6, 2 NUMA nodes, no P2P, ~3 GB/s PCIe shared by 10 GPUs; model and sequence length NOT stated",
+    "quoted_support": "GPU Topology (nvidia-smi topo -p2p r): GPU0-GPU9: CNS (Chipset Not Supported) ... 모든 데이터가 CPU/시스템 메모리 경유 / PCIe 대역폭 ~3 GB/s를 10개 GPU가 공유",
+    "numbers": [
+      "1 GPU: DDP 27.4 vs ZeRO-2 27.5 samples/s",
+      "2 GPUs: 29.3 vs 31.4",
+      "4 GPUs: 28.6 vs 36.3 (+27%)",
+      "8 GPUs: 39.6 vs 59.4 (+50%)",
+      "10 GPUs: 47.9 vs 52.6 (+10%)",
+      "10-GPU scaling efficiency 19% (1.91x of ideal 10x)",
+      "~3 GB/s shared PCIe"
+    ],
+    "entities": [
+      "RTX 3090",
+      "DeepSpeed ZeRO-2",
+      "DDP",
+      "CNS",
+      "Supermicro X12DPG-OA6",
+      "NUMA"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "pcie-110-gpu-스케일링"
+  },
+  {
+    "claim": "The same host reaches only 19% scaling efficiency at 10 GPUs (1.91x of an ideal 10x) and its DDP throughput column is non-monotonic across GPU counts, which is the signature of a small model where per-step batch effects dominate over communication.",
+    "stance": "neutral",
+    "stance_target": "The transferability of this A/B to a >=1B-parameter / 32k-token regime",
+    "evidence_type": "empirical",
+    "scope_conditions": "Same 10x3090 host; samples/s metric; model size undisclosed",
+    "quoted_support": "10개 GPU로 이론적 10배 속도 대비 실제 1.9배 속도만 달성 (19% 효율)",
+    "numbers": [
+      "DDP samples/s by GPU count: 27.4, 29.3, 28.6, 39.6, 47.9",
+      "efficiency 100%, 57%, 33%, 27%, 19%"
+    ],
+    "entities": [
+      "DDP",
+      "scaling efficiency"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "pcie-110-gpu-스케일링"
+  },
+  {
+    "claim": "The whitepaper does not state the model, parameter count, or sequence length behind its DDP-vs-ZeRO-2 table, so it cannot satisfy cc-3's >=1B-params / 32k-token evidence bar.",
+    "stance": "neutral",
+    "stance_target": "Whether this source can overturn cc-3",
+    "evidence_type": "empirical",
+    "scope_conditions": "Full 1,219-word report body",
+    "quoted_support": "실측 범위: PCIe 환경에서 1~10 GPU 스케일링 효율 측정 (measured scope: 1-10 GPU scaling efficiency on PCIe)",
+    "numbers": [],
+    "entities": [
+      "methodology disclosure"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "pcie-110-gpu-스케일링"
+  }
+]

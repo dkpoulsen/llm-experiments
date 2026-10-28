@@ -1,0 +1,72 @@
+[
+  {
+    "claim": "The 170th Street full-specification table gives FP16 throughput as 49.05 TFLOPS in both the original and unlocked columns, so five cards would deliver ~245 TFLOPS — roughly a third of the repo's claimed ~810 TFLOPS bf16 for the box.",
+    "stance": "refutes",
+    "stance_target": "the repo's '~810 TFLOPS bf16' box-level compute premise, which implies ~162 TFLOPS per GPU",
+    "evidence_type": "statistical",
+    "scope_conditions": "CMP 170HX both SKUs; this is a spec-sheet table, not a measurement, and it shows no compute unlock for FP16",
+    "quoted_support": "49.05 TFLOPS/s\n49.05 TFLOPS/s",
+    "numbers": ["49.05 TFLOPS FP16 per card", "~245 TFLOPS for five cards", "~810 TFLOPS claimed by repo"],
+    "entities": ["FP16", "170th Street", "CMP 170HX"],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "low",
+    "source_note_id": "full-specifications-170th-street"
+  },
+  {
+    "claim": "The compute unlock raises FP32 from 0.41 to 12.99 TFLOPS, FP64 from 0.19 to 6.44 TFLOPS and INT8 from 1.64 to 48.03 TFLOPS, while INT64, INT32 and INT16 are unchanged at 2.52, 12.99 and 11.94 TFLOPS respectively.",
+    "stance": "neutral",
+    "stance_target": "which precisions the unlock restores — the repo's claim that fp32 is only ~13 TFLOPS is corroborated, but FP16 is not lifted by the unlock in this table",
+    "evidence_type": "statistical",
+    "scope_conditions": "CMP 170HX, Original vs Unlocked columns of the Full Specifications performance table",
+    "quoted_support": "0.19 TLFOPS/s\n6.44 TFLOPS/s\n0.41 TLFOPS/s\n12.99 TFLOPS/s\n49.05 TFLOPS/s\n49.05 TFLOPS/s\nINT64\n2.52 TFLOPS/s\n2.52 TFLOPS/s\nINT32\n12.99 TFLOPS/s\n12.99 TFLOPS/s\nINT16\n11.94 TFLOPS/s\n11.94 TFLOPS/s\n1.64 TFLOPS/s\n48.03 TFLOPS/s",
+    "numbers": ["FP32 0.41 -> 12.99", "FP64 0.19 -> 6.44", "INT8 1.64 -> 48.03", "INT64 2.52 unchanged", "INT32 12.99 unchanged", "INT16 11.94 unchanged"],
+    "entities": ["FP32", "FP64", "INT8", "INT64", "INT32", "INT16"],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "low",
+    "source_note_id": "full-specifications-170th-street"
+  },
+  {
+    "claim": "The card's electrical PCIe interface is Gen1 x4, firmware-locked, giving ~1 GB/s, with a physical x16 slot and NVLink connectors present but disabled via fuse.",
+    "stance": "supports",
+    "stance_target": "the repo's 'PCIe Gen2 x4' premise — x4 is the electrical width, and Gen2 comes from the software unlock on top of it",
+    "evidence_type": "statistical",
+    "scope_conditions": "CMP 170HX connectivity table, stock state",
+    "quoted_support": "PCIe Interface (physical)\nx16 slot\nPCIe Interface (electrical)\nGen 1 x4 (firmware locked)\nPCIe Bandwidth\n~1 GB/s\nNVLink\nPhysical connectors present, disabled via fuse",
+    "numbers": ["Gen1 x4", "~1 GB/s", "physical x16"],
+    "entities": ["PCIe Gen1 x4", "NVLink", "firmware lock"],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "full-specifications-170th-street"
+  },
+  {
+    "claim": "Memory bandwidth is 1.49 TB/s on the 4,096-bit 8 GB variant and 1.56 TB/s on the 5,120-bit 10 GB variant, with ECC disabled and resizable BAR limited to 64 MiB.",
+    "stance": "neutral",
+    "stance_target": "the per-card memory bandwidth that bounds prefill and decode, and therefore any training-throughput estimate",
+    "evidence_type": "statistical",
+    "scope_conditions": "CMP 170HX both SKUs, HBM2e",
+    "quoted_support": "Memory Bus Width\n4,096-bit (8GB) / 5,120-bit (10GB)\nMemory Clock\n1,458 MHz (8GB) / 1215 MHz (10GB)\nMemory Bandwidth (theoretical)\n1.49TB/s (8GB) / 1.56TB/s (10GB)\nDisabled\nResizable BAR\nPresent but limited to 64 MiB",
+    "numbers": ["1.49 TB/s", "1.56 TB/s", "4,096-bit", "5,120-bit", "64 MiB BAR"],
+    "entities": ["HBM2e", "memory bandwidth", "ECC", "resizable BAR"],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "full-specifications-170th-street"
+  },
+  {
+    "claim": "The 8 GB and 10 GB variants are genuine hardware binning variants with different memory buses, not software differences controlled by firmware.",
+    "stance": "supports",
+    "stance_target": "the per-SKU capacity claim (8 GB -> 64 GB, 10 GB -> 40 GB) and the warning that a mixed pool would not deliver a uniform 64 GB per card",
+    "evidence_type": "empirical",
+    "scope_conditions": "CMP 170HX 8 GB (0x20C2) and 10 GB (0x2082) production cards",
+    "quoted_support": "The CMP 170HX exists in multiple hardware configurations: **8GB, and 10GB variants are confirmed real production cards** , not database errors. These are not merely software differences controlled by firmware; they represent genuine hardware binning variants with different memory configurations",
+    "numbers": ["8 GB: 4,096-bit", "10 GB: 5,120-bit"],
+    "entities": ["8 GB SKU", "10 GB SKU", "hardware binning"],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "full-specifications-170th-street"
+  }
+]

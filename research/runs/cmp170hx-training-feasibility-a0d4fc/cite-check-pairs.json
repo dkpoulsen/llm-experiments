@@ -1,0 +1,1372 @@
+{
+  "report": "/home/dkp/.thinkrail/worktrees/llm-experiments/workspace-1/research/notes/final_report_cmp170hx-training-feasibility-a0d4fc.md",
+  "summary": {
+    "total": 111,
+    "supported_mechanical": 29,
+    "dangling": 0,
+    "needs_llm": 82
+  },
+  "sampled_for_llm": [
+    {
+      "sentence": "Width is a board-level omission: twelve of sixteen lanes ship with their AC-coupling capacitors depopulated, the lane fuses are all clear (`OPT_PCIE_LANE_DISABLE` = `0x00000000`, \"No lanes fused off\"), and the registers show a physical-layer discontinuity — `LnkCap: Width x16` against `LnkSta: Width x4 (downgraded)` [[physical-modsmd]].",
+      "note_id": "physical-modsmd",
+      "numbers": [
+        "0",
+        "00000000",
+        "16",
+        "4"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "A hands-on review of four of these cards states \"the transfer rate is 800MB/s at Gen 1 and 1.6GB/s at Gen 2\" [[i-tested-the-cmp170hx]] (T2), and a sanitized NCCL receipt on three cards at Gen2 x16 behind PLX switches measures 6.63–6.68 GB/s host-staged copy [[readmemd]] (T2).",
+      "note_id": "i-tested-the-cmp170hx",
+      "numbers": [
+        "800",
+        "1",
+        "1.6",
+        "2",
+        "170",
+        "2",
+        "2",
+        "16",
+        "6.63",
+        "6.68",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "A hands-on review of four of these cards states \"the transfer rate is 800MB/s at Gen 1 and 1.6GB/s at Gen 2\" [[i-tested-the-cmp170hx]] (T2), and a sanitized NCCL receipt on three cards at Gen2 x16 behind PLX switches measures 6.63–6.68 GB/s host-staged copy [[readmemd]] (T2).",
+      "note_id": "readmemd",
+      "numbers": [
+        "800",
+        "1",
+        "1.6",
+        "2",
+        "170",
+        "2",
+        "2",
+        "16",
+        "6.63",
+        "6.68",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "The modal state is Gen2 x4 — a four-card rig reports \"All four slots negotiate Gen2 x4\" across cold power cycles [[readme_enmd]] (T2) — because the capacitor mod is 24 solder joints nobody performs by accident.",
+      "note_id": "readme_enmd",
+      "numbers": [
+        "2",
+        "4",
+        "2",
+        "4",
+        "2",
+        "24"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "At Gen2 x16, NCCL reaches 3.69–4.24 GB/s busbw against a 6.63–6.68 GB/s one-way rate — 53–64% of the link [[readmemd]] (T2/T4).",
+      "note_id": "readmemd",
+      "numbers": [
+        "2",
+        "16,",
+        "3.69",
+        "4.24",
+        "6.63",
+        "6.68",
+        "53",
+        "64%",
+        "2",
+        "4"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "Scaling by the measured width ratio 1.68/6.63 = 0.253 puts the x4 busbw band at 0.94–1.07 GB/s and the algbw band at 0.58–0.67 GB/s (T4), because a ring all-reduce's busbw is 2(n−1)/n times its algbw, which at five ranks is exactly 1.6 [[all_reducecu]], [[whats-the-difference-in-allreduce-for-factor-between-the-nccl-and-nccl-test-issu]].",
+      "note_id": "all_reducecu",
+      "numbers": [
+        "1.68",
+        "6.63",
+        "0.253",
+        "4",
+        "0.94",
+        "1.07",
+        "0.58",
+        "0.67",
+        "4",
+        "2",
+        "1",
+        "1.6"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "Scaling by the measured width ratio 1.68/6.63 = 0.253 puts the x4 busbw band at 0.94–1.07 GB/s and the algbw band at 0.58–0.67 GB/s (T4), because a ring all-reduce's busbw is 2(n−1)/n times its algbw, which at five ranks is exactly 1.6 [[all_reducecu]], [[whats-the-difference-in-allreduce-for-factor-between-the-nccl-and-nccl-test-issu]].",
+      "note_id": "whats-the-difference-in-allreduce-for-factor-between-the-nccl-and-nccl-test-issu",
+      "numbers": [
+        "1.68",
+        "6.63",
+        "0.253",
+        "4",
+        "0.94",
+        "1.07",
+        "0.58",
+        "0.67",
+        "4",
+        "2",
+        "1",
+        "1.6"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "Read as algbw it implies a busbw of 1.29 GB/s, which is 77% of the one-way rate on a fabric where every byte crosses PCIe twice; the best efficiency measured on this hardware class is 64% [[readmemd]] (T2).",
+      "note_id": "readmemd",
+      "numbers": [
+        "1.29",
+        "77%",
+        "64%",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "The 162–193 band is real and it is a GEMM peak under a 202.1 TFLOPS arithmetic ceiling [[performancemd]] (T4).",
+      "note_id": "performancemd",
+      "numbers": [
+        "162",
+        "193",
+        "202.1",
+        "4"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "The only figure with a full receipt chain is the 180 W one: 77.7 / 76.4 / 74.6 / 78.5 TFLOP/s per card over a ten-minute `gpu-burn -tc`, peak core 63 °C against an 80 °C stop rule, so the shortfall from 202 TFLOPS is not thermal throttling [[readmemd-2]], [[2026-09-02-cmp170hx-health-gateipynb]] (T2).",
+      "note_id": "readmemd-2",
+      "numbers": [
+        "180",
+        "77.7",
+        "76.4",
+        "74.6",
+        "78.5",
+        "63",
+        "80",
+        "202",
+        "2",
+        "2026",
+        "09",
+        "02",
+        "170",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "The only figure with a full receipt chain is the 180 W one: 77.7 / 76.4 / 74.6 / 78.5 TFLOP/s per card over a ten-minute `gpu-burn -tc`, peak core 63 °C against an 80 °C stop rule, so the shortfall from 202 TFLOPS is not thermal throttling [[readmemd-2]], [[2026-09-02-cmp170hx-health-gateipynb]] (T2).",
+      "note_id": "2026-09-02-cmp170hx-health-gateipynb",
+      "numbers": [
+        "180",
+        "77.7",
+        "76.4",
+        "74.6",
+        "78.5",
+        "63",
+        "80",
+        "202",
+        "2",
+        "2026",
+        "09",
+        "02",
+        "170",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "The 180 W burn gives 74.6–78.5; scaling to 250 W at the sub-linear rate expected when power goes as clock cubed gives 83–88; and PaLM's Table 3 brackets the range, with Megatron-Turing NLG on A100 at 30.2% MFU and PaLM on TPU v4 at 46.2% [[palm-scaling-language-modeling-with-pathways]] (T3).",
+      "note_id": "palm-scaling-language-modeling-with-pathways",
+      "numbers": [
+        "180",
+        "74.6",
+        "78.5",
+        "250",
+        "83",
+        "88",
+        "3",
+        "100",
+        "30.2%",
+        "4",
+        "46.2%",
+        "3"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "The measurement gap is narrower and more consequential: every receipt is one, two, three or four ranks [[readmemd]], [[2026-10-01-cmp170hx-4card-bar1-p2p-plx-cudaipynb]] (T2), and the three-card receipt concedes \"One probe run per pair; no cross-run error bars\" [[readmemd]].",
+      "note_id": "readmemd",
+      "numbers": [
+        "2026",
+        "10",
+        "01",
+        "170",
+        "4",
+        "1",
+        "2",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "The measurement gap is narrower and more consequential: every receipt is one, two, three or four ranks [[readmemd]], [[2026-10-01-cmp170hx-4card-bar1-p2p-plx-cudaipynb]] (T2), and the three-card receipt concedes \"One probe run per pair; no cross-run error bars\" [[readmemd]].",
+      "note_id": "2026-10-01-cmp170hx-4card-bar1-p2p-plx-cudaipynb",
+      "numbers": [
+        "2026",
+        "10",
+        "01",
+        "170",
+        "4",
+        "1",
+        "2",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "The measurement gap is narrower and more consequential: every receipt is one, two, three or four ranks [[readmemd]], [[2026-10-01-cmp170hx-4card-bar1-p2p-plx-cudaipynb]] (T2), and the three-card receipt concedes \"One probe run per pair; no cross-run error bars\" [[readmemd]].",
+      "note_id": "readmemd",
+      "numbers": [
+        "2026",
+        "10",
+        "01",
+        "170",
+        "4",
+        "1",
+        "2",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "Four RTX PRO 6000 cards on PCIe 4 with no NVLink, training a 500M-total/~330M-active MoE at an effective global batch of ~1M tokens — the same regime — measured \"gradient communication accounted for 50% of the single-step time\"; enabling `no_sync()` so the all-reduce fires only on the tenth micro-step cut wall-clock from under 18 hours to 13.2 hours, leaving ~1.7% in sync [[a-13-hour-training-experiment-on-a-pc-workstation-why-optimization-begins-with-m]] (T2).",
+      "note_id": "a-13-hour-training-experiment-on-a-pc-workstation-why-optimization-begins-with-m",
+      "numbers": [
+        "6000",
+        "4",
+        "500",
+        "330",
+        "1",
+        "50%",
+        "18",
+        "13.2",
+        "1.7%",
+        "13",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "The 2× only reproduces if you force fp32 gradient reduction via `MixedPrecision(reduce_dtype=torch.float32)`; FSDP's default `reduce_dtype=None` \"still running gradient reduction in low precision\" [[fullyshardeddataparallel-pytorch-213-documentation]] (T3).",
+      "note_id": "fullyshardeddataparallel-pytorch-213-documentation",
+      "numbers": [
+        "2",
+        "32",
+        "32",
+        "213",
+        "3"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "What remains is the bubble: (5−1)/32 = 12.5% for 1F1B at 32 micro-batches, ~4.2% for zero-bubble schedules, and under 4.5% measured for RoundPipe with asynchronous optimizer updates [[efficient-training-on-multiple-consumer-gpus-with]] (T2/T3).",
+      "note_id": "efficient-training-on-multiple-consumer-gpus-with",
+      "numbers": [
+        "5",
+        "1",
+        "32",
+        "12.5%",
+        "1",
+        "1",
+        "32",
+        "4.2%",
+        "4.5%",
+        "2",
+        "3"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "It shards optimizer state and gradients but not parameters, so it costs 4.8 B/param × 7B = 33.6 GB of model state (T4) and its communication is \"exactly 2Ψ\" — the same byte volume as DDP's all-reduce [[zero-memory-optimizations-toward-training-trillion-parameter-models-sc20]] (T3) — while preserving Adam, so comparability with the control survives.",
+      "note_id": "zero-memory-optimizations-toward-training-trillion-parameter-models-sc20",
+      "numbers": [
+        "4.8",
+        "7",
+        "33.6",
+        "4",
+        "2",
+        "20",
+        "3"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "On the closest published fabric analogue — ten RTX 3090s sharing ~3 GB/s of PCIe with P2P disabled — ZeRO-2 beats DDP at every GPU count, by +27% at four and +50% at eight [[pcie-110-gpu-스케일링]] (T2); on 8×A100 with NVSwitch it loses 2.90×, because the ~2.4 s delta was CPU-side Python execution of per-parameter hooks [[perf-29-throughput-by-switching-from-deepspeed-to-ddp-issue-177-tensorautoopen-2]] (T2).",
+      "note_id": "pcie-110-gpu-스케일링",
+      "numbers": [
+        "3090",
+        "3",
+        "2",
+        "2",
+        "27%",
+        "50%",
+        "110",
+        "2",
+        "8",
+        "100",
+        "2.90",
+        "2.4",
+        "29",
+        "177",
+        "2",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "On the closest published fabric analogue — ten RTX 3090s sharing ~3 GB/s of PCIe with P2P disabled — ZeRO-2 beats DDP at every GPU count, by +27% at four and +50% at eight [[pcie-110-gpu-스케일링]] (T2); on 8×A100 with NVSwitch it loses 2.90×, because the ~2.4 s delta was CPU-side Python execution of per-parameter hooks [[perf-29-throughput-by-switching-from-deepspeed-to-ddp-issue-177-tensorautoopen-2]] (T2).",
+      "note_id": "perf-29-throughput-by-switching-from-deepspeed-to-ddp-issue-177-tensorautoopen-2",
+      "numbers": [
+        "3090",
+        "3",
+        "2",
+        "2",
+        "27%",
+        "50%",
+        "110",
+        "2",
+        "8",
+        "100",
+        "2.90",
+        "2.4",
+        "29",
+        "177",
+        "2",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "Under standard AMP the parameters and gradients stay fp32, so the bucket payload is 4.0 GB and the overhead doubles [[pytorch-ddp-comm-hooks-default_hookspy-bf16fp16-compress-hooks]], [[does-nccl-allreduce-use-fp16-mixed-precision-pytorch-forums]] (T3); with pure-bf16 parameters the hook is a no-op cast.",
+      "note_id": "pytorch-ddp-comm-hooks-default_hookspy-bf16fp16-compress-hooks",
+      "numbers": [
+        "32,",
+        "4.0",
+        "16",
+        "16",
+        "16",
+        "3",
+        "16"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "Under standard AMP the parameters and gradients stay fp32, so the bucket payload is 4.0 GB and the overhead doubles [[pytorch-ddp-comm-hooks-default_hookspy-bf16fp16-compress-hooks]], [[does-nccl-allreduce-use-fp16-mixed-precision-pytorch-forums]] (T3); with pure-bf16 parameters the hook is a no-op cast.",
+      "note_id": "does-nccl-allreduce-use-fp16-mixed-precision-pytorch-forums",
+      "numbers": [
+        "32,",
+        "4.0",
+        "16",
+        "16",
+        "16",
+        "3",
+        "16"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "It is measured on this fabric class — on four RTX A6000s over PCIe with no NVLink, bf16 gradients moved plain DDP from 2.06× to 2.65× at 124M and 1.91× to 2.72× at 355M [[ddp-on-a-pcie-only-4x-rtx-a6000-no-nvlink-plain-ddp-gave-2x-bf16-gradient-compre]] (T2) — but at the corrected window it is worth only ~3% of step time: halving a 4.0 GB payload saves 1.85 s against 56.3 s of compute, and the ~18% it buys belongs to the plan's own 36% premise.",
+      "note_id": "ddp-on-a-pcie-only-4x-rtx-a6000-no-nvlink-plain-ddp-gave-2x-bf16-gradient-compre",
+      "numbers": [
+        "6000",
+        "16",
+        "2.06",
+        "2.65",
+        "124",
+        "1.91",
+        "2.72",
+        "355",
+        "4",
+        "6000",
+        "2",
+        "16",
+        "2",
+        "3%",
+        "4.0",
+        "1.85",
+        "56.3",
+        "18%",
+        "36%"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "The cluster's consensus runs against intuition — compression pays more, not less, on slow fabrics: AGoQ's 8-bit all-reduce is 3.7× at 10 Gbps against 3.4× at 200 Gbps [[agoq-activation-and-gradient-quantization-for]], and CERAR cuts Pythia-1.4B by 17.3% on PCIe while running 33% slower on NVLink [[communication-efficient-distributed-training]] (T3).",
+      "note_id": "agoq-activation-and-gradient-quantization-for",
+      "numbers": [
+        "8",
+        "3.7",
+        "10",
+        "3.4",
+        "200",
+        "1.4",
+        "17.3%",
+        "33%",
+        "3"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "The cluster's consensus runs against intuition — compression pays more, not less, on slow fabrics: AGoQ's 8-bit all-reduce is 3.7× at 10 Gbps against 3.4× at 200 Gbps [[agoq-activation-and-gradient-quantization-for]], and CERAR cuts Pythia-1.4B by 17.3% on PCIe while running 33% slower on NVLink [[communication-efficient-distributed-training]] (T3).",
+      "note_id": "communication-efficient-distributed-training",
+      "numbers": [
+        "8",
+        "3.7",
+        "10",
+        "3.4",
+        "200",
+        "1.4",
+        "17.3%",
+        "33%",
+        "3"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "PaLM states it explicitly: \"an N-parameter decoder-only model requires 6N matmul FLOPs per token seen (2N for forward and 4N for backward)\" and separately that \"The matmuls in dense self-attention add 6LH(2QT) FLOPs per token\", so the theoretical peak is R = P(6N + 12LHQT) [[palm-scaling-language-modeling-with-pathways]] (T3).",
+      "note_id": "palm-scaling-language-modeling-with-pathways",
+      "numbers": [
+        "6",
+        "2",
+        "4",
+        "6",
+        "2",
+        "6",
+        "12",
+        "3"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "Megatron-Core corroborates from measurement: \"at 64K tokens, SDPA consumes 69% of FLOPs, compared to only 10–15% in short-sequence scenarios\" [[scalable-training-of-mixture-of-experts-models-with]] (T3).",
+      "note_id": "scalable-training-of-mixture-of-experts-models-with",
+      "numbers": [
+        "64",
+        "69%",
+        "10",
+        "15%",
+        "3"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "It sits within a factor of four of the adjacent-hardware measurement at the same batch regime, 1.7% amortized after `no_sync()` [[a-13-hour-training-experiment-on-a-pc-workstation-why-optimization-begins-with-m]] (T2).",
+      "note_id": "a-13-hour-training-experiment-on-a-pc-workstation-why-optimization-begins-with-m",
+      "numbers": [
+        "1.7%",
+        "13",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "SLMTrainBench measures a 505.5M model at 4k = 26,297 tok/s (39.88% MFU) and at 32k = 11,990 tok/s (63.88% MFU) on an A100 80GB PCIe, computing MFU with the same 6N + 12LHS formula: a measured per-token cost ratio of 2.19×, with a 1.60× MFU uplift absorbing 40% of the quadratic penalty [[readmemd-faircslmtrainbench-at-main]] (T3).",
+      "note_id": "readmemd-faircslmtrainbench-at-main",
+      "numbers": [
+        "505.5",
+        "4",
+        "26,297",
+        "39.88%",
+        "32",
+        "11,990",
+        "63.88%",
+        "100",
+        "80",
+        "6",
+        "12",
+        "2.19",
+        "1.60",
+        "40%",
+        "3"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "The pattern is systematic — 2.19–2.27× across 150M–500M — and SkyLadder's 1B model cross-checks it with a 2.20× FLOPs ratio from 8K to 32K [[skyladder-better-and-faster-pretraining-via]] (T3).",
+      "note_id": "skyladder-better-and-faster-pretraining-via",
+      "numbers": [
+        "2.19",
+        "2.27",
+        "150",
+        "500",
+        "1",
+        "2.20",
+        "8",
+        "32",
+        "3"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "The one prototype that does work on PCIe without P2P, ThunderEP, reaches 2.00× dispatch and 1.53× combine over NCCL on 6×4090 and 6×5090 systems — but it is integrated into vLLM and evaluated on inference, with no gradient collectives [[efficient-expert-parallel-communication]] (T3).",
+      "note_id": "efficient-expert-parallel-communication",
+      "numbers": [
+        "2",
+        "2.00",
+        "1.53",
+        "6",
+        "4090",
+        "6",
+        "5090",
+        "3"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "So the corpus holds no evidence of a training-grade EP implementation for a no-P2P, no-NVLink, no-RDMA fabric — the closest are VarioPath, a PCIe-native all-to-all scheduler evaluated on inference [[variopath-workload-aware-all-to-all-communication-for-pcie-gpu-clusters]], and ThunderEP, a no-P2P dispatch/combine with no backward.",
+      "note_id": "variopath-workload-aware-all-to-all-communication-for-pcie-gpu-clusters",
+      "numbers": [
+        "2",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "TP has no equivalent hiding place at this scale — though model-parallel communication can be overlapped with compute given an overlap-friendly schedule [[on-optimizing-the-communication-of-model-parallelism]] (T3), and on PCIe TP overtakes DP above ~20B parameters by avoiding full-parameter synchronisation [[efficient-training-on-multiple-consumer-gpus-with]] (T2).",
+      "note_id": "on-optimizing-the-communication-of-model-parallelism",
+      "numbers": [
+        "3",
+        "20",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "Adafactor keeps only the per-row and per-column sums of Adam's second moment, giving state proportional to n + m rather than nm [[adafactor-adaptive-learning-rates-with-sublinear-memory-cost]] (T3), and 8-bit Adam's block-wise quantization matches 32-bit performance at 1.5B [[published-as-a-conference-paper-at-iclr-2022]] (T3).",
+      "note_id": "adafactor-adaptive-learning-rates-with-sublinear-memory-cost",
+      "numbers": [
+        "3",
+        "8",
+        "32",
+        "1.5",
+        "2022",
+        "3"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "Adafactor keeps only the per-row and per-column sums of Adam's second moment, giving state proportional to n + m rather than nm [[adafactor-adaptive-learning-rates-with-sublinear-memory-cost]] (T3), and 8-bit Adam's block-wise quantization matches 32-bit performance at 1.5B [[published-as-a-conference-paper-at-iclr-2022]] (T3).",
+      "note_id": "published-as-a-conference-paper-at-iclr-2022",
+      "numbers": [
+        "3",
+        "8",
+        "32",
+        "1.5",
+        "2022",
+        "3"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "A 23-run variance decomposition at 184M parameters and 3.7B tokens in bf16, with bitwise determinism verified across data centres, reports \"Within-group standard deviations are ≤0.004 for every category; FP arithmetic is even tighter at 0.001\" [[quantifying-pretraining-variance-data-initialization-and-floating-point-arithmet]] (T3).",
+      "note_id": "quantifying-pretraining-variance-data-initialization-and-floating-point-arithmet",
+      "numbers": [
+        "23",
+        "184",
+        "3.7",
+        "16,",
+        "0.004",
+        "0.001",
+        "3"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "Engram's allocation law buys 0.0139 nats (1.7248 → 1.7109) at 993M active and ~100B tokens [[conditional-memory-via-scalable-lookup]] (T3), 3.5× the tighter floor; OverEncoding's headline at 500B tokens is 0.082 nats on OLMoE-1.3B [[over-tokenized-transformer-vocabulary-is-generally-worth-scaling]] (T3), 20× above it.",
+      "note_id": "conditional-memory-via-scalable-lookup",
+      "numbers": [
+        "0.0139",
+        "1.7248",
+        "1.7109",
+        "993",
+        "100",
+        "3",
+        "3.5",
+        "500",
+        "0.082",
+        "1.3",
+        "3",
+        "20"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "Engram's allocation law buys 0.0139 nats (1.7248 → 1.7109) at 993M active and ~100B tokens [[conditional-memory-via-scalable-lookup]] (T3), 3.5× the tighter floor; OverEncoding's headline at 500B tokens is 0.082 nats on OLMoE-1.3B [[over-tokenized-transformer-vocabulary-is-generally-worth-scaling]] (T3), 20× above it.",
+      "note_id": "over-tokenized-transformer-vocabulary-is-generally-worth-scaling",
+      "numbers": [
+        "0.0139",
+        "1.7248",
+        "1.7109",
+        "993",
+        "100",
+        "3",
+        "3.5",
+        "500",
+        "0.082",
+        "1.3",
+        "3",
+        "20"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "The indexer's score tensor is a `[B, S, H_I, T]` FP32 intermediate materialized before the head-sum, which at S=32,768 with V4-Flash dimensions is 64 GiB, with a measured peak of 129.00 GB and 317 ms on a 140 GB H200 [[streamindex-memory-bounded-compressed-sparse]] (T3); the pure-PyTorch cuDNN reference has the same defect, materializing `(B, S_q, H_q, S_k)` FP32 at 68.7 GB for 32k/H_q=16 [[dsa_referencepy]] (T3/T4).",
+      "note_id": "streamindex-memory-bounded-compressed-sparse",
+      "numbers": [
+        "32",
+        "32,768",
+        "4",
+        "64",
+        "129.00",
+        "317",
+        "140",
+        "200",
+        "3",
+        "32",
+        "68.7",
+        "32",
+        "16",
+        "3",
+        "4"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "The indexer's score tensor is a `[B, S, H_I, T]` FP32 intermediate materialized before the head-sum, which at S=32,768 with V4-Flash dimensions is 64 GiB, with a measured peak of 129.00 GB and 317 ms on a 140 GB H200 [[streamindex-memory-bounded-compressed-sparse]] (T3); the pure-PyTorch cuDNN reference has the same defect, materializing `(B, S_q, H_q, S_k)` FP32 at 68.7 GB for 32k/H_q=16 [[dsa_referencepy]] (T3/T4).",
+      "note_id": "dsa_referencepy",
+      "numbers": [
+        "32",
+        "32,768",
+        "4",
+        "64",
+        "129.00",
+        "317",
+        "140",
+        "200",
+        "3",
+        "32",
+        "68.7",
+        "32",
+        "16",
+        "3",
+        "4"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "The tuned stacks are built on Hopper's `wgmma.mma_async`; Ampere has only `mma.sync`, and TileLang's own fallback to it \"runs 1.81× slower\", so an sm_80 build is possible-but-slow rather than impossible [[tilelangexamplesdeepseek_v32-at-main-tile-aitilelang-github]] (T2).",
+      "note_id": "tilelangexamplesdeepseek_v32-at-main-tile-aitilelang-github",
+      "numbers": [
+        "1.81",
+        "80",
+        "32",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "The one arch-portable Triton stack is worse than slow: StreamIndex's attention forward reaches only 8% of H200 BF16 peak at V4-Pro dimensions against TileLang's 40% on the same shape [[streamindex-memory-bounded-compressed-sparse]] (T3), and at 8% of peak even a 64× FLOP reduction does not produce a usable training kernel.",
+      "note_id": "streamindex-memory-bounded-compressed-sparse",
+      "numbers": [
+        "8%",
+        "200",
+        "16",
+        "4",
+        "40%",
+        "3",
+        "8%",
+        "64"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "The indexer, not the sparse MLA, is the hard half — HISA measures 1.6 ms for the Sparse MLA operator against 5.6 ms for the indexer at 64K on A100, and concludes \"the main performance bottleneck in DSA lies in the indexer rather than in Sparse MLA itself\" [[published-as-a-conference-paper-at-colm-2026]] (T3).",
+      "note_id": "published-as-a-conference-paper-at-colm-2026",
+      "numbers": [
+        "1.6",
+        "5.6",
+        "64",
+        "100,",
+        "2026",
+        "3"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "The layer mix bounds how much of that matters: V4.1-Flash ships 2 SWA + 4 Full + 4 Reindex + 30 Reuse over 40 layers, so 32 of 40 run no indexer and the 16,384-candidate cap binds on only the 4 decoder Reindex layers [[deepseek-v41-flash]] (T3).",
+      "note_id": "deepseek-v41-flash",
+      "numbers": [
+        "4.1",
+        "2",
+        "4",
+        "4",
+        "30",
+        "40",
+        "32",
+        "40",
+        "16,384",
+        "4",
+        "41",
+        "3"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "Its current release states its scope verbatim: Its current release lists its supported scope as sm_100a / sm_103a and Ascend 950, DeepSeek-V4.1 only, and it has dropped Hopper entirely [[github-deepseek-aiflashmla-flashmla-efficient-multi-head-latent-attention-kernel]] (T2).",
+      "note_id": "github-deepseek-aiflashmla-flashmla-efficient-multi-head-latent-attention-kernel",
+      "numbers": [
+        "100",
+        "103",
+        "950,",
+        "4.1",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "The production sparse-attention forward for CSA2 does not run on Hopper, let alone Ampere. flash-attention's sparse-MLA forward and backward kernels are SM100-only files (`flash_fwd_mla_sm100.py`, `flash_bwd_mla_sm100.py`) [[cutebwdsm100-add-sparse-mla-deepseek-v4-backward-kernels-2621-dao-ailabflash-att]] (T2), and the Ampere port of FlashMLA exposes only paged-KV decode, has no backward, and reports that \"the performance of Ampere is currently poor due to register overflow\" — 464 GB/s and 59 TFLOPS on A100 SXM against 2,039 GB/s and 312 TFLOPS peak [[github-pzhao-engflashmla-github]] (T2).",
+      "note_id": "cutebwdsm100-add-sparse-mla-deepseek-v4-backward-kernels-2621-dao-ailabflash-att",
+      "numbers": [
+        "2",
+        "100",
+        "100.",
+        "100.",
+        "100",
+        "4",
+        "2621",
+        "2",
+        "464",
+        "59",
+        "100",
+        "2,039",
+        "312",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "The production sparse-attention forward for CSA2 does not run on Hopper, let alone Ampere. flash-attention's sparse-MLA forward and backward kernels are SM100-only files (`flash_fwd_mla_sm100.py`, `flash_bwd_mla_sm100.py`) [[cutebwdsm100-add-sparse-mla-deepseek-v4-backward-kernels-2621-dao-ailabflash-att]] (T2), and the Ampere port of FlashMLA exposes only paged-KV decode, has no backward, and reports that \"the performance of Ampere is currently poor due to register overflow\" — 464 GB/s and 59 TFLOPS on A100 SXM against 2,039 GB/s and 312 TFLOPS peak [[github-pzhao-engflashmla-github]] (T2).",
+      "note_id": "github-pzhao-engflashmla-github",
+      "numbers": [
+        "2",
+        "100",
+        "100.",
+        "100.",
+        "100",
+        "4",
+        "2621",
+        "2",
+        "464",
+        "59",
+        "100",
+        "2,039",
+        "312",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "SGLang has \"SGLang currently has no end-to-end CUDA path for running DeepSeek Sparse Attention (DSA), including DeepSeek-V3.2, on NVIDIA A100 / SM80\" [[feature-add-an-opt-in-sm80-fallback-for-deepseek-sparse-attention-dsa-on-nvidia]] (T2).",
+      "note_id": "feature-add-an-opt-in-sm80-fallback-for-deepseek-sparse-attention-dsa-on-nvidia",
+      "numbers": [
+        "3.2",
+        "100",
+        "80",
+        "80",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "The only sm_80 path is vLLM's `TRITON_MLA_SPARSE`, which adds a Triton-based sparse MLA attention backend (`TRITON_MLA_SPARSE`) \"so DSA sparse-MLA models (DeepSeek-V3.2, GLM-5.x) can run on GPUs where DeepGEMM and FlashMLA-Sparse are unavailable\" [[attention-triton_mla_sparse-backend-for-sm80sm121-sparse-mla-rebase-takeover-of]] (T2).",
+      "note_id": "attention-triton_mla_sparse-backend-for-sm80sm121-sparse-mla-rebase-takeover-of",
+      "numbers": [
+        "80",
+        "3.2",
+        "5.",
+        "80",
+        "121",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "It reports up to 1.25× and 1.09× on average end-to-end training speedup over the Triton NSA kernel, and up to 2.47× and 1.86× on average over full attention [[published-as-a-conference-paper-at-iclr-2026]] (T3).",
+      "note_id": "published-as-a-conference-paper-at-iclr-2026",
+      "numbers": [
+        "1.25",
+        "1.09",
+        "2.47",
+        "1.86",
+        "2026",
+        "3"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "The fla-org Triton implementation reproduces a shrinking advantage: 2.66× forward at 16,384 tokens, 1.35× at 8,192, and 0.72× at 4,096 — NSA is slower than flash at short context [[github-fla-orgnative-sparse-attention-efficient-triton-implementations-for-nativ]] (T2).",
+      "note_id": "github-fla-orgnative-sparse-attention-efficient-triton-implementations-for-nativ",
+      "numbers": [
+        "2.66",
+        "16,384",
+        "1.35",
+        "8,192,",
+        "0.72",
+        "4,096",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "FSA reports directly that vanilla NSA lags behind full attention in many tested cases, even with its sparse attention mechanism: when the sequence length is 32K and one GQA group contains one query head, NSA consistently falls short of full attention [[published-as-a-conference-paper-at-iclr-2026]] (T3).",
+      "note_id": "published-as-a-conference-paper-at-iclr-2026",
+      "numbers": [
+        "32",
+        "2026",
+        "3"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "Top-k is non-differentiable, so the indexer is trained by a clipped-log KL distillation against the main attention distribution rather than end-to-end [[dsa_referencepy]] (T3), which adds a second score-tensor forward and backward and a separate loss term to every step; and the indexer's cost is additive and measured at 3.5× the kernel it feeds.",
+      "note_id": "dsa_referencepy",
+      "numbers": [
+        "3",
+        "3.5"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "FSA's official implementation is \"well tested with NVIDIA Ampere or Hopper GPUs (e.g., A100 SXM, H20, H100 PCIe, H100 NVL, H100 SXM, H200 SXM)\", supports \"Training and inference (prefill)\", and calls `loss.backward()` through a 65,536 + 32,768-token batch; it requires `flash-attn==2.6.3` [[github-relaxed-system-labflash-sparse-attention-efficient-implementations-of-nat]] (T2).",
+      "note_id": "github-relaxed-system-labflash-sparse-attention-efficient-implementations-of-nat",
+      "numbers": [
+        "100",
+        "20,",
+        "100",
+        "100",
+        "100",
+        "200",
+        "65,536",
+        "32,768",
+        "2.6",
+        "3",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "The fla-org Triton NSA ships full training support via `flame` [[github-fla-orgnative-sparse-attention-efficient-triton-implementations-for-nativ]] (T2).",
+      "note_id": "github-fla-orgnative-sparse-attention-efficient-triton-implementations-for-nativ",
+      "numbers": [
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "MoBA is the fallback, also pinned to `flash-attn==2.6.3` [[github-moonshotaimoba-moba-mixture-of-block-attention-for-long-context-llms-gith]] (T2), but it is compute-neutral at 32k and lossy alone: trailing LM loss at 32K is 1.546 against 1.464 for full attention [[moba-mixture-of-block-attention-for]] (T3).",
+      "note_id": "github-moonshotaimoba-moba-mixture-of-block-attention-for-long-context-llms-gith",
+      "numbers": [
+        "2.6",
+        "3",
+        "2",
+        "32",
+        "32",
+        "1.546",
+        "1.464",
+        "3"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "DeepSeek-V4.1-Flash trains sparse attention from scratch at 64K across 45T tokens [[deepseek-v41-flash]] (T3) — a capability receipt, not a speedup receipt, and at 64K rather than 32k.",
+      "note_id": "deepseek-v41-flash",
+      "numbers": [
+        "4.1",
+        "64",
+        "45",
+        "41",
+        "3",
+        "64",
+        "32"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "**Width is not speed.** One side holds that PCIe width and generation are independent axes that must never be conflated: the capacitor mod changes width only, the unlocker changes generation only, and a card with neither runs Gen1 x4 [[physical-modsmd]], [[pcie-subsystemmd]] (T2).",
+      "note_id": "physical-modsmd",
+      "numbers": [
+        "1",
+        "4",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "**Width is not speed.** One side holds that PCIe width and generation are independent axes that must never be conflated: the capacitor mod changes width only, the unlocker changes generation only, and a card with neither runs Gen1 x4 [[physical-modsmd]], [[pcie-subsystemmd]] (T2).",
+      "note_id": "pcie-subsystemmd",
+      "numbers": [
+        "1",
+        "4",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "The other holds that published architecture effects are 0.014–0.082 nats against a 3.5%-relative single-run floor, so a 9B-token null is the expected result [[moba-mixture-of-block-attention-for]], [[a-hitchhikers-guide-to-scaling-law-estimation]] (T3).",
+      "note_id": "moba-mixture-of-block-attention-for",
+      "numbers": [
+        "0.014",
+        "0.082",
+        "3.5%",
+        "9",
+        "3"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "The other holds that published architecture effects are 0.014–0.082 nats against a 3.5%-relative single-run floor, so a 9B-token null is the expected result [[moba-mixture-of-block-attention-for]], [[a-hitchhikers-guide-to-scaling-law-estimation]] (T3).",
+      "note_id": "a-hitchhikers-guide-to-scaling-law-estimation",
+      "numbers": [
+        "0.014",
+        "0.082",
+        "3.5%",
+        "9",
+        "3"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "**Every sparse-attention 32k win is an adaptation-stage result.** One side holds that sparse attention delivers large measured 32k wins: NSA reports 6.3× forward and 3.4× backward at 32k on A100 with a quality win, and LongCat's LSA claims parity with full attention and native training to 1M tokens [[native-sparse-attention-hardware-aligned-and-natively]], [[longcat-sparse-attention-taming-the-lightning-via]] (T3/T2).",
+      "note_id": "longcat-sparse-attention-taming-the-lightning-via",
+      "numbers": [
+        "32",
+        "32",
+        "6.3",
+        "3.4",
+        "32",
+        "100",
+        "1",
+        "3",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "**P2P has two incompatible data-movement figures and the larger one is unverified.** One side holds that BAR1 P2P works and moves data at 1.68 GB/s each way at Gen2 x4 on 12/12 pairs [[github-bayleycmpunlocker-a-cmpunlocker-fork-with-working-p2p-on-sys-4028gr-trt2]] (T2).",
+      "note_id": "github-bayleycmpunlocker-a-cmpunlocker-fork-with-working-p2p-on-sys-4028gr-trt2",
+      "numbers": [
+        "2",
+        "1",
+        "2",
+        "1.68",
+        "2",
+        "4",
+        "12",
+        "12",
+        "2",
+        "4028",
+        "2",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "The decisive fact is the one nobody cites: on a four-card PLX rig at Gen2 x16, host-staged copy already moves large buffers at 6.21–6.30 GB/s, so P2P is 8% slower above 16 MiB and costs 25–44% on TP4 decode [[2026-10-01-cmp170hx-4card-bar1-p2p-plx-cudaipynb]] (T2).",
+      "note_id": "2026-10-01-cmp170hx-4card-bar1-p2p-plx-cudaipynb",
+      "numbers": [
+        "2",
+        "16,",
+        "6.21",
+        "6.30",
+        "2",
+        "8%",
+        "16",
+        "25",
+        "44%",
+        "4",
+        "2026",
+        "10",
+        "01",
+        "170",
+        "4",
+        "1",
+        "2",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "**The most trustworthy sustained numbers are at 180 W, not the plan's 250 W.** One side holds that the decision-grade benchmarks run against an enforced 180.00 W limit, and that 74.6–78.5 TFLOP/s is a ten-minute `gpu-burn -tc` at that cap with no thermal throttle [[readmemd-2]], [[2026-09-02-cmp170hx-health-gateipynb]] (T2).",
+      "note_id": "readmemd-2",
+      "numbers": [
+        "180",
+        "250",
+        "180.00",
+        "74.6",
+        "78.5",
+        "2",
+        "2026",
+        "09",
+        "02",
+        "170",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "**The most trustworthy sustained numbers are at 180 W, not the plan's 250 W.** One side holds that the decision-grade benchmarks run against an enforced 180.00 W limit, and that 74.6–78.5 TFLOP/s is a ten-minute `gpu-burn -tc` at that cap with no thermal throttle [[readmemd-2]], [[2026-09-02-cmp170hx-health-gateipynb]] (T2).",
+      "note_id": "2026-09-02-cmp170hx-health-gateipynb",
+      "numbers": [
+        "180",
+        "250",
+        "180.00",
+        "74.6",
+        "78.5",
+        "2",
+        "2026",
+        "09",
+        "02",
+        "170",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "The other holds that the card's stock cap is 250 W and it delivers ~162 TFLOPS bf16, the basis of the ~810 aggregate [[performancemd]], [[lessonsmd]] (T2/T1).",
+      "note_id": "performancemd",
+      "numbers": [
+        "250",
+        "162",
+        "16,",
+        "810",
+        "2",
+        "1"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "The other holds that the card's stock cap is 250 W and it delivers ~162 TFLOPS bf16, the basis of the ~810 aggregate [[performancemd]], [[lessonsmd]] (T2/T1).",
+      "note_id": "lessonsmd",
+      "numbers": [
+        "250",
+        "162",
+        "16,",
+        "810",
+        "2",
+        "1"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "ECC is stale by one release: it read as off or N/A through cmpunlocker v0.4, and v0.5 (2026-10-06) reports ECC N/A → Enabled at a measured ≤0.3% integration-level cost, verified only by counters moving and a copy pattern bit-verifying because no fault-injection tooling exists [[readme_enmd]] (T2); amoghmunikote lists it Working [[github-amoghmunikotecmpunlocker-a-tool-to-unlobotomize-your-nvidia-card-github]], while bayley, dl4rce and the 170th Street spec sheet say it is not restored [[full-specifications-170th-street]], [[cmp-170hx-inference-labdocsunlock-and-modsmd-at-main-dl4rcecmp-170hx-inference-l]] (T2).",
+      "note_id": "readme_enmd",
+      "numbers": [
+        "0.4",
+        "0.5",
+        "2026",
+        "10",
+        "06",
+        "0.3%",
+        "2",
+        "4",
+        "170",
+        "170",
+        "170",
+        "4",
+        "170",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "ECC is stale by one release: it read as off or N/A through cmpunlocker v0.4, and v0.5 (2026-10-06) reports ECC N/A → Enabled at a measured ≤0.3% integration-level cost, verified only by counters moving and a copy pattern bit-verifying because no fault-injection tooling exists [[readme_enmd]] (T2); amoghmunikote lists it Working [[github-amoghmunikotecmpunlocker-a-tool-to-unlobotomize-your-nvidia-card-github]], while bayley, dl4rce and the 170th Street spec sheet say it is not restored [[full-specifications-170th-street]], [[cmp-170hx-inference-labdocsunlock-and-modsmd-at-main-dl4rcecmp-170hx-inference-l]] (T2).",
+      "note_id": "github-amoghmunikotecmpunlocker-a-tool-to-unlobotomize-your-nvidia-card-github",
+      "numbers": [
+        "0.4",
+        "0.5",
+        "2026",
+        "10",
+        "06",
+        "0.3%",
+        "2",
+        "4",
+        "170",
+        "170",
+        "170",
+        "4",
+        "170",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "ECC is stale by one release: it read as off or N/A through cmpunlocker v0.4, and v0.5 (2026-10-06) reports ECC N/A → Enabled at a measured ≤0.3% integration-level cost, verified only by counters moving and a copy pattern bit-verifying because no fault-injection tooling exists [[readme_enmd]] (T2); amoghmunikote lists it Working [[github-amoghmunikotecmpunlocker-a-tool-to-unlobotomize-your-nvidia-card-github]], while bayley, dl4rce and the 170th Street spec sheet say it is not restored [[full-specifications-170th-street]], [[cmp-170hx-inference-labdocsunlock-and-modsmd-at-main-dl4rcecmp-170hx-inference-l]] (T2).",
+      "note_id": "full-specifications-170th-street",
+      "numbers": [
+        "0.4",
+        "0.5",
+        "2026",
+        "10",
+        "06",
+        "0.3%",
+        "2",
+        "4",
+        "170",
+        "170",
+        "170",
+        "4",
+        "170",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "ECC is stale by one release: it read as off or N/A through cmpunlocker v0.4, and v0.5 (2026-10-06) reports ECC N/A → Enabled at a measured ≤0.3% integration-level cost, verified only by counters moving and a copy pattern bit-verifying because no fault-injection tooling exists [[readme_enmd]] (T2); amoghmunikote lists it Working [[github-amoghmunikotecmpunlocker-a-tool-to-unlobotomize-your-nvidia-card-github]], while bayley, dl4rce and the 170th Street spec sheet say it is not restored [[full-specifications-170th-street]], [[cmp-170hx-inference-labdocsunlock-and-modsmd-at-main-dl4rcecmp-170hx-inference-l]] (T2).",
+      "note_id": "cmp-170hx-inference-labdocsunlock-and-modsmd-at-main-dl4rcecmp-170hx-inference-l",
+      "numbers": [
+        "0.4",
+        "0.5",
+        "2026",
+        "10",
+        "06",
+        "0.3%",
+        "2",
+        "4",
+        "170",
+        "170",
+        "170",
+        "4",
+        "170",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "Enable it before the first long run, deploy the five-minute counter snapshot, and run `memtest_vulkan` over the full 64 GB rather than the 8 GiB a mining rig would touch — independent reports put field failure around 50% among buyers, with faults appearing only above that region [[lessonsmd]] (T2).",
+      "note_id": "lessonsmd",
+      "numbers": [
+        "64",
+        "8",
+        "50%",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "The architecture comparison should run at 8K, not 32k: a four-point ladder (50M / 125M / 250M / 500M) × two architectures, each trained to ~1/3 of budget with the first 10% of checkpoints discarded, fitting L(C) and comparing exponents rather than single losses [[a-hitchhikers-guide-to-scaling-law-estimation]] (T3).",
+      "note_id": "a-hitchhikers-guide-to-scaling-law-estimation",
+      "numbers": [
+        "8",
+        "32",
+        "50",
+        "125",
+        "250",
+        "500",
+        "1",
+        "3",
+        "10%",
+        "3"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "The repo has LR warmup but no batch-size warmup, and the linear LR-scaling rule it may be leaning on is an SGD-on-vision result, not an Adam-on-LLM one [[accurate-large-minibatch-sgd]] (T3).",
+      "note_id": "accurate-large-minibatch-sgd",
+      "numbers": [
+        "3"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "Token supply is fine — nine billion tokens at a 75/15/10 mix draws 6.75B from FineWeb-Edu's 1.3T tokens [[huggingfacefwfineweb-edu-datasets-at-hugging-face]], 1.35B from Stack-Edu's ~125B [[huggingfacetbstack-edu-datasets-at-hugging-face]] and 0.9B from FineMath-4+'s 9.6B [[huggingfacetbfinemath-datasets-at-hugging-face-2]] (T2) — but the packing is the worst of four measured configurations.",
+      "note_id": "huggingfacefwfineweb-edu-datasets-at-hugging-face",
+      "numbers": [
+        "75",
+        "15",
+        "10",
+        "6.75",
+        "1.3",
+        "1.35",
+        "125",
+        "0.9",
+        "4",
+        "9.6",
+        "2",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "Token supply is fine — nine billion tokens at a 75/15/10 mix draws 6.75B from FineWeb-Edu's 1.3T tokens [[huggingfacefwfineweb-edu-datasets-at-hugging-face]], 1.35B from Stack-Edu's ~125B [[huggingfacetbstack-edu-datasets-at-hugging-face]] and 0.9B from FineMath-4+'s 9.6B [[huggingfacetbfinemath-datasets-at-hugging-face-2]] (T2) — but the packing is the worst of four measured configurations.",
+      "note_id": "huggingfacetbstack-edu-datasets-at-hugging-face",
+      "numbers": [
+        "75",
+        "15",
+        "10",
+        "6.75",
+        "1.3",
+        "1.35",
+        "125",
+        "0.9",
+        "4",
+        "9.6",
+        "2",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "Token supply is fine — nine billion tokens at a 75/15/10 mix draws 6.75B from FineWeb-Edu's 1.3T tokens [[huggingfacefwfineweb-edu-datasets-at-hugging-face]], 1.35B from Stack-Edu's ~125B [[huggingfacetbstack-edu-datasets-at-hugging-face]] and 0.9B from FineMath-4+'s 9.6B [[huggingfacetbfinemath-datasets-at-hugging-face-2]] (T2) — but the packing is the worst of four measured configurations.",
+      "note_id": "huggingfacetbfinemath-datasets-at-hugging-face-2",
+      "numbers": [
+        "75",
+        "15",
+        "10",
+        "6.75",
+        "1.3",
+        "1.35",
+        "125",
+        "0.9",
+        "4",
+        "9.6",
+        "2",
+        "2"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "The repo's default is random interleaving across the three sources with document-boundary masking off; that is MIXChunk, and intra-document masking beats it by 0.762 PPL average at 2K (8.410 against 9.172) and 0.986 at 8K (8.079 against 9.065), with the largest gain on code — −1.3 PPL at 2K and −2.0 at 8K on GitHub, the domain the paper finds most damaged by cross-document distraction [[analysing-the-impact-of-sequence-composition]] (T3).",
+      "note_id": "analysing-the-impact-of-sequence-composition",
+      "numbers": [
+        "0.762",
+        "2",
+        "8.410",
+        "9.172",
+        "0.986",
+        "8",
+        "8.079",
+        "9.065",
+        "1.3",
+        "2",
+        "2.0",
+        "8",
+        "3"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    },
+    {
+      "sentence": "The determinism manifest is the part that must not be skipped either: floating-point arithmetic order — induced by sharding topology, gradient accumulation depth or precision — produces functional divergence within 10–17% of changing the data seed [[quantifying-pretraining-variance-data-initialization-and-floating-point-arithmet]] (T3).",
+      "note_id": "quantifying-pretraining-variance-data-initialization-and-floating-point-arithmet",
+      "numbers": [
+        "10",
+        "17%",
+        "3"
+      ],
+      "strong": true,
+      "verdict": "needs-llm"
+    }
+  ],
+  "dangling": []
+}

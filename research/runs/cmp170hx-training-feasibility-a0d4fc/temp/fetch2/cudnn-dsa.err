@@ -1,0 +1,4 @@
+[INIT].... → Crawl4AI 0.9.5 
+[FETCH]... ↓ https://docs.nvidia.com/deeplearning/cudnn/latest/fe-oss-apis/dsa.html                               | ✓ | ⏱: 5.47s 
+[SCRAPE].. ◆ https://docs.nvidia.com/deeplearning/cudnn/latest/fe-oss-apis/dsa.html                               | ✓ | ⏱: 0.89s 
+[COMPLETE] ● https://docs.nvidia.com/deeplearning/cudnn/latest/fe-oss-apis/dsa.html                               | ✓ | ⏱: 6.41s 

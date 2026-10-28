@@ -1,0 +1,94 @@
+[
+  {
+    "claim": "Ring all-reduce transfers 2(N-1)/N x message size and reaches near-peak interconnect bandwidth for messages over 1 MB.",
+    "stance": "neutral",
+    "stance_target": "NCCL ring algorithm cost model",
+    "evidence_type": "anecdotal",
+    "scope_conditions": "NCCL ring all-reduce, large messages",
+    "quoted_support": "The ring all-reduce algorithm divides the message into N chunks and performs N-1 reduce-scatter steps followed by N-1 all-gather steps. Total data transferred: 2(N-1)/N * message_size.",
+    "numbers": [
+      "2(N-1)/N",
+      "1 MB"
+    ],
+    "entities": [
+      "NCCL",
+      "ring all-reduce"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "low"
+  },
+  {
+    "claim": "NCCL's tree algorithm is reportedly 20-30% faster than ring for 128 KB-1 MB messages because O(log N) steps reduce latency.",
+    "stance": "supports",
+    "stance_target": "algorithm selection should be message-size dependent",
+    "evidence_type": "anecdotal",
+    "scope_conditions": "NCCL tree vs ring, 128 KB-1 MB messages",
+    "quoted_support": "For messages of 128K-1M bytes, tree algorithms outperform ring by 20-30% because the O(log N) step count reduces latency.",
+    "numbers": [
+      "20-30%",
+      "128 KB",
+      "1 MB",
+      "O(log N)"
+    ],
+    "entities": [
+      "NCCL",
+      "tree algorithm"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "low"
+  },
+  {
+    "claim": "Manual NCCL algorithm/protocol tuning is claimed to yield 15-40% improvements depending on workload.",
+    "stance": "supports",
+    "stance_target": "NCCL default algorithm selection is not optimal",
+    "evidence_type": "anecdotal",
+    "scope_conditions": "NCCL, unspecified clusters",
+    "quoted_support": "The library automatically selects algorithms based on GPU count, interconnect topology, and message size, but default selection is not always optimal. Manual tuning can yield 15-40% improvements depending on workload characteristics.",
+    "numbers": [
+      "15-40%"
+    ],
+    "entities": [
+      "NCCL"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "low"
+  },
+  {
+    "claim": "A stated heuristic: communication-to-computation ratio should stay below 15% for efficient scaling at 1,000+ GPUs.",
+    "stance": "neutral",
+    "stance_target": "communication overhead threshold for scaling efficiency",
+    "evidence_type": "anecdotal",
+    "scope_conditions": "1,000+ GPU configurations",
+    "quoted_support": "Communication-to-computation ratio should be below 15% for efficient scaling at 1,000+ GPU configurations.",
+    "numbers": [
+      "15%",
+      "1,000 GPUs"
+    ],
+    "entities": [
+      "NCCL"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "low"
+  },
+  {
+    "claim": "Ring performance degrades when spanning nodes without NVLink, which is the regime a PCIe-only box lives in permanently.",
+    "stance": "supports",
+    "stance_target": "PCIe-only fabrics are the worst case for ring collectives",
+    "evidence_type": "anecdotal",
+    "scope_conditions": "multi-node, no NVLink",
+    "quoted_support": "Ring performance degrades when spanning nodes without NVLink.",
+    "numbers": [],
+    "entities": [
+      "NCCL",
+      "ring all-reduce",
+      "NVLink"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "low"
+  }
+]

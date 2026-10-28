@@ -1,0 +1,294 @@
+[
+  {
+    "claim": "FP8 mixed-precision training of GPT-175B on H100 achieves a 39% reduction in real memory use and runs 75% faster than the BF16 Megatron-LM baseline, and 37% faster than NVIDIA Transformer Engine.",
+    "stance": "supports",
+    "stance_target": "FP8 is a large, quality-neutral lever for LLM training cost",
+    "evidence_type": "empirical",
+    "scope_conditions": "GPT-175B, Azure NDv5 H100 80GB cluster, 100B tokens",
+    "quoted_support": "during the training of GPT-175B model on H100 GPU platform, our FP8 mixed-precision training framework not only achieved a remarkable 39% reduction in real memory usage but also ran 75% faster than the widely adopted BF16 framework (i.e., Megatron-LM), surpassing the speed of Nvidia Transformer Engine by 37%.",
+    "numbers": [
+      "39%",
+      "75%",
+      "37%",
+      "42%",
+      "GPT-175B",
+      "H100",
+      "80 GB"
+    ],
+    "entities": [
+      "FP8-LM",
+      "GPT-175B",
+      "H100",
+      "Megatron-LM",
+      "Transformer Engine"
+    ],
+    "time_period": "2023",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "8-bit gradients for all-reduce give a theoretical 75% communication reduction versus the mainstream 32-bit scheme, and a practical 63-65% reduction in GPT training.",
+    "stance": "supports",
+    "stance_target": "FP8 gradient all-reduce is the single largest communication-volume lever available",
+    "evidence_type": "empirical",
+    "scope_conditions": "GPT-7B/13B/175B on H100, all-reduce collective",
+    "quoted_support": "Our method employs 8-bit gradients for all-reduce collective communication among GPUs. Theoretically, this results in a 75% reduction in communication costs when compared to the mainstream 32-bit scheme ... the observed practical reduction during GPT model training falls within the range of 63% to 65%",
+    "numbers": [
+      "75%",
+      "63%",
+      "65%",
+      "32-bit",
+      "8-bit"
+    ],
+    "entities": [
+      "FP8-LM",
+      "NCCL",
+      "all-reduce"
+    ],
+    "time_period": "2023",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "BF16 mixed-precision training still performs all-reduce in 32-bit, so the baseline communication payload is 32-bit even when compute is BF16.",
+    "stance": "supports",
+    "stance_target": "the DDP gradient payload on a BF16 training run is 32-bit, not 16-bit",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "BF16 mixed-precision, Megatron-LM",
+    "quoted_support": "Despite BF16 mixed-precision computing gradients using 16-bit precision, it still employs 32-bit precision for all-reduce communication (Shoeybi et al., 2019).",
+    "numbers": [
+      "BF16",
+      "32-bit",
+      "16-bit"
+    ],
+    "entities": [
+      "BF16",
+      "Megatron-LM",
+      "all-reduce"
+    ],
+    "time_period": "2023",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "FP8 mixed-precision reduces memory footprint by 28% to 39% versus BF16, with the saving growing with model size (29% for GPT-7B, 39% for GPT-175B).",
+    "stance": "supports",
+    "stance_target": "FP8 reduces per-card memory enough to change what fits",
+    "evidence_type": "empirical",
+    "scope_conditions": "GPT-7B/13B/175B on H100",
+    "quoted_support": "FP8 mixed-precision can lead to a reduction in memory footprint ranging from 28% to 39% when compared to BF16",
+    "numbers": [
+      "28%",
+      "39%",
+      "29%",
+      "GPT-7B",
+      "GPT-175B"
+    ],
+    "entities": [
+      "FP8-LM",
+      "BF16"
+    ],
+    "time_period": "2023",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "The core technical obstacle is overflow/underflow in low-bit all-reduce; pre-scaling underflows while post-scaling (sum first, divide after) keeps gradients near the FP8 maximum.",
+    "stance": "supports",
+    "stance_target": "FP8 all-reduce requires careful scaling to preserve accuracy",
+    "evidence_type": "theoretical",
+    "scope_conditions": "FP8 gradient all-reduce",
+    "quoted_support": "This post-scaling approach keeps the gradients close to the maximum value of the FP8 datatype, effectively",
+    "numbers": [],
+    "entities": [
+      "FP8",
+      "all-reduce",
+      "pre-scaling",
+      "post-scaling"
+    ],
+    "time_period": "2023",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "NCCL lacks native support for tensor-wise scaling factors during all-reduce, so FP8-LM computes a global minimum scaling factor across GPUs and folds it into a standard NCCL all-reduce.",
+    "stance": "supports",
+    "stance_target": "FP8 collectives can be built on stock NCCL without patching it",
+    "evidence_type": "empirical",
+    "scope_conditions": "FP8 gradient all-reduce on H100",
+    "quoted_support": "The current NCCL implementation (Nvidia, 2020) lacks the capability of performing all-reduce operation considering the additional tensor-wise",
+    "numbers": [],
+    "entities": [
+      "NCCL",
+      "FP8-LM"
+    ],
+    "time_period": "2023",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "FP8 is Hopper-native: the paper frames FP8 as arriving with the H100, and the only prior usable framework (Transformer Engine) applied FP8 solely to GEMM while keeping master weights and gradients in high precision.",
+    "stance": "refutes",
+    "stance_target": "FP8 training is available on Ampere-generation (GA100/sm_80) hardware",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "H100 (sm_90) vs GA100 (sm_80)",
+    "quoted_support": "With the release of Nvidia H100 GPU, FP8 is becoming the next-generation datatype for low-precision representation ... the current support for FP8 training is rare and limited. The only usable framework is the Nvidia Transformer Engine (TE), but it applies FP8 solely for GEMM computation and still retains master weights and gradients using high precision",
+    "numbers": [
+      "H100",
+      "sm_90",
+      "GA100",
+      "sm_80"
+    ],
+    "entities": [
+      "FP8",
+      "H100",
+      "Transformer Engine",
+      "GA100",
+      "CMP 170HX"
+    ],
+    "time_period": "2023",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "The training recipe is 100B tokens, batch size 4M tokens, sequence length 2048 - i.e. FP8's benefits were demonstrated at very large global batch.",
+    "stance": "neutral",
+    "stance_target": "experimental scale behind the FP8 claims",
+    "evidence_type": "empirical",
+    "scope_conditions": "GPT-7B/13B/175B pretraining",
+    "quoted_support": "We train the models for 100B tokens in total with a batch size of 4M tokens, and the input sequence length is set to 2048.",
+    "numbers": [
+      "100B tokens",
+      "4M tokens",
+      "2048"
+    ],
+    "entities": [
+      "FP8-LM",
+      "GPT-7B",
+      "GPT-13B",
+      "GPT-175B"
+    ],
+    "time_period": "2023",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "FP8's memory saving lets a fixed GPU budget train longer context: 32 H100 80GB supports 175B at 4096 tokens under FP8 versus 2048 tokens under Transformer Engine.",
+    "stance": "supports",
+    "stance_target": "memory savings convert directly into longer context at fixed hardware",
+    "evidence_type": "empirical",
+    "scope_conditions": "32x H100 80GB, 175B model",
+    "quoted_support": "when employing 32 H100 GPUs with a memory capacity of 80GB, our approach enables the training of models with a context of 4,096 tokens, accommodating up to 175 billion parameters. In contrast, TE can only accommodate models with a context of 2,048 tokens.",
+    "numbers": [
+      "32 H100",
+      "80 GB",
+      "4096 tokens",
+      "2048 tokens",
+      "175B"
+    ],
+    "entities": [
+      "FP8-LM",
+      "Transformer Engine",
+      "H100"
+    ],
+    "time_period": "2023",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "FP8 also works for RLHF: 32% memory reduction on model weights and 62% on optimizer states versus BF16.",
+    "stance": "supports",
+    "stance_target": "FP8 low-precision training generalises beyond pretraining",
+    "evidence_type": "empirical",
+    "scope_conditions": "RLHF fine-tuning",
+    "quoted_support": "a 32% memory reduction concerning model weights and a 62% reduction concerning optimizer states",
+    "numbers": [
+      "32%",
+      "62%"
+    ],
+    "entities": [
+      "FP8-LM",
+      "RLHF"
+    ],
+    "time_period": "2023",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "The theoretical FP8 ceiling is 2x speedup, 50-75% memory savings and 50-75% communication savings versus 16/32-bit mixed precision.",
+    "stance": "neutral",
+    "stance_target": "upper bound on FP8's benefits",
+    "evidence_type": "theoretical",
+    "scope_conditions": "FP8 vs FP16/FP32 mixed precision",
+    "quoted_support": "Theoretically, FP8 can achieve 2× speed-up, 50% - 75% memory cost savings, and 50% - 75% communication savings compared with current 16-bit and 32-bit floating point mixed-precision training",
+    "numbers": [
+      "2x",
+      "50%",
+      "75%"
+    ],
+    "entities": [
+      "FP8"
+    ],
+    "time_period": "2023",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "The FP8 optimizer keeps the second-order gradient moment in 16-bit because its small values would underflow in FP8, while the first-order moment tolerates low precision.",
+    "stance": "supports",
+    "stance_target": "not every optimizer state can be pushed to FP8",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Adam-family optimizer states",
+    "quoted_support": "the gradient first-order gradient moment can tolerate a high quantization error and can be assigned with low-precision ... gradients for the second-order gradient moment might lead to data underflow due to the typically small gradient values. Therefore, allocating a 16-bit higher precision is necessary",
+    "numbers": [
+      "16-bit",
+      "FP8"
+    ],
+    "entities": [
+      "FP8-LM",
+      "Adam"
+    ],
+    "time_period": "2023",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "FP8 compute, storage and communication are pushed through tensor, pipeline and sequence parallelism, so FP8 collectives work under 3D parallelism as well as plain data parallelism.",
+    "stance": "supports",
+    "stance_target": "FP8 gradient communication composes with model-parallel topologies",
+    "evidence_type": "empirical",
+    "scope_conditions": "Megatron-style 3D parallelism on H100",
+    "quoted_support": "FP8 supports of these strategies, neither data parallelism nor pipeline parallelism necessitates any specific",
+    "numbers": [],
+    "entities": [
+      "FP8-LM",
+      "tensor parallelism",
+      "pipeline parallelism",
+      "sequence parallelism"
+    ],
+    "time_period": "2023",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "Transferability caveat: the 63-65% communication saving is measured on H100 with NVLink/InfiniBand-class fabrics; on a PCIe Gen2 x4 box the saving would be larger in relative terms but is gated on FP8 hardware support that GA100 lacks.",
+    "stance": "neutral",
+    "stance_target": "applicability of FP8-LM's communication saving to the CMP 170HX box",
+    "evidence_type": "theoretical",
+    "scope_conditions": "H100 cluster vs 5x CMP 170HX Gen2 x4",
+    "quoted_support": "The training is conducted on Azure NDv5 H100 GPU platform (Microsoft, 2023).",
+    "numbers": [
+      "H100",
+      "Gen2 x4",
+      "GA100"
+    ],
+    "entities": [
+      "FP8-LM",
+      "CMP 170HX",
+      "H100"
+    ],
+    "time_period": "2023",
+    "region": "",
+    "confidence": "medium"
+  }
+]

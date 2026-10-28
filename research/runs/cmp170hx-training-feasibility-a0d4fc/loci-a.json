@@ -1,0 +1,534 @@
+{
+  "analyst_id": "a",
+  "corpus_tag": "cmp170hx-training-feasibility-a0d4fc",
+  "generated_at": "2026-10-27T12:45:28.774164+00:00",
+  "method_note": "Read the contradiction graph first (13 clusters), then all 143 corpus notes at title/summary level and ~25 notes in full. Validated each high-relevance cluster against its cited notes; merged clusters that are one underlying question (link width + P2P + 0.75 GiB/s -> collective ceiling; FSDP + PP + TP/EP -> topology cost table). Scores use the orchestrator's four dimensions (importance, uncertainty, disagreement, decision_impact; 0-10 each; composite = sum, max 40). Every locus cites at least one corpus note id; dialectical loci carry opposing_positions with source ids. The repo's own docs are cited as 'repo:research.md' / 'repo:goal-and-requirements.md' where they are the position under test, not as corpus notes.",
+  "loci": [
+    {
+      "name": "collective-ceiling-x4-p2p-x16",
+      "flavor": "dialectical",
+      "one_line": "What all-reduce bandwidth can DDP actually get on this box: is 0.75 GiB/s the structural Gen2-x4 host-staged ceiling, does BAR1 P2P lift it, and does the 24-capacitor x16 mod multiply it?",
+      "rationale": "The repo's entire overhead model divides by one user-measured number, 0.75 GiB/s (research.md §2), and the corpus contains four incompatible measurements of the same quantity. lessonsmd and deepseek-v4-cmp170hx/SETTINGS.md report ~1.0 GB/s bus bandwidth at Gen2 x4. club-170hx BENCHMARKS/README reports 3.69 GB/s (same-switch), 3.85 (cross-switch) and 4.24 GB/s (three cards) NCCL all-reduce busbw at 256 MiB — but the receipt (readmemd) shows that host is three cards at Gen2 x16 behind PLX, with no BAR1-P2P patches and NCCL SHM transport. bayley/cmpunlocker reports BAR1 P2P at 1.68 GB/s each way at Gen2 x4 (12/12 pairs), and club UNDERSTANDING reports static-BAR1 P2P at 5.79 GB/s on the x16 host. p2pmd reports the aikitoria P2P patch half-works but hangs every NCCL collective at transport connect because BAR1 is 64 MB and the static-BAR1 check cannot pass. No source measures a 5-rank all-reduce on the user's actual x4 box, so the report cannot say whether 0.75 GiB/s is a ceiling, a misconfiguration, or a 5-GPU NUMA artefact. The reconciliation is load-bearing in two directions. (a) If 3.69-4.24 GB/s is an x16 number, the capacitor mod (physical-mods: 24 x 0402 220 nF X7R, ~20 min/card, four-card field report at Gen2 x16 and 5.97 GB/s per card) is the single highest-leverage intervention in the program: ~4-5x on every bandwidth-bound collective, dropping DDP overhead from ~36% to ~9% (or from ~58% to ~15% if the repo's 0.75 GiB/s is a busbw rather than an algbw number) and weakening the 'large-batch-only' conclusion. (b) If P2P is a latency lever rather than a bandwidth lever — club UNDERSTANDING measures P2P copy at 5.79 GB/s vs host-staged 6.21-6.30 GB/s at 256 MiB, but 16/194 us vs 22/343 us latency — then the 'no P2P' premise costs latency, not bandwidth: DDP's large all-reduce is unaffected, while TP/FSDP's many small collectives are. A third unresolved detail: the repo never says whether 0.75 GiB/s is algbw or busbw; at N=5 the ring factor 2(N-1)/N = 1.6x, so the overhead could be 36% or 58% depending on which it is.",
+      "corpus_evidence": [
+        "lessonsmd",
+        "deepseek-v4-cmp170hxsettingsmd-at-317dac12bbd7f401f0538c76161bc7186086fb65-allov",
+        "club-170hxdocsbenchmarksmd-at-main-pixelmlclub-170hx-github",
+        "readmemd",
+        "club-170hxdocshardwaremd-at-main-pixelmlclub-170hx-github",
+        "club-170hxdocscmp170hx-understandingmd-at-main-pixelmlclub-170hx-github",
+        "github-bayleycmpunlocker-a-cmpunlocker-fork-with-working-p2p-on-sys-4028gr-trt2",
+        "p2pmd",
+        "physical-modsmd",
+        "performancemd",
+        "pcie-subsystemmd",
+        "demystifying-nccl-an-in-depth-analysis-of-gpu",
+        "evaluating-modern-gpu-interconnect-pcie",
+        "environment-variables-nccl-2323-documentation"
+      ],
+      "opposing_positions": [
+        {
+          "position": "0.75 GiB/s is the real x4 host-staged ceiling: no P2P means every byte crosses PCIe twice, and NCCL's ring/LL algorithms cannot exceed ~1 GB/s busbw at Gen2 x4.",
+          "sources": [
+            "lessonsmd",
+            "deepseek-v4-cmp170hxsettingsmd-at-317dac12bbd7f401f0538c76161bc7186086fb65-allov",
+            "environment-variables-nccl-2323-documentation",
+            "demystifying-nccl-an-in-depth-analysis-of-gpu"
+          ]
+        },
+        {
+          "position": "3.69-4.24 GB/s is achievable — the club measures it on a 4-card PLX host, and that host trains Gen2 x16, so the gap is link width, not NCCL.",
+          "sources": [
+            "club-170hxdocsbenchmarksmd-at-main-pixelmlclub-170hx-github",
+            "readmemd",
+            "club-170hxdocshardwaremd-at-main-pixelmlclub-170hx-github",
+            "physical-modsmd"
+          ]
+        },
+        {
+          "position": "BAR1 P2P works and moves data at 1.68 GB/s (x4) / 5.79 GB/s (x16), so peer DMA is available and could bypass host staging.",
+          "sources": [
+            "github-bayleycmpunlocker-a-cmpunlocker-fork-with-working-p2p-on-sys-4028gr-trt2",
+            "club-170hxdocscmp170hx-understandingmd-at-main-pixelmlclub-170hx-github",
+            "2x-cmp-170hx-for-llm-inference-unlock-cross-root-p2p-serving-vllm-epycromed8-2-2"
+          ]
+        },
+        {
+          "position": "The P2P patch is unusable for collectives: BAR1 is 64 MB, the static-BAR1 check cannot pass, and every NCCL collective hangs at transport connect.",
+          "sources": [
+            "p2pmd",
+            "pcie-subsystemmd"
+          ]
+        }
+      ],
+      "suggested_starting_urls": [
+        "https://github.com/PixelML/club-170hx/blob/main/docs/BENCHMARKS.md",
+        "https://github.com/PixelML/club-170hx/blob/main/docs/CMP170HX-UNDERSTANDING.md",
+        "https://github.com/PixelML/club-170hx/blob/main/results/2026-10-01-cmp170hx-3card-p2p-plx/README.md",
+        "https://github.com/Consensus-Protocol/cmp170hx/blob/main/docs/frontier/p2p.md",
+        "https://github.com/bayley/cmpunlocker",
+        "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/env.html",
+        "https://github.com/NVIDIA/nccl-tests"
+      ],
+      "suggested_searches": [
+        "NCCL all-reduce busbw PCIe Gen2 x4 host-staged SHM 5 GPU benchmark",
+        "NCCL_P2P_LEVEL PIX PHB SYS PCIe no NVLink all-reduce tuning",
+        "CMP 170HX 5-GPU training all-reduce benchmark",
+        "BAR1 P2P NCCL collective hang static BAR1 64MB GA100",
+        "bf16_compress_hook all-reduce bandwidth message size NCCL",
+        "PCIe Gen2 x4 2 GB/s per direction theoretical vs achieved",
+        "NCCL LL LL128 threshold message size PCIe algorithm selection"
+      ],
+      "importance": 10,
+      "uncertainty": 9,
+      "disagreement": 9,
+      "decision_impact": 10,
+      "composite_score": 38,
+      "why_it_pays_off": "Every overhead number in the report is comm_time/compute_time; this locus fixes the numerator and decides whether the capacitor mod is a prerequisite for the whole program. It also resolves whether 'no P2P' is a bandwidth constraint or only a latency constraint.",
+      "what_would_settle_it": "A 5-rank NCCL all-reduce benchmark on the user's x4 box at 1 MB / 100 MB / 1 GB, with and without bf16_compress_hook, repeated on a cap-modded x16 card; plus a p2pBandwidthLatencyTest matrix with and without the BAR1-P2P patch, and a note on whether the reported figure is algbw or busbw."
+    },
+    {
+      "name": "sustained-training-tflops",
+      "flavor": "dialectical",
+      "one_line": "What is the sustained bf16 training throughput per card — 42, 49, 74.6-78.5, 91-100, 155.7, 162, or 164.4-192.7 TFLOPS — and which of those is a training-shaped measurement rather than a peak or stock benchmark?",
+      "rationale": "The repo's ~810 TFLOPS aggregate is the denominator of every overhead estimate and the basis of the 80-120k tok/s prediction, and the corpus contains at least six incompatible per-card figures. 42 TFLOPS fp16 on the stock card (exploration-of-cryptocurrency-mining-specific-gpus-in-ai, all-gbs-without-flops); 49.05 TFLOPS in the 170th Street spec sheet (full-specifications-170th-street, specifications-cmp-170hx-documentation); 74.6-78.5 TFLOP/s measured by the club's own health gate (club-170hxdocscmp170hx-understandingmd); 91-100 TFLOPS/GPU in the repo's proven 494M baseline (goal-and-requirements.md); 155.7 TFLOPS on a healthy unlocked card vs 39.3 under PWRBRK# (lessonsmd); 162 TFLOPS in the repo; and 164.4-192.7 TFLOPS against a 202.1 ceiling (performancemd). The contradiction graph only pits 162 against 42 and calls it a scope mismatch (stock vs unlocked). That misses the harder question: the club's own 74.6-78.5 and the repo's 91-100 are the only figures that look like sustained, real-work throughput, and both are roughly half the benchmark peak. No source measures training MFU on this box. A consistency check makes the gap concrete: a 500M dense model at 32k needs ~4.6 GFLOPs/token (3.0 model + ~1.6 attention), so 80-120k tok/s implies 368-552 TFLOPS aggregate, i.e. 74-110 TFLOPS/card — consistent with the club's 74.6-78.5 and the repo's 91-100 baseline, but only ~half the 162-TFLOPS headline. The headline and the throughput estimate are therefore inconsistent with each other, and full activation checkpointing adds a further ~33% FLOP surcharge that neither accounts for. If sustained is 75-100 TFLOPS/card, the 9B-token run is 40-50 h, not 25 h, and the overhead ratio at 1M tokens is ~18%, not 36% — which changes both the wall-clock feasibility and the batch-size recommendation.",
+      "corpus_evidence": [
+        "performancemd",
+        "lessonsmd",
+        "club-170hxdocscmp170hx-understandingmd-at-main-pixelmlclub-170hx-github",
+        "club-170hxdocsbenchmarksmd-at-main-pixelmlclub-170hx-github",
+        "exploration-of-cryptocurrency-mining-specific-gpus-in-ai",
+        "all-gbs-without-flops-nvidia-cmp-170hx-review-performance-lockdown-workaround-te",
+        "full-specifications-170th-street",
+        "specifications-cmp-170hx-documentation",
+        "nvidia-a100-tensor-core-gpu-data-sheet-jun21-1"
+      ],
+      "opposing_positions": [
+        {
+          "position": "The unlocked card really delivers ~162-192 TFLOPS bf16; the 202.1 ceiling is SM-count scaling from A100 and the repo's 162 is conservative.",
+          "sources": [
+            "performancemd",
+            "nvidia-a100-tensor-core-gpu-data-sheet-jun21-1",
+            "lessonsmd"
+          ]
+        },
+        {
+          "position": "The card delivers only ~42-49 TFLOPS fp16; tensor cores are unusable on the stock card and the spec sheet says 49.05 even unlocked.",
+          "sources": [
+            "exploration-of-cryptocurrency-mining-specific-gpus-in-ai",
+            "all-gbs-without-flops-nvidia-cmp-170hx-review-performance-lockdown-workaround-te",
+            "full-specifications-170th-street",
+            "specifications-cmp-170hx-documentation"
+          ]
+        },
+        {
+          "position": "Real sustained throughput is ~75-100 TFLOPS/card: the club's health gate measures 74.6-78.5 and the repo's own proven baseline runs at 91-100, both far below the benchmark peak.",
+          "sources": [
+            "club-170hxdocscmp170hx-understandingmd-at-main-pixelmlclub-170hx-github",
+            "lessonsmd"
+          ]
+        }
+      ],
+      "suggested_starting_urls": [
+        "https://github.com/PixelML/club-170hx/blob/main/docs/BENCHMARKS.md",
+        "https://github.com/PixelML/club-170hx/blob/main/notebooks/2026-09-02-cmp170hx-health-gate.ipynb",
+        "https://github.com/Consensus-Protocol/cmp170hx/blob/main/docs/operations/performance.md",
+        "https://github.com/NVIDIA/Megatron-LM",
+        "https://mlcommons.org/benchmarks/training/"
+      ],
+      "suggested_searches": [
+        "CMP 170HX sustained training TFLOPS MFU",
+        "A100 70 SM 250W bf16 tensor core sustained throughput power scaling",
+        "GA100 sm80 bf16 GEMM efficiency vs peak 202 TFLOPS",
+        "activation checkpointing FLOP overhead 33 percent training",
+        "500M parameter 32k context training tokens per second 5 GPU"
+      ],
+      "importance": 9,
+      "uncertainty": 8,
+      "disagreement": 8,
+      "decision_impact": 8,
+      "composite_score": 33,
+      "why_it_pays_off": "It fixes the denominator of the overhead model and the wall-clock feasibility of every experiment; the corpus has the numbers but no training-shaped measurement.",
+      "what_would_settle_it": "A training-shaped bf16 benchmark at 32k on one unlocked card — e.g. a 100-step 500M-model smoke test — reported as sustained TFLOPS/GPU and MFU, with and without activation checkpointing."
+    },
+    {
+      "name": "topology-cost-table-at-1m-tokens",
+      "flavor": "dialectical",
+      "one_line": "At 1M-token global batches, is DDP really the only viable topology — or does PP beat it once activation hand-offs are overlapped, and are TP/EP merely degraded rather than ruled out by the fabric?",
+      "rationale": "The repo's topology table (research.md §2) is the spine of its recommendation, and it is wrong in at least three ways the corpus can expose. (a) It treats PP's activation hand-off as an additive 16 GB/step cost (21 s, ~2.9x overhead), but physical-mods measures PP's inter-card traffic at 10,240 bytes per token per hop for a 5120-hidden model, and lessonsmd/mobius/RoundPipe all describe PP as moving O(activations) that overlaps with compute. At 1M tokens the per-micro-batch hand-off is ~335 MB, which fits inside a 32k-token micro-batch's compute window, so PP's communication is hideable rather than additive; with 30 micro-batches and 5 stages the bubble is ~12%, not fatal. The overlap works for the 7B design (each of 5 stages holds ~1.4B params, so a 32k micro-batch costs ~1.7-2.8 s of compute against ~0.42 s of hand-off at 0.75 GiB/s) but not for a 500M model (~0.2 s compute vs ~0.42 s hand-off), so PP is a 7B-scale lever rather than a universal one. (b) It compares FSDP at 7B trainable against DDP at 1B trainable, conflating parameter count with strategy, and its 2x multiplier contradicts both the FSDP paper (1.5x) and ZeRO (3Psi vs 2Psi = 1.5x). FSDP's per-layer all-gather/reduce-scatter also means many small messages, which on a 120-145 us link is worse than the byte ratio suggests. (c) It asserts TP and EP cost ~70x compute time, but the corpus's measured multipliers are ThunderEP's 1.6x ring-traffic ratio at N=5, VarioPath's 1.7-5.9x off hardware limit, CoMoE's 81.6% comms share on an RTX 5090, and Head Parallel's O(1) comms — none reproduces 70x. ThunderEP also states that every existing EP library (DeepEP, pplx-kernels, NCCL EP, UCCL-EP, NIXL) assumes NVLink, GPUDirect P2P or RDMA and cannot run on this fabric at all, so 'EP is out' survives for a software-stack reason, not the 70x arithmetic. The graph's cluster 5 says PP is viable and cluster 6 says EP is degraded, but neither resolves the actual question: at equal trainable params and 1M-token batches, which topology wins, and does PP's bubble at 5 stages x 30 micro-batches leave it ahead of FSDP's per-layer collectives?",
+      "corpus_evidence": [
+        "physical-modsmd",
+        "lessonsmd",
+        "club-170hxdocstopology-and-parallelismmd-at-main-pixelmlclub-170hx-github-2",
+        "efficient-training-on-multiple-consumer-gpus-with",
+        "mobius-fine-tuning-large-scale-models-on",
+        "zeropp-unleashing-exceptional-parallelism-efficiency",
+        "arxiv221105953v2-csdc-6-jul-2023",
+        "pytorch-fsdp-experiences-on-scaling-fully-sharded-data-parallel-pvldb-16",
+        "zero-memory-optimizations-toward-training-trillion-parameter-models-sc20",
+        "fullyshardeddataparallel-pytorch-213-documentation",
+        "efficient-expert-parallel-communication",
+        "variopath-workload-aware-all-to-all-communication-for-pcie-gpu-clusters",
+        "democratizing-moe-inference-on-commodity-gpus",
+        "multi-head-latentmoe-and-head-parallel"
+      ],
+      "opposing_positions": [
+        {
+          "position": "DDP is the only viable topology: PP's activation traffic is 16 GB/step (2.9x compute), TP runs 86 all-reduces per forward, and EP does two all-to-alls per MoE layer at ~70x compute time.",
+          "sources": [
+            "repo:research.md §2",
+            "repo:goal-and-requirements.md"
+          ]
+        },
+        {
+          "position": "PP is viable and cheaper than FSDP on a bandwidth-starved fabric: it moves only activations (10,240 B/token/hop), overlaps transfer with compute, and PP+offload beats ZeRO-2/FSDP/Megatron-PP/TP by 1.48-2.16x on 8x4090.",
+          "sources": [
+            "physical-modsmd",
+            "lessonsmd",
+            "efficient-training-on-multiple-consumer-gpus-with",
+            "mobius-fine-tuning-large-scale-models-on",
+            "zeropp-unleashing-exceptional-parallelism-efficiency",
+            "arxiv221105953v2-csdc-6-jul-2023"
+          ]
+        },
+        {
+          "position": "TP and EP are degraded, not ruled out: ThunderEP gets 2.00x/1.53x over NCCL on host-staged PCIe, VarioPath gets 1.7-5.9x off hardware limit, CoMoE recovers 85-90% of A800+DeepEP at 23.4% cost, Head Parallel is O(1) in k.",
+          "sources": [
+            "efficient-expert-parallel-communication",
+            "variopath-workload-aware-all-to-all-communication-for-pcie-gpu-clusters",
+            "democratizing-moe-inference-on-commodity-gpus",
+            "multi-head-latentmoe-and-head-parallel"
+          ]
+        }
+      ],
+      "suggested_starting_urls": [
+        "https://arxiv.org/abs/2211.05953",
+        "https://arxiv.org/abs/2604.27085",
+        "https://github.com/PixelML/club-170hx/blob/main/docs/TOPOLOGY-AND-PARALLELISM.md",
+        "https://arxiv.org/abs/1910.02054",
+        "https://github.com/NVIDIA/Megatron-LM",
+        "https://doi.org/10.1145/3575693.3575703"
+      ],
+      "suggested_searches": [
+        "pipeline parallelism activation communication volume per micro-batch 1F1B overlap training",
+        "pipeline bubble fraction micro-batches stages 1M token global batch",
+        "PP vs FSDP training PCIe no NVLink consumer GPU throughput",
+        "tensor parallelism all-reduce latency PCIe Gen2 x4 collectives per forward",
+        "expert parallelism all-to-all payload at 1M token batch PCIe host-staged",
+        "ZeRO-1 ZeRO-2 communication volume 2 Psi same as DDP"
+      ],
+      "importance": 10,
+      "uncertainty": 8,
+      "disagreement": 9,
+      "decision_impact": 10,
+      "composite_score": 37,
+      "why_it_pays_off": "It is the query's first named claim ('DDP is the only viable training topology at 1M-token global batches') and the repo's PP row is wrong in a direction that changes the recommendation: PP may let 7B train fully without FSDP or frozen tables.",
+      "what_would_settle_it": "A per-micro-batch PP hand-off measurement on this box (or a worked 1F1B schedule cost model with the 10,240 B/token/hop figure), plus a PP-vs-FSDP comparison at equal trainable params and 1M-token batches."
+    },
+    {
+      "name": "7b-fits-without-freezing",
+      "flavor": "dialectical",
+      "one_line": "Does 7B fully trainable fit DDP on 64 GB without freezing anything — via 8-bit Adam, Adafactor, or ZeRO-1/ZeRO-2 — and if so, is the frozen-Engram design a memory necessity or an architecture choice?",
+      "rationale": "The repo's headline finding #4 says 7B fully trainable needs ~112 GB/card and therefore must freeze 6B params to fit DDP. The corpus contains three independent routes that break that arithmetic. (a) 8-bit Adam cuts optimizer state from 84 GB to ~14 GB for 7B, giving ~42 GB total before activations — inside 64 GB with no freezing (published-as-a-conference-paper-at-iclr-2022). (b) Adafactor's O(n+m) state is at most ~4 B/param (~28 GB for 7B) and far less for large matrices (adafactor-adaptive-learning-rates-with-sublinear-memory-cost), though it drops momentum and is not a drop-in for a comparability-controlled experiment. (c) ZeRO-1/ZeRO-2 shard optimizer state (and gradients) across 5 ranks while keeping communication at exactly 2Psi — the same as DDP — so 7B fits at ~48 GB (ZeRO-1) or ~36 GB (ZeRO-2) with no FSDP-style 3Psi penalty (zero-memory-optimizations-toward-training-trillion-parameter-models-sc20, fullyshardeddataparallel-pytorch-213-documentation). The graph's cluster 9 catches (a) and (b) but misses (c), which is the cheapest route because it needs no optimizer swap. The repo's 112 GB figure also uses 16 B/param where memory-efficient-mixed-precision-optimizers derives 18 B/param, so the baseline is optimistic by ~14 GB; behind-the-scenes measures Mistral-7B BF16+Adam at 87 GB of model state, which OOMs an 80 GB A100 under DDP. This is the strongest challenge to the whole frozen-table premise, and it changes the experiment design: if 7B fits, the Engram axis should be tested as an architecture hypothesis, not as a memory workaround.",
+      "corpus_evidence": [
+        "published-as-a-conference-paper-at-iclr-2022",
+        "adafactor-adaptive-learning-rates-with-sublinear-memory-cost",
+        "zero-memory-optimizations-toward-training-trillion-parameter-models-sc20",
+        "fullyshardeddataparallel-pytorch-213-documentation",
+        "memory-efficient-mixed-precision-optimizers",
+        "behind-the-scenes-of-distributed-training-and-why-your-gpu-wiring-matters-as-muc",
+        "mics-near-linear-scaling-for-training-gigantic-model-on-public",
+        "amsp-reducing-communication-overhead-of",
+        "zero-3-vs-fsdp-memory-efficiency-for-llm-training-lyceum",
+        "published-as-a-conference-paper-at-iclr-2018"
+      ],
+      "opposing_positions": [
+        {
+          "position": "7B fully trainable needs ~112 GB/card with Adam (14 weights + 14 grads + 84 state), so DDP on 64 GB is impossible and freezing is required.",
+          "sources": [
+            "repo:research.md §5",
+            "zero-3-vs-fsdp-memory-efficiency-for-llm-training-lyceum",
+            "behind-the-scenes-of-distributed-training-and-why-your-gpu-wiring-matters-as-muc"
+          ]
+        },
+        {
+          "position": "7B fits without freezing: 8-bit Adam gives ~42 GB, Adafactor ~28 GB of state, and ZeRO-1/2 shard state at DDP-identical 2Psi communication.",
+          "sources": [
+            "published-as-a-conference-paper-at-iclr-2022",
+            "adafactor-adaptive-learning-rates-with-sublinear-memory-cost",
+            "zero-memory-optimizations-toward-training-trillion-parameter-models-sc20",
+            "fullyshardeddataparallel-pytorch-213-documentation"
+          ]
+        },
+        {
+          "position": "The cheaper-optimizer routes are not free: Adafactor drops momentum and is not comparable to Adam, 8-bit state adds quantization error, and ZeRO-1/2 add a second collective per step (latency doubles on a 120-145 us link).",
+          "sources": [
+            "adafactor-adaptive-learning-rates-with-sublinear-memory-cost",
+            "published-as-a-conference-paper-at-iclr-2022",
+            "demystifying-nccl-an-in-depth-analysis-of-gpu",
+            "club-170hxdocsbenchmarksmd-at-main-pixelmlclub-170hx-github"
+          ]
+        }
+      ],
+      "suggested_starting_urls": [
+        "https://arxiv.org/abs/2110.02861",
+        "https://arxiv.org/abs/1804.04235",
+        "https://arxiv.org/abs/1910.02054",
+        "https://arxiv.org/abs/2309.12381",
+        "https://pytorch.org/docs/stable/fsdp.html"
+      ],
+      "suggested_searches": [
+        "8-bit Adam LLM pretraining quality 1B 7B scale",
+        "Adafactor vs AdamW LLM pretraining loss degradation",
+        "ZeRO-1 optimizer state sharding communication volume DDP equivalent",
+        "7B model 64GB GPU DDP 8-bit optimizer activation memory 32k context",
+        "fp32 master weights 8-bit optimizer memory accounting"
+      ],
+      "importance": 9,
+      "uncertainty": 7,
+      "disagreement": 8,
+      "decision_impact": 9,
+      "composite_score": 33,
+      "why_it_pays_off": "It decides whether the repo's central design constraint is real; if 7B fits with a cheaper optimizer or ZeRO-1/2, the frozen-table premise collapses into an architecture choice.",
+      "what_would_settle_it": "A memory accounting for 7B under 8-bit Adam, Adafactor and ZeRO-1/ZeRO-2 that includes fp32 master weights and 32k activations, plus quality evidence at 1B-7B scale for the optimizer swap."
+    },
+    {
+      "name": "frozen-engram-at-1b-trainable",
+      "flavor": "dialectical",
+      "one_line": "Do frozen Engram tables actually deliver Memory Grafting's reported gains at the repo's ~1B-trainable scale, and what do they really cost in VRAM, offload traffic, and lookup latency?",
+      "rationale": "The repo treats frozen tables as 'pure VRAM' and budgets 6B frozen params = 12 GB. Memory Grafting's own numbers break that budget in three ways. (a) The paper's 0.92B-trainable recipient carries ~12B frozen grafting memory — 24 GB at bf16, twice the repo's 6B — and it is offloaded, not resident (memory-grafting-scaling-language-model). (b) Each grafted layer is ~12 GB at 3M entries x 2048 hidden x 2 B, so the repo's 6B budget buys roughly one grafted layer, not a memory system; the paper's capacity curve (30k -> 300k -> 3M entries) shows loss improves monotonically with table size, so one layer at 3M entries is the minimum that works, not a comfortable margin. (c) The 0.92B result was trained for 50B tokens and the 2.8B result for 100B tokens; at the repo's 9B-token budget the delta may not appear. Worse, at ~1B-trainable vanilla Engram underperforms the MoE baseline (45.03 vs 45.62) because of hash collisions, so the experiment must compare grafting against MoE, not against vanilla Engram. The graph's cluster 8 has side B (production trains tables: Engram-27B trains 5.7B Engram params via model-parallel sharding + all-to-all, LongCat-Flash-Lite trains 31.4B n-gram params from scratch, UltraMemV2 trains 120B sparse memory params) and side C (Delta N-gram's T0 is 51.2B params / ~102 GB bf16, trained with EP4/DP4 on 4xH200), but it does not do the arithmetic that decides whether the repo's 6B budget is enough to reproduce the paper's gain. The depth question is concrete: what table size does the 0.92B delta require, does it fit resident on a 64 GB card alongside 28-48 GB of trainable state, and does host-side hashing lookup latency bind before VRAM does (research.md open question #4)?",
+      "corpus_evidence": [
+        "memory-grafting-scaling-language-model",
+        "conditional-memory-via-scalable-lookup",
+        "delta-n-gram-forward-only-continual-writing",
+        "ultramemv2-memory-networks-scaling-to-120b",
+        "over-tokenized-transformer-vocabulary-is-generally-worth-scaling",
+        "tf-engram-a-train-free-engram-with-ssd-backed-memory-for",
+        "pooling-engram-conditional-memory-in-large",
+        "dr-robert-li-engram-a-critical-analysis-of-conditional-memory-as-a-sparsity-axis",
+        "engram-conditional-memory-via-n-gram-lookups-vllm",
+        "representation-drift-in-continual-learning",
+        "factorengram-factorized-n-gram-memory-with-basis-level"
+      ],
+      "opposing_positions": [
+        {
+          "position": "Frozen tables are pure VRAM: zero optimizer state, zero per-token FLOPs, so 7B total / 1B trainable fits DDP at ~28 GB/card and is the cheapest capacity available.",
+          "sources": [
+            "repo:research.md §3 and §5",
+            "memory-grafting-scaling-language-model"
+          ]
+        },
+        {
+          "position": "Production-scale memory models train their tables: Engram-27B trains 5.7B Engram params via model-parallel sharding + all-to-all, LongCat-Flash-Lite trains 31.4B n-gram params from scratch, UltraMemV2 trains 120B sparse memory params.",
+          "sources": [
+            "conditional-memory-via-scalable-lookup",
+            "scaling-embeddings-outperforms-scaling-experts-in-language",
+            "ultramemv2-memory-networks-scaling-to-120b",
+            "over-tokenized-transformer-vocabulary-is-generally-worth-scaling"
+          ]
+        },
+        {
+          "position": "Frozen tables exist but the literature's tables are an order of magnitude larger than the repo's design: Delta N-gram's T0 is 51.2B params (~102 GB bf16) and trained with EP4/DP4 on 4xH200; Memory Grafting's 0.92B recipient carries 12B frozen params, offloaded.",
+          "sources": [
+            "delta-n-gram-forward-only-continual-writing",
+            "memory-grafting-scaling-language-model",
+            "representation-drift-in-continual-learning"
+          ]
+        }
+      ],
+      "suggested_starting_urls": [
+        "https://arxiv.org/abs/2605.20948",
+        "https://arxiv.org/abs/2601.07372",
+        "https://arxiv.org/abs/2610.31125",
+        "https://arxiv.org/abs/2508.18756",
+        "https://github.com/deepseek-ai/Engram"
+      ],
+      "suggested_searches": [
+        "Memory Grafting frozen Engram table size ablation 0.92B 50B tokens",
+        "Engram hash collision small table 1B scale underperform MoE",
+        "frozen embedding table offload lookup latency training throughput",
+        "UltraMemV2 sparse memory parameters training from scratch",
+        "Delta N-gram forward-only table 51.2B params training topology"
+      ],
+      "importance": 10,
+      "uncertainty": 8,
+      "disagreement": 9,
+      "decision_impact": 9,
+      "composite_score": 36,
+      "why_it_pays_off": "It decides whether the repo's central design (7B total / 1B trainable) reproduces the paper it cites, or is a smaller, offloaded variant that will not show the reported delta.",
+      "what_would_settle_it": "Memory Grafting's table-size ablation at 0.92B (entries per layer vs loss delta) and a measured lookup-latency curve for host-side hashing at 3M entries/layer, resident vs offloaded."
+    },
+    {
+      "name": "csa2-at-32k-sm80",
+      "flavor": "dialectical",
+      "one_line": "Is CSA2 trainable at 32k on GA100 within 64 GB — or is the indexer's score-tensor memory and SM90-only kernel path a hard blocker, and is a block-sparse family (MoBA/NSA) the better experiment?",
+      "rationale": "The repo's CSA2 verdict ('worth one experiment, most likely to disappoint at 32k') is right for the wrong reasons, and the corpus contains a hard feasibility blocker the graph's cluster 7 only partly surfaces. (a) The indexer, not attention, gates sequence length: the materialized [B,S,HI,T] FP32 score tensor is 64 GB at S=32,768 with V4-Flash dimensions and peaks at 129 GB on a 140 GB H200 (streamindex-memory-bounded-compressed-sparse); the reference implementation materializes 68.7 GB at 32k/H_q=16, already over a 64 GB card (dsa_referencepy). (b) The chunked partition-merge top-k fix runs at 0.40 GB and is 10.3x faster at 32k, but it is a Triton research driver, and the production DSA kernels are SM90/SM100-only (deepseek-sparse-attention-dsa-nvidia-cudnn) — GA100 is sm_80. (c) The repo's 'candidate cap barely binds at 32k' is backwards: HISA shows the 16,384 cap is exceeded 2x at 32k, so it does bind, but the per-query saving is ~32x smaller than at 1M (deepseek-v41-flash), which is the real reason the win shrinks. (d) The repo's model of CSA2 is also structurally wrong: V4.1-Flash assigns only 4 of 40 layers a Full-mode indexer, 4 Reindex, 27 Reuse (zero indexer work) and 2 SWA, so 67.5% of layers execute no indexer at all — a per-layer-indexer-everywhere model overstates the indexer cost by ~10x. (e) The alternative family is measured: blockwise NSA at 32k is 6.3x fwd / 3.4x bwd vs Triton FlashAttention-2, MoBA at 32k loses 1.546 vs 1.464 unless you use the 90/10 hybrid, and LongCat's 32K verdict is 0.83x total (1.08x fwd / 0.79x bwd) vs dense MLA with crossover at 64K. So the depth question is not 'does CSA2 pay off' but 'is there a runnable sm_80 path at all, and which sparse-attention family gives a measurable 32k training win on this box'.",
+      "corpus_evidence": [
+        "streamindex-memory-bounded-compressed-sparse",
+        "dsa_referencepy",
+        "deepseek-sparse-attention-dsa-nvidia-cudnn",
+        "deepseek-v41-flash",
+        "published-as-a-conference-paper-at-colm-2026",
+        "longcat-sparse-attention-taming-the-lightning-via",
+        "native-sparse-attention-hardware-aligned-and-natively",
+        "moba-mixture-of-block-attention-for",
+        "hysparse2-hybrid-sparse-attention",
+        "indexcache-accelerating-sparse-attention-via-cross-layer",
+        "periodic-weak-spots",
+        "you-only-cache-once"
+      ],
+      "opposing_positions": [
+        {
+          "position": "CSA2 is worth one experiment at 32k: the published 890 B/token KV cache and near-flat decode FLOPs are real, and the 16,384 cap gives some sparsity even at 32k.",
+          "sources": [
+            "repo:research.md §4",
+            "deepseek-v41-flash",
+            "deepseek-aideepseek-v41-flash-hugging-face"
+          ]
+        },
+        {
+          "position": "CSA2 is not runnable at 32k on this box: the indexer score tensor is 64-129 GB at 32k, the reference path needs 68.7 GB, and every production DSA kernel is SM90/SM100-only.",
+          "sources": [
+            "streamindex-memory-bounded-compressed-sparse",
+            "dsa_referencepy",
+            "deepseek-sparse-attention-dsa-nvidia-cudnn"
+          ]
+        },
+        {
+          "position": "Sparse attention at 32k is granularity-dependent and mostly a loss unless block-granular with a hybrid: LongCat 0.83x total vs dense MLA, MoBA 1.546 vs 1.464 trailing loss, NSA 6.3x/3.4x blockwise, HISA's cap binds 2x at 32k.",
+          "sources": [
+            "longcat-sparse-attention-taming-the-lightning-via",
+            "moba-mixture-of-block-attention-for",
+            "native-sparse-attention-hardware-aligned-and-natively",
+            "published-as-a-conference-paper-at-colm-2026"
+          ]
+        }
+      ],
+      "suggested_starting_urls": [
+        "https://arxiv.org/abs/2605.02568",
+        "https://github.com/NVIDIA/cudnn-frontend/blob/main/python/dsa_reference.py",
+        "https://arxiv.org/abs/2502.13189",
+        "https://arxiv.org/abs/2502.11089",
+        "https://arxiv.org/abs/2609.19969",
+        "https://github.com/RightNow-AI/StreamIndex"
+      ],
+      "suggested_searches": [
+        "CSA2 indexer chunked top-k SM80 Ampere training kernel",
+        "sparse attention training 32k context Ampere Triton kernel",
+        "MoBA hybrid 90/10 full attention 32k training loss",
+        "NSA blockwise sparse attention 32k training speedup",
+        "DSA indexer distillation loss training memory"
+      ],
+      "importance": 9,
+      "uncertainty": 9,
+      "disagreement": 8,
+      "decision_impact": 9,
+      "composite_score": 35,
+      "why_it_pays_off": "It converts 'does CSA2 pay off' into 'is CSA2 runnable on sm_80 at all', which is a go/no-go for the experiment rather than a judgment call.",
+      "what_would_settle_it": "A runnable sm_80 chunked-indexer path (StreamIndex or equivalent) benchmarked at 32k on a 64 GB card, plus a 32k training loss comparison against dense MLA and a MoBA 90/10 hybrid."
+    },
+    {
+      "name": "token-budget-adequacy",
+      "flavor": "convergent",
+      "one_line": "Are 9B tokens enough for the architecture deltas the experiment program wants to measure, given that the papers it cites used 20-100B tokens and the repo's own baseline is 9B?",
+      "rationale": "The contradiction graph has no cluster on this, and it is the quietest feasibility constraint in the whole program. The repo's plan is 9B tokens at ~500M active params (18 tokens/param, near Chinchilla-optimal) and ~25 h at 100k tok/s. But every architecture result the program wants to reproduce was measured at a much larger budget: Memory Grafting's 0.92B-trainable result used 50B tokens and its 2.8B result 100B tokens (memory-grafting-scaling-language-model); MoBA's scaling-law runs used 10.8-36.9B tokens at 568M-2.1B and its 32K hybrid recipe used 30B tokens at 1.5B (moba-mixture-of-block-attention-for); Qwen3 reached 32k via a dedicated stage on hundreds of billions of tokens (qwen3-technical-report); CSA2/V4.1 pretrained on 45T tokens at a fixed 100.6M-token batch (deepseek-v41-flash); SmolLM2's ablations used 350B tokens per ablation (smollm2-when-smol-goes-big). A 9B-token run is 5-11x shorter than the runs that established the Engram and sparse-attention deltas, so the experiments may be underpowered: the loss curves will not have separated, and a null result will be uninterpretable. The depth question is concrete: what token budget does each axis need before its delta exceeds run-to-run noise, and what does that do to wall-clock feasibility (50B tokens at 100k tok/s is 139 h; 100B is 278 h)?",
+      "corpus_evidence": [
+        "memory-grafting-scaling-language-model",
+        "moba-mixture-of-block-attention-for",
+        "qwen3-technical-report",
+        "deepseek-v41-flash",
+        "smollm2-when-smol-goes-big",
+        "training-compute-optimal-large-language-models",
+        "arxiv230516264v5-cscl-28-jun-2025",
+        "cramming-training-a-language-model-on-a",
+        "critical-batch-size-revisited-a-simple-empirical"
+      ],
+      "suggested_starting_urls": [
+        "https://arxiv.org/abs/2605.20948",
+        "https://arxiv.org/abs/2502.13189",
+        "https://arxiv.org/abs/2001.08361",
+        "https://arxiv.org/abs/2305.16264",
+        "https://arxiv.org/abs/2402.13991"
+      ],
+      "suggested_searches": [
+        "how many tokens before architecture ablation delta emerges LLM pretraining",
+        "Engram memory ablation token budget 1B scale",
+        "sparse attention vs dense loss gap token budget scaling",
+        "compute-optimal tokens per parameter small model 500M",
+        "9B token pretraining run loss noise architecture comparison"
+      ],
+      "importance": 8,
+      "uncertainty": 7,
+      "disagreement": 4,
+      "decision_impact": 8,
+      "composite_score": 27,
+      "why_it_pays_off": "It decides whether the experiment program can detect the deltas it is designed to measure, and it changes the recommended token budget and wall-clock plan.",
+      "what_would_settle_it": "A token-budget sweep or scaling-law fit showing when the Engram/CSA2 delta exceeds run-to-run noise, plus the wall-clock cost at the measured sustained throughput."
+    }
+  ],
+  "skip_loci": [
+    {
+      "slug": "fsdp-multiplier-1.5-vs-2",
+      "reason": "Rejected as a standalone locus. The correction is already fully derivable from two primaries in the corpus: the FSDP paper states 1.5x explicitly (pytorch-fsdp-experiences-on-scaling-fully-sharded-data-parallel-pvldb-16) and ZeRO derives 3Psi vs 2Psi (zero-memory-optimizations-toward-training-trillion-parameter-models-sc20). The confounded table (FSDP at 7B trainable vs DDP at 1B trainable) is a drafting fix, not a depth investigation. Folded into topology-cost-table-at-1m-tokens as a correction the investigator should make."
+    },
+    {
+      "slug": "ep-ruled-out-vs-degraded",
+      "reason": "Rejected as a standalone locus. The verdict survives: EP is irrelevant to the proposed non-MoE design, and ThunderEP states that every existing EP library (DeepEP, pplx-kernels, NCCL EP, UCCL-EP, NIXL) assumes NVLink/GPUDirect P2P/RDMA and cannot run on this fabric at all (efficient-expert-parallel-communication). The magnitude correction (70x -> 1.6-5.9x multipliers) is derivable from corpus sources and does not change the recommendation. Folded into topology-cost-table-at-1m-tokens as a secondary branch."
+    },
+    {
+      "slug": "five-gpus-fine-vs-pathological",
+      "reason": "Rejected. The finding is real — evaluating-modern-gpu-interconnect-pcie measures significant NUMA/congestion effects for a 5-GPU NCCL ring and explicitly recommends avoiding 5-GPU configurations — but the box has 5 cards, and the actionable question is a measurement (4 vs 5 ranks, ring vs tree), not a literature depth investigation. Note it as a pre-flight experiment in the report rather than a locus."
+    },
+    {
+      "slug": "bf16-hook-halves-vs-already-32bit",
+      "reason": "Rejected as a standalone locus. The hook's documented behaviour is already in the corpus (pytorch-ddp-comm-hooks-default_hookspy-bf16fp16-compress-hooks), and the real question — whether NCCL honours bf16 all-reduce at the message sizes used on GA100 — is a measurement, not a literature search. Folded into collective-ceiling-x4-p2p-x16 as a suggested search and a sub-question about LL/LL128 thresholds."
+    },
+    {
+      "slug": "large-batch-free-vs-cbs-binds",
+      "reason": "Rejected. The corpus already answers it: critical-batch-size-revisited measures CBS at ~16.8M tokens on OLMo 1B/7B but CBS is approximately zero at init, and an-empirical-model-of-large-batch-training / accurate-large-minibatch-sgd establish the warmup requirement. This is a missing constraint the drafter can add to the batch plan, not a depth locus."
+    },
+    {
+      "slug": "pwrbrk-power-brake",
+      "reason": "Rejected. Adequately covered by four independent sources (lessonsmd, allover326deepseek-v4-cmp170hx-deepwiki, all-gbs-without-flops..., club-170hxdocshardwaremd...), and it is a pre-flight check rather than a contested question. The report should insist it runs, but no depth investigation is needed."
+    },
+    {
+      "slug": "data-pipeline-packing-determinism",
+      "reason": "Rejected. The sequence-composition paper (analysing-the-impact-of-sequence-composition) answers the packing question, and the 75/15/10 mix is a design choice, not a contested claim. No corpus source disputes the pipeline; it is infrastructure the drafter can describe."
+    },
+    {
+      "slug": "activation-memory-arithmetic-at-32k",
+      "reason": "Rejected as a standalone locus. The 3.2 GB activation figure is arithmetic (32,768 tokens x 2048 hidden x 2 B x 24 layers) and the checkpointing FLOP surcharge is folded into sustained-training-tflops. No corpus source disputes the arithmetic; the open question is the recompute cost, which belongs with the compute calibration."
+    },
+    {
+      "slug": "nccl-075-misconfiguration-vs-structural",
+      "reason": "Promoted into collective-ceiling-x4-p2p-x16. It is the same question as the achievable all-reduce ceiling, and splitting it would produce two loci that must cite the same sources."
+    },
+    {
+      "slug": "link-width-x4-vs-x16",
+      "reason": "Promoted into collective-ceiling-x4-p2p-x16. The fight is genuine but scoped: x4 is the stock/normal slot, x16 requires the 24-capacitor mod (physical-modsmd). The training-side payoff is the part that needs depth, and it is the same question as the collective ceiling."
+    },
+    {
+      "slug": "p2p-absent-vs-available-vs-breaks-nccl",
+      "reason": "Promoted into collective-ceiling-x4-p2p-x16. The three-sided fight is genuine and the corpus adds a fourth position (club UNDERSTANDING's static-BAR1 P2P at 5.79 GB/s on x16), but it resolves into the same question: what bandwidth can a collective actually use?"
+    },
+    {
+      "slug": "compute-162-vs-42-tflops",
+      "reason": "Promoted into sustained-training-tflops, with the graph's missing third position (club UNDERSTANDING's 74.6-78.5 TFLOP/s and the repo's 91-100 TFLOPS baseline) added."
+    },
+    {
+      "slug": "csa2-32k-pays-vs-disappoints",
+      "reason": "Promoted into csa2-at-32k-sm80, with the SM90-only kernel blocker and the V4.1 layer-mix correction added."
+    },
+    {
+      "slug": "frozen-engram-capacity-vs-training-trap",
+      "reason": "Promoted into frozen-engram-at-1b-trainable, with the table-size arithmetic (12 GB per grafted layer, 12B frozen at 0.92B, offloaded) added."
+    },
+    {
+      "slug": "7b-fits-with-cheaper-optimizer",
+      "reason": "Promoted into 7b-fits-without-freezing, with the ZeRO-1/ZeRO-2 middle ground added — the graph missed it, and it is the cheapest route because it needs no optimizer swap."
+    },
+    {
+      "slug": "ddp-only-vs-pp-viable",
+      "reason": "Promoted into topology-cost-table-at-1m-tokens. The graph's side_b is mostly inference evidence; the training-side PP cost (per-micro-batch activation hand-off, overlap, bubble) is the part that needs depth."
+    }
+  ]
+}

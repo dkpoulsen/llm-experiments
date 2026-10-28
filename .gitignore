@@ -1,0 +1,9 @@
+# Local research index — regenerable with `hyperresearch sync`
+.hyperresearch/
+
+# Raw fetched PDFs — re-fetchable from the source URLs recorded in each note
+research/raw/
+
+# Tool state
+.thinkrail/
+.unipi/

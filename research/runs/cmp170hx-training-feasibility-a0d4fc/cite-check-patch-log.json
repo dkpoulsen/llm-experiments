@@ -1,0 +1,127 @@
+{
+  "total_findings": 14,
+  "applied": [
+    {
+      "id": "pair-2",
+      "critic": "cite-check",
+      "severity": "minor",
+      "action": "§1 anchor corrected: the three-card PLX receipt measures 6.21–6.30 GB/s host-staged copy (cuMemcpyPeer, 256 MiB) against a 6.68 GB/s single-card D2H reference, not 6.63–6.68. Dropped 6.63, which is the ocl_pcie_bw figure from physical-modsmd / pcie-subsystemmd on a different four-card rig and appears nowhere in [[readmemd]]. Propagated consistently: the Gen2 x16 bandwidth-table row is now 6.21–6.68 GB/s, the width ratio is 1.68/6.68 = 0.252 (was 1.68/6.63 = 0.253), and the derived x4 busbw band is 0.93–1.07 GB/s (was 0.94–1.07). §1 now agrees with Source Tensions, which already used 6.21–6.30."
+    },
+    {
+      "id": "pair-4",
+      "critic": "cite-check",
+      "severity": "minor",
+      "action": "Efficiency band corrected from 53–64% to 55–64%: 3.69/6.68 = 55.2% at the low end. The one-way rate in the same clause is now 6.21–6.68 GB/s (host-staged copy band plus the D2H reference) rather than 6.63–6.68. Applied in the same hunk as pair 2."
+    },
+    {
+      "id": "pair-10",
+      "critic": "cite-check",
+      "severity": "minor",
+      "action": "Dropped [[2026-09-02-cmp170hx-health-gateipynb]] from the 180 W receipt-chain sentence. The note's body is a mis-fetched NCCL all_reduce.cu source dump with no 77.7/76.4/74.6/78.5 per-card figures, no 180 W cap, no ten-minute gpu-burn -tc, no 63 °C peak, no 80 °C stop rule and no 202 TFLOPS comparison. [[readmemd-2]] carries all of it (per-card table, 180 W enforced, 10-minute gpu-burn -tc, peak core 62/56/63/58 °C, 80 °C stop condition), so the sentence now cites only that note."
+    },
+    {
+      "id": "pair-17",
+      "critic": "cite-check",
+      "severity": "minor",
+      "action": "Split the citation and corrected the characterisation. [[efficient-training-on-multiple-consumer-gpus-with]] now covers only the <4.5% RoundPipe figure; the ~4.2% zero-bubble figure is attributed to [[zero-bubble-pipeline-parallelism]] ('bubble size is reduced to a third of 1F1B's size'). Added the RoundPipe note's own exact formula: 11.1% on (S−1)/(M+S−1) at S=5, M=32, alongside the 12.5% (S−1)/M approximation."
+    },
+    {
+      "id": "pair-41",
+      "critic": "cite-check",
+      "severity": "minor",
+      "action": "Softened to what the note measures. The 1.81× is TileLang's `mma.sync` fallback path on H800 SXM — a layout-induced fallback inside an SM90 kernel because V is not K-major — not an sm_80 measurement. The sentence now says so explicitly and states that an sm_80 build 'would be slower still' rather than asserting 'possible-but-slow' from a Hopper number."
+    },
+    {
+      "id": "pair-53",
+      "critic": "cite-check",
+      "severity": "minor",
+      "action": "Added [[published-as-a-conference-paper-at-colm-2026]] after '3.5× the kernel it feeds'. That note carries the measurement (5.6 ms indexer vs 1.6 ms Sparse MLA at 64K on A100); [[dsa_referencepy]] is retained only for the distillation mechanism it actually supports."
+    },
+    {
+      "id": "pair-56",
+      "critic": "cite-check",
+      "severity": "minor",
+      "action": "Reframed the MoBA loss clause as what the note contains: fitted 32K trailing-loss scaling-law coefficients (1.546·C^−0.108 against 1.464·C^−0.097) that sit above full attention's in all five runs — not trailing LM-loss values at 32K. The GitHub note keeps only the flash-attn==2.6.3 pin."
+    },
+    {
+      "id": "pair-60",
+      "critic": "cite-check",
+      "severity": "critical",
+      "action": "Re-pointed the effect-size range. [[moba-mixture-of-block-attention-for]] contains none of 0.014/0.082/nats/3.5% and was removed from the sentence; the 0.0139-nat figure is in [[conditional-memory-via-scalable-lookup]] and the 0.082-nat figure in [[over-tokenized-transformer-vocabulary-is-generally-worth-scaling]], both now cited."
+    },
+    {
+      "id": "pair-61",
+      "critic": "cite-check",
+      "severity": "minor",
+      "action": "[[a-hitchhikers-guide-to-scaling-law-estimation]] is retained for the 3.5%-relative restart floor only; the 0.014–0.082 range is now carried by the Engram and OverEncoding notes. Applied in the same hunk as pair 60."
+    },
+    {
+      "id": "pair-66",
+      "critic": "cite-check",
+      "severity": "critical",
+      "action": "Dropped [[2026-09-02-cmp170hx-health-gateipynb]] from the Source Tensions 180 W dispute. The note is a mis-fetched NCCL AllReduce C source dump; [[readmemd-2]] carries the 180 W cap, the 74.6–78.5 TFLOP/s table, the ten-minute gpu-burn -tc and the 80 °C stop rule. This was the last occurrence of the note in the report — grep confirms zero remain."
+    },
+    {
+      "id": "pair-73",
+      "critic": "cite-check",
+      "severity": "minor",
+      "action": "Added [[readme_enmd]] after 'five-minute counter snapshot'. That note carries the 5-minute ECC counter snapshot cron; [[lessonsmd]] keeps the 50% field-failure rate, the above-8-GiB qualifier and the full-VRAM memtest_vulkan gate it actually supports."
+    },
+    {
+      "id": "pair-74",
+      "critic": "cite-check",
+      "severity": "minor",
+      "action": "Marked the ladder as the report's own design: 'a four-point ladder of our own design — 50M / 125M / 250M / 500M (T4)'. [[a-hitchhikers-guide-to-scaling-law-estimation]] is retained for the methodology it does support (estimate final loss from ~1/3 of the trajectory, discard the first ≈10% of checkpoints, fit L(C))."
+    },
+    {
+      "id": "pair-79",
+      "critic": "cite-check",
+      "severity": "minor",
+      "action": "Corrected the GitHub deltas to the sentence's stated baseline. The −1.3/−2.0 figures are INTRADoc-vs-UNIChunk; against MIXChunk the GitHub column goes 5.531 → 4.252 (−1.28) at 2K and 7.496 → 5.010 (−2.49) at 8K. The sentence now reads −1.28 at 2K and −2.49 at 8K, consistent with the MIXChunk baseline named earlier in the paragraph."
+    },
+    {
+      "id": "pair-80",
+      "critic": "cite-check",
+      "severity": "minor",
+      "action": "De-conflated the two ratios: 'within ~17% of changing the data seed (and ~10% of changing the initialization seed)'. The note's 10% is relative to the init seed, not the data seed."
+    },
+    {
+      "id": "pair-29",
+      "critic": "cite-check (spawn directive; not present in cite-check-findings.json)",
+      "severity": "minor",
+      "action": "SLMTrainBench's model is labelled '500M' in [[readmemd-faircslmtrainbench-at-main]]; 505.5M appears in no vault note. Changed to 'its 500M-class model'. No downstream arithmetic depended on the 505.5 figure."
+    },
+    {
+      "id": "hygiene-duplicated-phrase",
+      "critic": "cite-check (compensating cut)",
+      "severity": "formatting",
+      "counts_toward_findings": false,
+      "action": "Three duplicated-phrase defects left by earlier patches were cut to offset the ~46 words the citation fixes added: 'Its current release states its scope verbatim: Its current release lists...' collapsed to one clause; 'SGLang has \"SGLang currently has...\"' → 'SGLang states \"...\"'; and the redundant `TRITON_MLA_SPARSE` name repeated inside its own gloss. Net word count 10,010 → 10,056."
+    }
+  ],
+  "skipped": [],
+  "conflicts": [
+    {
+      "ids": [
+        "pair-2",
+        "pair-4"
+      ],
+      "resolution": "Compatible — both target the same two sentences in §1 and were merged into a single edit pair. Pair 2 supplies the corrected one-way figures (6.21–6.30 host-staged, 6.68 D2H reference) and the width-ratio propagation; pair 4 supplies the corrected efficiency band (55–64%)."
+    },
+    {
+      "ids": [
+        "pair-10",
+        "pair-66"
+      ],
+      "resolution": "Compatible — both are the same vacuous citation at its two occurrences (the §1 compute ladder and the Source Tensions 180 W dispute). Both were dropped in one pass; zero occurrences of [[2026-09-02-cmp170hx-health-gateipynb]] remain."
+    },
+    {
+      "ids": [
+        "pair-60",
+        "pair-61"
+      ],
+      "resolution": "Compatible — both target the single sentence 'published architecture effects are 0.014–0.082 nats against a 3.5%-relative single-run floor'. Merged into one citation swap: MoBA out, Engram + OverEncoding in for the range, hitchhikers retained for the floor."
+    }
+  ],
+  "orchestrator_escalated": []
+}

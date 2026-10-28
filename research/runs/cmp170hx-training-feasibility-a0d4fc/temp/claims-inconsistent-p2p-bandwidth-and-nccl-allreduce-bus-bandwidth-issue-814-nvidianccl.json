@@ -1,0 +1,93 @@
+[
+ {
+  "claim": "A 6-rank host-staged all-reduce on a fast PCIe fabric (6x RTX 4090, NCCL_P2P_DISABLE=1) reaches 1.45 GB/s algbw / 2.42 GB/s busbw at 64 MiB and an average busbw of 2.71 GB/s.",
+  "stance": "refutes",
+  "stance_target": "cc-2's falsifier that a 5-rank no-P2P all-reduce could fall to <=0.1 GB/s algbw: a 6-rank host-staged run on a much faster fabric is 14-27x above that threshold",
+  "evidence_type": "empirical",
+  "scope_conditions": "6x RTX 4090 on one node, mixed PHB/SYS topology, NCCL_P2P_DISABLE=1, bf16 (half), all_reduce_perf -b 1M -e 64M -f 2 -g 6, 5 warmup / 20 iters, one process driving six GPUs",
+  "quoted_support": "67108864 16777216 float sum -1 46206 1.45 2.42 0 46237 1.45 2.42 0 ... # Avg bus bandwidth : 2.70867",
+  "numbers": [
+   "64 MiB: 46,206 us, algbw 1.45 GB/s, busbw 2.42 GB/s",
+   "32 MiB: algbw 1.48, busbw 2.47",
+   "8 MiB: algbw 1.54, busbw 2.56",
+   "1 MiB: algbw 2.04, busbw 3.39",
+   "Avg bus bandwidth 2.70867 GB/s",
+   "6 ranks"
+  ],
+  "entities": [
+   "NCCL",
+   "all_reduce_perf",
+   "RTX 4090",
+   "host-staged SHM",
+   "NCCL_P2P_DISABLE"
+  ],
+  "time_period": "measured 2023-03/04",
+  "region": "global",
+  "confidence": "high",
+  "source_note_id": "inconsistent-p2p-bandwidth-and-nccl-allreduce-bus-bandwidth-issue-814-nvidianccl"
+ },
+ {
+  "claim": "NCCL maintainer sjeaugey attributes the low multi-GPU all-reduce bandwidth to CPU-side flow interleaving, not to the link: with 6 GPUs an all-reduce has 6 flows interleaving on the CPU, which breaks pipelining and can cost more than 2x.",
+  "stance": "supports",
+  "stance_target": "the reading that host-staged collectives at N>=5 are CPU/flow-contention bound, so the N=5 penalty is a software/topology artifact rather than a link-bandwidth collapse",
+  "evidence_type": "expert-opinion",
+  "scope_conditions": "AMD-CPU host, 6x RTX 4090, P2P disabled",
+  "quoted_support": "That's unfortunately a common problem, in particular with AMD CPUs. Even though the p2pBandwidth benchmark shows 10GB/s (which is already not great), NCCL needs to communicate in both directions; it's not just a copy. This tends to decrease performance, even more than 2x. ... With 6 GPUs and an allreduce you have 6 flows interleaving on the CPU, which I'm not surprised leads to that performance.",
+  "numbers": [
+   "more than 2x degradation",
+   "6 flows interleaving",
+   "10 GB/s p2pBandwidth reference"
+  ],
+  "entities": [
+   "NCCL",
+   "sjeaugey",
+   "CPU flow contention",
+   "AMD EPYC"
+  ],
+  "time_period": "2023-04-03",
+  "region": "global",
+  "confidence": "high",
+  "source_note_id": "inconsistent-p2p-bandwidth-and-nccl-allreduce-bus-bandwidth-issue-814-nvidianccl"
+ },
+ {
+  "claim": "The reporter's all-pairs all_reduce_perf matrix on the same 6x4090 box shows pairwise busbw between 2.61 and 4.50 GB/s, i.e. even the best pair is only ~4.5 GB/s on a Gen4-class fabric.",
+  "stance": "neutral",
+  "stance_target": "the ceiling of NCCL all-reduce on a PCIe-only fabric, which bounds any extrapolation to the 5-card box",
+  "evidence_type": "empirical",
+  "scope_conditions": "6x RTX 4090, all ordered pairs, all_reduce_perf busbw",
+  "quoted_support": "I measured the AllReduce bandwidth between every GPU pairs (all numbers are the bus bandwidth in GB/s from `all_reduce_perf`): | GPU0 | X | 2.61 | 3.60 | 3.58 | 3.57 | 3.59 ...",
+  "numbers": [
+   "2.61-4.50 GB/s pairwise busbw"
+  ],
+  "entities": [
+   "NCCL",
+   "all_reduce_perf",
+   "RTX 4090"
+  ],
+  "time_period": "measured 2023-03/04",
+  "region": "global",
+  "confidence": "medium",
+  "source_note_id": "inconsistent-p2p-bandwidth-and-nccl-allreduce-bus-bandwidth-issue-814-nvidianccl"
+ },
+ {
+  "claim": "The same box reports 'NCCL AllReduce can only achieve ~2.6 GB/s bus bandwidth while P2P test shows a much higher value', i.e. the collective is 4-5x slower than the raw peer copy rate.",
+  "stance": "neutral",
+  "stance_target": "the efficiency factor between raw link rate and collective busbw, which is the key transfer parameter for extrapolating to Gen2 x4",
+  "evidence_type": "empirical",
+  "scope_conditions": "6x RTX 4090, P2P disabled for the collective, p2pBandwidthLatencyTest for the raw copy",
+  "quoted_support": "Why NCCL AllReduce can only achieve ~2.6 GB/s bus bandwidth while P2P test shows a much higher value even with",
+  "numbers": [
+   "~2.6 GB/s busbw",
+   "4-5x gap vs peer copy"
+  ],
+  "entities": [
+   "NCCL",
+   "p2pBandwidthLatencyTest",
+   "RTX 4090"
+  ],
+  "time_period": "2023-03/04",
+  "region": "global",
+  "confidence": "medium",
+  "source_note_id": "inconsistent-p2p-bandwidth-and-nccl-allreduce-bus-bandwidth-issue-814-nvidianccl"
+ }
+]

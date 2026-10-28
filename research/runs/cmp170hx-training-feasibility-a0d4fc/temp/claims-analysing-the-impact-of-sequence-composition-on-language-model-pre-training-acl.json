@@ -1,0 +1,72 @@
+[
+  {
+    "claim": "Standard fixed-length sequence concatenation with causal masking lets each token attend to tokens from previous, unrelated documents, injecting distracting context that measurably degrades language-modelling and downstream performance.",
+    "stance": "refutes",
+    "stance_target": "The repo's data-pipeline assumption that naive packing with causal masking is a neutral implementation detail",
+    "evidence_type": "empirical",
+    "scope_conditions": "1.3B-parameter LLaMA-architecture models, 150B SlimPajama tokens, 2K and 8K context",
+    "quoted_support": "we find that applying causal masking can lead to the inclusion of distracting information from previous documents during pre-training, which negatively impacts the performance of the models on language modelling and downstream tasks.",
+    "numbers": ["1.3B parameters", "150B tokens", "2,048 and 8,192 context"],
+    "entities": ["causal masking", "SlimPajama", "MIXChunk", "LLaMA"],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "analysing-the-impact-of-sequence-composition-on-language-model-pre-training-acl"
+  },
+  {
+    "claim": "Intra-document causal masking, where each token is conditioned only on preceding tokens of the same document, significantly improves performance over causal masking across LM and downstream tasks.",
+    "stance": "supports",
+    "stance_target": "The repo's option of document-boundary-aware attention masking as a data-pipeline design choice",
+    "evidence_type": "empirical",
+    "scope_conditions": "INTRADoc variant, 1.3B models, 2K and 8K context, SlimPajama",
+    "quoted_support": "In intra-document causal masking, the likelihood of each token is only conditioned on the previous tokens in the same document, eliminating potential distracting information from previous documents and significantly improving performance.",
+    "numbers": [],
+    "entities": ["intra-document causal masking", "INTRADoc"],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "analysing-the-impact-of-sequence-composition-on-language-model-pre-training-acl"
+  },
+  {
+    "claim": "The retrieval-based packing method BM25Chunk improves in-context learning by 11.6%, knowledge memorisation by 9.8% and context utilisation by 7.2% without sacrificing training efficiency.",
+    "stance": "supports",
+    "stance_target": "That packing strategy is a first-order quality lever available to a small-scale run at no throughput cost",
+    "evidence_type": "empirical",
+    "scope_conditions": "BM25Chunk sequence construction, 1.3B models, 2K and 8K context",
+    "quoted_support": "our proposed efficient retrieval-based sequence construction method, Bm25Chunk, can improve in-context learning (+11.6%), knowledge memorisation (+9.8%), and context utilisation (+7.2%) abilities of language models without sacrificing efficiency.",
+    "numbers": ["+11.6% in-context learning", "+9.8% knowledge memorisation", "+7.2% context utilisation"],
+    "entities": ["BM25Chunk", "in-context learning", "knowledge memorisation", "context utilisation"],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "analysing-the-impact-of-sequence-composition-on-language-model-pre-training-acl"
+  },
+  {
+    "claim": "The paper is published at ACL 2024 (Long Papers, volume 1), pages 7897-7912, Bangkok, August 2024, DOI 10.18653/v1/2024.acl-long.427.",
+    "stance": "neutral",
+    "stance_target": "Venue authority for the sequence-composition claims",
+    "evidence_type": "historical",
+    "scope_conditions": "ACL Anthology record",
+    "quoted_support": "Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers), pages 7897-7912, Bangkok, Thailand, August 2024.",
+    "numbers": ["pages 7897-7912", "2024"],
+    "entities": ["ACL 2024", "Zhao et al.", "Pasquale Minervini"],
+    "time_period": "2024-08",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "analysing-the-impact-of-sequence-composition-on-language-model-pre-training-acl"
+  },
+  {
+    "claim": "This note is the ACL Anthology landing page only (abstract plus citation metadata); it carries no experimental tables, hyperparameters or efficiency measurements, so quantitative claims must be sourced from the arXiv primary 2402.13991.",
+    "stance": "neutral",
+    "stance_target": "Evidentiary completeness of this note",
+    "evidence_type": "theoretical",
+    "scope_conditions": "ACL Anthology HTML page",
+    "quoted_support": "The fetched page contains the abstract, Anthology ID, volume, month, year, address, editors, pages, DOI, BibTeX/MODS/RIS exports and PDF link, but no body text.",
+    "numbers": ["1,403 words fetched"],
+    "entities": ["ACL Anthology"],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "analysing-the-impact-of-sequence-composition-on-language-model-pre-training-acl"
+  }
+]

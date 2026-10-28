@@ -1,0 +1,119 @@
+{
+  "manifest_version": 1,
+  "vault_tag": "cmp170hx-training-feasibility-a0d4fc",
+  "profile": "full",
+  "profile_steps": [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15",
+    "16"
+  ],
+  "status": "done",
+  "started_at": "2026-10-27T09:55:09.231815+00:00",
+  "updated_at": "2026-10-27T19:01:28.440184+00:00",
+  "budget_usd": null,
+  "max_sources": null,
+  "max_notes": null,
+  "counts_force_cleared": 0,
+  "counts_clear_baselines": {},
+  "blocked_on": null,
+  "steps": {
+    "1": {
+      "status": "done",
+      "finished_at": "2026-10-27T09:56:21.458992+00:00"
+    },
+    "2": {
+      "status": "done",
+      "finished_at": "2026-10-27T12:20:02.387651+00:00"
+    },
+    "3": {
+      "status": "done",
+      "finished_at": "2026-10-27T12:22:27.089223+00:00"
+    },
+    "4": {
+      "status": "done",
+      "finished_at": "2026-10-27T12:53:11.424050+00:00"
+    },
+    "5": {
+      "status": "done",
+      "finished_at": "2026-10-27T14:09:48.805520+00:00"
+    },
+    "6": {
+      "status": "done",
+      "finished_at": "2026-10-27T14:10:49.834666+00:00"
+    },
+    "7": {
+      "status": "done",
+      "finished_at": "2026-10-27T14:12:28.157214+00:00"
+    },
+    "8": {
+      "status": "done",
+      "finished_at": "2026-10-27T15:03:47.843297+00:00"
+    },
+    "9": {
+      "status": "done",
+      "finished_at": "2026-10-27T15:05:12.189202+00:00"
+    },
+    "10": {
+      "status": "done",
+      "finished_at": "2026-10-27T16:21:31.217482+00:00"
+    },
+    "11": {
+      "status": "done",
+      "finished_at": "2026-10-27T17:14:35.146365+00:00"
+    },
+    "12": {
+      "status": "done",
+      "finished_at": "2026-10-27T17:49:09.585148+00:00"
+    },
+    "13": {
+      "status": "done",
+      "finished_at": "2026-10-27T17:49:53.035994+00:00"
+    },
+    "14": {
+      "status": "done",
+      "finished_at": "2026-10-27T18:11:12.603601+00:00"
+    },
+    "14.5": {
+      "status": "done",
+      "finished_at": "2026-10-27T18:36:01.122301+00:00"
+    },
+    "15": {
+      "status": "done",
+      "finished_at": "2026-10-27T18:44:24.803861+00:00"
+    },
+    "16": {
+      "status": "done",
+      "finished_at": "2026-10-27T18:50:40.571347+00:00"
+    }
+  },
+  "chapters": {},
+  "spend": {
+    "estimated_usd": 0.0,
+    "sources_fetched": 219,
+    "notes_written": 225,
+    "agents_spawned": 0
+  },
+  "levers": {
+    "register": "analyze",
+    "inference_depth": "standard",
+    "domain_notes": "Sourcing: academic APIs first for architecture claims (arXiv for Engram, Memory Grafting, CSA2, expert-parallel-over-PCIe); GitHub repos and community benchmarks for hardware measurements (club-170hx, deepseek-v4-cmp170hx); NVIDIA and PCI-SIG documentation for PWRBRK# and link negotiation. Evidence norms: a number measured on this exact box outranks a community report, which outranks arithmetic from stated assumptions \u2014 label every claim with its tier. Recency: hardware and model-architecture claims within 12 months matter; PCIe and NCCL fundamentals are stable."
+  },
+  "verify": {
+    "passed": true,
+    "at": "2026-10-27T19:01:28.439949+00:00",
+    "failed_checks": []
+  }
+}

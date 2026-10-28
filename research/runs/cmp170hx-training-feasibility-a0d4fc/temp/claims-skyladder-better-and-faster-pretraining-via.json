@@ -1,0 +1,66 @@
+[
+  {
+    "claim": "For 1B models, the PaLM FLOP formula gives 11.6e20 FLOPs at 8K context and 25.5e20 at 32K - a 2.20x ratio - and the measured training time tracks the FLOPs saving within about 5%, confirming that wall-clock scales with the FLOPs formula at roughly constant MFU for a 1B model.",
+    "stance": "supports",
+    "stance_target": "the validity of the 6N+12LHQT FLOPs model as a wall-clock proxy at 1B scale, 8K-32K",
+    "evidence_type": "empirical",
+    "scope_conditions": "1B models pretrained on 100B tokens, up to 32K context; FLOPs calculation follows Zhang et al. (TinyLlama)",
+    "quoted_support": "Random (8K) 100.0% 11.6 ; + SkyLadder 86.9% (-13.1%) 9.9 (-14.7%) ; Random (32K) 100.0% 25.5 ; + SkyLadder 77.8% (-22.2%) 18.8 (-26.3%)",
+    "numbers": [
+      "11.6e20 FLOPs at 8K",
+      "25.5e20 FLOPs at 32K",
+      "2.20x FLOPs ratio",
+      "77.8% time for 73.7% FLOPs at 32K",
+      "86.9% time for 85.3% FLOPs at 8K"
+    ],
+    "entities": [
+      "SkyLadder",
+      "TinyLlama",
+      "1B model"
+    ],
+    "time_period": "2025",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "skyladder-better-and-faster-pretraining-via"
+  },
+  {
+    "claim": "Naively training a 1B model at a constant 32K context costs 2.20x the FLOPs of a constant 8K run, and scheduling the context window recovers 22% of that training time while improving long-context performance.",
+    "stance": "neutral",
+    "stance_target": "the size of the long-context training penalty at 1B scale",
+    "evidence_type": "empirical",
+    "scope_conditions": "1B models, 100B tokens, FineWeb-Pro, 32K target context",
+    "quoted_support": "With a 32K context window, the efficiency gain becomes even more pronounced: our method saves 22% of training time while achieving better performance. The FLOPs saving is larger than the actual time because of reduced attention calculation.",
+    "numbers": [
+      "22% training-time saving",
+      "2.20x FLOPs penalty"
+    ],
+    "entities": [
+      "SkyLadder",
+      "FineWeb-Pro"
+    ],
+    "time_period": "2025",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "skyladder-better-and-faster-pretraining-via"
+  },
+  {
+    "claim": "SkyLadder's ablations use 120M models at 8K on 100B tokens, and its main runs are 1B (up to 32K) and 3B (8K) on 100B tokens - the closest published budget match to a small-box 9B-token run is therefore still 11x larger.",
+    "stance": "neutral",
+    "stance_target": "the token-budget gap between published long-context runs and the box's 9B plan",
+    "evidence_type": "empirical",
+    "scope_conditions": "100B tokens for main runs, 100B CC tokens for 120M ablations",
+    "quoted_support": "we pretrain 1B-parameter models (up to 32K context) and 3B-parameter models (8K context) on 100B tokens ... we adopt a default setup of pretraining 120M models with 8K context on 100B CC tokens.",
+    "numbers": [
+      "100B tokens",
+      "1B and 3B models",
+      "120M ablation models"
+    ],
+    "entities": [
+      "SkyLadder"
+    ],
+    "time_period": "2025",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "skyladder-better-and-faster-pretraining-via"
+  }
+]

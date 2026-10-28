@@ -1,0 +1,69 @@
+[
+  {
+    "claim": "For a 7B dense GPT under DeepSpeed Ulysses weak scaling, per-GPU achieved TFLOPs stays nearly flat as sequence length doubles twice (161.36 at 65k on 64 GPUs, 157.41 at 131k on 128 GPUs, 147.4 at 262k on 256 GPUs), so the quadratic attention FLOPs convert to wall-clock at roughly constant efficiency.",
+    "stance": "supports",
+    "stance_target": "the claim that the 6N+12LHQT FLOPs ratio is a valid proxy for wall-clock at long context, for a 7B model",
+    "evidence_type": "empirical",
+    "scope_conditions": "GPT-7B dense, global batch 8, 64/128/256 A100 GPUs, sequence lengths 65,536/131,072/262,144",
+    "quoted_support": "Seqlen 65536 GPUs 64 Time (ms) 9676.76 TFLOPs 161.3626667 ; Seqlen 131072 GPUs 128 Time (ms) 17052.5143 TFLOPs 157.41 ; Seqlen 262144 GPUs 256 Time (ms) 33486.5 TFLOPs 147.4",
+    "numbers": [
+      "161.36 TFLOPs/GPU at 65k",
+      "157.41 at 131k",
+      "147.4 at 262k",
+      "-9% across 4x sequence length"
+    ],
+    "entities": [
+      "DeepSpeed Ulysses",
+      "A100",
+      "GPT-7B"
+    ],
+    "time_period": "2023",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepspeed-ulysses-system-optimizations-for-enabling"
+  },
+  {
+    "claim": "Ulysses sustains over 175 TFLOPs/GPU (over 54% of A100 hardware peak) with a 10x communication reduction and up to 2.5x throughput improvement over Megatron-LM sequence parallelism.",
+    "stance": "neutral",
+    "stance_target": "the achievable MFU ceiling for long-context training on A100",
+    "evidence_type": "empirical",
+    "scope_conditions": "up to 256 A100 GPUs, 7B and 30B GPT, dense and sparse attention",
+    "quoted_support": "Communication reduction of over 10x compared to existing systems, resulting in throughput improvements of up to 2.5x, and sustained throughput of over 175 TFlops/GPU (over 54% of hardware peak).",
+    "numbers": [
+      "175 TFLOPs/GPU",
+      "54% of peak",
+      "10x communication reduction",
+      "2.5x throughput"
+    ],
+    "entities": [
+      "DeepSpeed Ulysses",
+      "Megatron-LM"
+    ],
+    "time_period": "2023",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepspeed-ulysses-system-optimizations-for-enabling"
+  },
+  {
+    "claim": "Ulysses reports a 1.3B GPT convergence run at 32K sequence length on 8 A100 GPUs with sequence-parallel degree 4, confirming that 32K training is a routine measured configuration at the 1B scale.",
+    "stance": "neutral",
+    "stance_target": "the feasibility of 32K training at 1B scale on 8 GPUs",
+    "evidence_type": "empirical",
+    "scope_conditions": "1.3B GPT, 32K, 8xA100, SP degree 4",
+    "quoted_support": "Figure 8 shows convergence of a 1.3 billion GPT model at 32K sequence length on 8 A100 GPUs with sequence parallelism degree set at 4 for both DeepSpeed-Ulysses and Megatron-LM sequence parallelism.",
+    "numbers": [
+      "1.3B parameters",
+      "32K sequence length",
+      "8 A100 GPUs",
+      "SP degree 4"
+    ],
+    "entities": [
+      "DeepSpeed Ulysses",
+      "A100"
+    ],
+    "time_period": "2023",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepspeed-ulysses-system-optimizations-for-enabling"
+  }
+]

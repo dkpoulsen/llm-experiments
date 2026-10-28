@@ -1,0 +1,72 @@
+[
+  {
+    "claim": "Without BAR1-P2P patches, cuDeviceCanAccessPeer and cuCtxEnablePeerAccess return 0 / CUDA_ERROR_PEER_ACCESS_UNSUPPORTED (217) on all six ordered pairs and nvidia-smi topo -p2p r reports GNS, yet an alias-proof cuMemcpyPeer passes on all six pairs because the driver stages the copy through host memory.",
+    "stance": "supports",
+    "stance_target": "the repo's 'no P2P' premise in the default unlocked configuration, and the mechanism by which collectives still work (host staging) despite peer access being unavailable",
+    "evidence_type": "empirical",
+    "scope_conditions": "3x CMP 170HX memory-unlocked to 65,536 MiB, all Gen2 x16, GPU0/GPU1 behind one PLX PEX 8747 and GPU2 behind a second, ACS at firmware default with ReqRedir+/CmpltRedir+ enabled (ACSCtl 0x001d), driver 615.71.09 + upstream cmpunlocker 88e39ce + rebar-serialize.patch, no BAR1-P2P patches",
+    "quoted_support": "| `canAccessPeer` / `enablePeerAccess` | 0 / `CUDA_ERROR_PEER_ACCESS_UNSUPPORTED` (217) on all 6 pairs; `nvidia-smi topo -p2p r` = GNS | | Alias-proof copy | pass on all 6 pairs (driver stages through host memory) |",
+    "numbers": ["0 on all 6 pairs", "CUDA_ERROR_PEER_ACCESS_UNSUPPORTED (217)", "6/6 alias-proof copies pass"],
+    "entities": ["cuDeviceCanAccessPeer", "cuCtxEnablePeerAccess", "nvidia-smi topo -p2p", "host memory staging"],
+    "time_period": "measured 2026-10-01",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "readmemd"
+  },
+  {
+    "claim": "NCCL all-reduce bus bandwidth at 256 MiB measures 3.69 GB/s on a same-switch pair, 3.85 GB/s on a cross-switch pair and 4.24 GB/s across all three cards, with NCCL selecting SHM/direct transport for every pair.",
+    "stance": "neutral",
+    "stance_target": "the all-reduce bandwidth DDP gradient reduction would actually get on this box — the load-bearing number for the repo's DDP-feasibility arithmetic",
+    "evidence_type": "empirical",
+    "scope_conditions": "3x CMP 170HX at Gen2 x16, no BAR1-P2P, torch 2.13.0+cu130 / NCCL 2.29.7 under torchrun, bf16 sum, 5 warm-ups, median of 20, bus bandwidth = algbw x 2(n-1)/n",
+    "quoted_support": "| NCCL all-reduce 256 MiB, busbw | 3.69 GB/s same-switch pair, 3.85 GB/s cross-switch pair, 4.24 GB/s all three | | NCCL transport | SHM/direct for every pair |",
+    "numbers": ["3.69 GB/s same-switch pair", "3.85 GB/s cross-switch pair", "4.24 GB/s all three", "256 MiB"],
+    "entities": ["NCCL", "all-reduce", "bus bandwidth", "SHM transport", "torchrun"],
+    "time_period": "measured 2026-10-01",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "readmemd"
+  },
+  {
+    "claim": "Small-message all-reduce latency is 144 us (same-switch pair), 120 us (cross-switch pair) and 134 us (all three) at 8 KiB, and cuMemcpyPeer latency is 22 us / 40 us / 343 us at 4 KiB / 64 KiB / 1 MiB versus a D2H reference of 9.5 / 18.4 / 165 us.",
+    "stance": "neutral",
+    "stance_target": "the latency floor for any per-step collective on this fabric — at 8 KiB, a 5-GPU DDP all-reduce would cost on the order of 100+ us per collective regardless of message size",
+    "evidence_type": "empirical",
+    "scope_conditions": "3x CMP 170HX at Gen2 x16, no P2P; latency measured with cuMemcpyPeer synchronised on both contexts, median of 30 (<=16 MiB) or 8 copies",
+    "quoted_support": "| `cuMemcpyPeer`, 4 KiB / 64 KiB / 1 MiB | 22 µs / 40 µs / 343 µs (D2H: 9.5 / 18.4 / 165 µs) | ... | NCCL all-reduce 8 KiB | 144 µs / 120 µs / 134 µs |",
+    "numbers": ["22/40/343 us at 4 KiB/64 KiB/1 MiB", "D2H 9.5/18.4/165 us", "NCCL 8 KiB 144/120/134 us"],
+    "entities": ["cuMemcpyPeer", "latency", "NCCL", "all-reduce"],
+    "time_period": "measured 2026-10-01",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "readmemd"
+  },
+  {
+    "claim": "Same-switch and cross-switch copy bandwidth differ by no more than 1% (6.21-6.30 GB/s at 256 MiB against a single-card D2H reference of 6.68 GB/s) because nothing takes the switch-local path when P2P is unavailable.",
+    "stance": "neutral",
+    "stance_target": "whether PCIe switch topology can be exploited to reduce collective cost on this box — without P2P it cannot, so switch-aware placement buys nothing",
+    "evidence_type": "empirical",
+    "scope_conditions": "3x CMP 170HX at Gen2 x16 behind two PLX PEX 8747 switches, no BAR1-P2P; nvidia-smi topo -m reports GPU0-GPU1 PIX and GPU0/1-GPU2 PHB",
+    "quoted_support": "| `cuMemcpyPeer`, 256 MiB | 6.21–6.30 GB/s (single-card D2H: 6.68 GB/s) | ... | Same switch vs cross switch | no difference (≤1 %) — nothing takes the switch-local path |",
+    "numbers": ["6.21-6.30 GB/s", "6.68 GB/s D2H", "<=1% same vs cross switch"],
+    "entities": ["PLX PEX 8747", "PCIe switch topology", "PIX", "PHB"],
+    "time_period": "measured 2026-10-01",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "readmemd"
+  },
+  {
+    "claim": "The authors state two limitations: true BAR1 P2P (community fork patches) was untested here, so this is the no-P2P baseline for that comparison, and there was one probe run per pair with no cross-run error bars.",
+    "stance": "neutral",
+    "stance_target": "the confidence tier of the all-reduce numbers — they are single-run measurements on a no-P2P baseline, not a repeated comparison against the P2P-enabled path",
+    "evidence_type": "empirical",
+    "scope_conditions": "As stated in the receipt's Limitations section",
+    "quoted_support": "- True BAR1 P2P (community fork patches) was **untested** here; this is the no-P2P baseline for that comparison. - One probe run per pair; no cross-run error bars.",
+    "numbers": ["one probe run per pair"],
+    "entities": ["BAR1 P2P", "measurement limitations"],
+    "time_period": "measured 2026-10-01",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "readmemd"
+  }
+]

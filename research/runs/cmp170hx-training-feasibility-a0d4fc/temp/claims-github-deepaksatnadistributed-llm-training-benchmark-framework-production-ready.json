@@ -1,0 +1,49 @@
+[
+  {
+    "claim": "On Oracle Cloud 4x A10 24GB with one GPU per node over standard Ethernet, DeepSpeed ZeRO-2 reaches 18,147 tok/s at 4 GPUs, +48% vs DDP, while ZeRO-2 at 2 GPUs is -24% vs DDP and ZeRO-3 at 4 GPUs is -31% vs DDP.",
+    "stance": "refutes",
+    "stance_target": "The assumption that ZeRO-2 always pays a communication penalty relative to DDP",
+    "evidence_type": "empirical",
+    "scope_conditions": "4x NVIDIA A10 24GB, 1 GPU per node, standard Ethernet (eth0) for A10; RDMA/InfiniBand only on A100/H100; TinyGPT model",
+    "quoted_support": "DeepSpeed ZeRO-2 dominates with 18,147 tokens/sec at 4 GPUs, 48% faster than DDP, 93% faster than FSDP at 4 GPUs",
+    "numbers": [
+      "18,147 tok/s",
+      "+48% vs DDP",
+      "-24% vs DDP at 2 GPUs",
+      "-31% vs DDP for ZeRO-3 at 4 GPUs",
+      "FSDP 1.39x from 2->4 GPUs"
+    ],
+    "entities": [
+      "DeepSpeed ZeRO-2",
+      "DDP",
+      "FSDP",
+      "A10",
+      "Oracle Cloud"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "github-deepaksatnadistributed-llm-training-benchmark-framework-production-ready"
+  },
+  {
+    "claim": "Because each A10 sits on a separate node and the interconnect is Ethernet rather than an intra-node PCIe bus, this benchmark measures a network fabric and is silent on host-staged PCIe behaviour.",
+    "stance": "neutral",
+    "stance_target": "Whether this source bears on cc-3's fabric question",
+    "evidence_type": "empirical",
+    "scope_conditions": "Hardware section: '4x NVIDIA A10 GPUs (24GB VRAM each, 1 GPU per node)'; 'Standard Ethernet (eth0) for A10 VMs, RDMA/InfiniBand (ib0) for A100/H100 bare metal'",
+    "quoted_support": "Standard Ethernet (eth0) for A10 VMs, RDMA/InfiniBand (ib0) for A100/H100 bare metal",
+    "numbers": [
+      "1 GPU per node",
+      "4 nodes"
+    ],
+    "entities": [
+      "Ethernet",
+      "A10",
+      "PCIe"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "github-deepaksatnadistributed-llm-training-benchmark-framework-production-ready"
+  }
+]

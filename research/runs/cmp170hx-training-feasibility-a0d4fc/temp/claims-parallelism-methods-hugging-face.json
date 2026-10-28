@@ -1,0 +1,44 @@
+[
+  {
+    "claim": "Hugging Face's strategy-selection table says: single node / model fits on one GPU -> DistributedDataParallel or ZeRO; doesn't fit -> PipelineParallel, ZeRO or TensorParallel; largest layer doesn't fit -> TensorParallel or ZeRO.",
+    "stance": "supports",
+    "stance_target": "the repo's claim that DDP is the default topology when the model fits replicated on each card",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "Single-node multi-GPU setups; HF Transformers docs (main branch)",
+    "quoted_support": "| single node/multi-GPU | fits on single GPU | DistributedDataParallel or ZeRO | ... | doesn't fit on single GPU | PipelineParallel, ZeRO or TensorParallel | ... | largest model layer doesn't fit | TensorParallel or ZeRO |",
+    "numbers": [],
+    "entities": ["DDP", "ZeRO", "PipelineParallel", "TensorParallel"],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "parallelism-methods-hugging-face"
+  },
+  {
+    "claim": "DDP is recommended over single-machine DataParallel because it reduces communication overhead between GPUs, uses each GPU efficiently and scales beyond one machine.",
+    "stance": "supports",
+    "stance_target": "the repo's claim that DDP is the cheapest communication topology per step",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "PyTorch DP vs DDP; multi-GPU and multi-machine",
+    "quoted_support": "DDP is recommended because it reduces communication overhead between GPUs, efficiently utilizes each GPU, and scales to more than one machine.",
+    "numbers": [],
+    "entities": ["DDP", "DataParallel"],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "parallelism-methods-hugging-face"
+  },
+  {
+    "claim": "Model, pipeline and tensor parallelism all add inter-GPU communication overhead that can become the bottleneck, and the docs give no guidance for PCIe-only, no-P2P fabrics — so this source cannot support the repo's stronger claim that DDP is the *only* viable topology on this box.",
+    "stance": "neutral",
+    "stance_target": "the boundary of what the HF docs can be cited for",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "HF Transformers 'Parallelism methods' page, ~1.4k words, no benchmarks",
+    "quoted_support": "Like other parallelism methods though, tensor parallelism adds communication overhead between GPUs. ... Passing results between GPUs also adds communication overhead and it can be a bottleneck.",
+    "numbers": [],
+    "entities": ["tensor parallelism", "pipeline parallelism", "model parallelism"],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "parallelism-methods-hugging-face"
+  }
+]

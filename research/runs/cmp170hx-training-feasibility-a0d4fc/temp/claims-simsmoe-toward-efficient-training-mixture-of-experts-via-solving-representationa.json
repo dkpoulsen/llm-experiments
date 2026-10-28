@@ -1,0 +1,44 @@
+[
+  {
+    "claim": "Representation collapse between experts is a first-order failure mode of sparse-MoE training: experts converge to near-identical representations, which harms model performance and causes parameter redundancy even when FLOPs per token are held constant.",
+    "stance": "supports",
+    "stance_target": "the repo's treatment of expert collapse / load balancing as a risk that makes MoE experiments non-trivial at small scale",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "Sparse mixture-of-experts LLMs; abstract-level claim from Findings of NAACL 2025",
+    "quoted_support": "Regardless of several notable successes of SMoE, effective training such architecture remains elusive due to the representation collapse problem, which in turn harms model performance and causes parameter redundancy.",
+    "numbers": [],
+    "entities": ["sparse mixture of experts", "representation collapse", "parameter redundancy"],
+    "time_period": "2025",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "simsmoe-toward-efficient-training-mixture-of-experts-via-solving-representationa"
+  },
+  {
+    "claim": "SimSMoE claims a similarity-based routing algorithm that guarantees a solution to expert representation collapse under a fixed FLOPs budget, i.e. the fix is claimed to be free in compute terms.",
+    "stance": "neutral",
+    "stance_target": "whether MoE routing fixes can be adopted without changing the compute budget on a fixed-FLOPs box",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Fixed FLOPs budget; guarantee stated in the abstract, not verified here (landing page only)",
+    "quoted_support": "we present Similarity-based Sparse Mixture of Experts (SimSMoE), a novel similarity of neural network algorithm, that guarantees a solution to address the representation collapse issue between experts given a fixed FLOPs budget.",
+    "numbers": [],
+    "entities": ["SimSMoE", "routing", "FLOPs budget"],
+    "time_period": "2025",
+    "region": "global",
+    "confidence": "low",
+    "source_note_id": "simsmoe-toward-efficient-training-mixture-of-experts-via-solving-representationa"
+  },
+  {
+    "claim": "The method is evaluated on three large language models for both pre-training and fine-tuning, and outperforms other SMoE routing policies — but this note is the ACL Anthology metadata page only, so no numbers, model sizes or training costs are available from it.",
+    "stance": "neutral",
+    "stance_target": "the evidence weight this source can carry",
+    "evidence_type": "anecdotal",
+    "scope_conditions": "ACL Anthology landing page (abstract + BibTeX), ~1.1k words; primary PDF at aclanthology.org/2025.findings-naacl.107.pdf",
+    "quoted_support": "We conduct extensive empirical evaluations on three large language models for both Pre-training and Fine-tuning tasks to illustrate the efficacy, robustness, and scalability of our method.",
+    "numbers": ["three LLMs", "pages 2012-2025"],
+    "entities": ["SimSMoE", "NAACL 2025 Findings", "ACL Anthology"],
+    "time_period": "2025",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "simsmoe-toward-efficient-training-mixture-of-experts-via-solving-representationa"
+  }
+]

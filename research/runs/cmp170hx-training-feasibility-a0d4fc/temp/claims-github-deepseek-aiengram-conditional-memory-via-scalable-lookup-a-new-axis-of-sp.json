@@ -1,0 +1,30 @@
+[
+  {
+    "claim": "The Engram repository's shipped code is a demonstration only: it mocks Attention, MoE and mHC to isolate the Engram module, so the repo cannot be used to reproduce the paper's 27B-scale training results.",
+    "stance": "neutral",
+    "stance_target": "The reproducibility of the Engram paper from public artifacts",
+    "evidence_type": "empirical",
+    "scope_conditions": "deepseek-ai/Engram README section 5 Quick Start",
+    "quoted_support": "The provided code is a demonstration version intended to illustrate the data flow. It mocks standard components (like Attention/MoE/mHC) to focus on the Engram module.",
+    "numbers": [],
+    "entities": ["Engram", "deepseek-ai/Engram"],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "github-deepseek-aiengram-conditional-memory-via-scalable-lookup-a-new-axis-of-sp"
+  },
+  {
+    "claim": "The Engram repository is a small, low-churn codebase: 4 commits with the latest on 14 Jan 2026, one branch, and no published releases.",
+    "stance": "neutral",
+    "stance_target": "How actively maintained the Engram reference code is",
+    "evidence_type": "empirical",
+    "scope_conditions": "GitHub repository metadata as of the fetch date",
+    "quoted_support": "Latest commit fb7f84a ... Jan 14, 2026 ... 4 Commits ... No releases published",
+    "numbers": ["4 commits", "1 branch", "0 releases", "4.8k stars"],
+    "entities": ["deepseek-ai/Engram"],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "github-deepseek-aiengram-conditional-memory-via-scalable-lookup-a-new-axis-of-sp"
+  }
+]

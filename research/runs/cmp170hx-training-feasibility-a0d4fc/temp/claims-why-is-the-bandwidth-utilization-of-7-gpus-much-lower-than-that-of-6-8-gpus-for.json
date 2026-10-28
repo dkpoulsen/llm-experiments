@@ -1,0 +1,63 @@
+[
+ {
+  "claim": "NCCL maintainer sjeaugey confirms that 5- and 7-GPU runs have much lower bandwidth utilization than 4, 6 or 8 GPUs, attributing it to offset alignment (4 or 8 bytes instead of 16, or 1 byte for int8).",
+  "stance": "supports",
+  "stance_target": "cc-2's premise that a 5-rank ring is pathological, and the Tartan/TPDS warning that one should avoid 5 GPUs",
+  "evidence_type": "expert-opinion",
+  "scope_conditions": "all-gather at a fixed total parameter count of 10,660,224 across 4, 5, 6, 7 and 8 GPUs, reported Nov 2021",
+  "quoted_support": "With 5 or 7 GPUs the alignment of the offsets is probably not great (e.g. 4 or 8 bytes instead of 16 bytes, or even down to 1 byte if using a int8 datatype).",
+  "numbers": [
+   "4, 5, 6, 7, 8 GPUs tested",
+   "10,660,224 total parameters",
+   "16-byte alignment threshold"
+  ],
+  "entities": [
+   "NCCL",
+   "sjeaugey",
+   "all-gather",
+   "offset alignment"
+  ],
+  "time_period": "2021-11-23",
+  "region": "global",
+  "confidence": "high",
+  "source_note_id": "why-is-the-bandwidth-utilization-of-7-gpus-much-lower-than-that-of-6-8-gpus-for"
+ },
+ {
+  "claim": "The reporter measured all-gather across 4, 5, 6, 7 and 8 GPUs at a fixed total parameter value and found the bandwidth utilization of 5 and 7 GPUs 'much lower than others'.",
+  "stance": "supports",
+  "stance_target": "the existence of an odd-rank-count penalty at N=5 on PCIe",
+  "evidence_type": "empirical",
+  "scope_conditions": "all-gather, fixed total parameter count 10,660,224, 4-8 GPUs",
+  "quoted_support": "Given a total parameter value of 10660224, respectively using 4, 5, 6, 7, 8 GPUs for experiments, the bandwidth utilization of 5, 7 GPUs will be much lower than others.",
+  "numbers": [
+   "10,660,224 parameters",
+   "5 and 7 GPUs degraded"
+  ],
+  "entities": [
+   "all-gather",
+   "NCCL",
+   "odd rank count"
+  ],
+  "time_period": "2021-11-23",
+  "region": "global",
+  "confidence": "medium",
+  "source_note_id": "why-is-the-bandwidth-utilization-of-7-gpus-much-lower-than-that-of-6-8-gpus-for"
+ },
+ {
+  "claim": "No GB/s figure is given for the 5-GPU case, so the source confirms the mechanism but cannot distinguish a 1.6x ring-load penalty from the 3-5x penalty cc-2's falsifier requires.",
+  "stance": "neutral",
+  "stance_target": "the magnitude of the N=5 penalty, which remains unmeasured in the corpus",
+  "evidence_type": "anecdotal",
+  "scope_conditions": "issue thread contains only a qualitative report and a maintainer hypothesis",
+  "quoted_support": "the bandwidth utilization of 5, 7 GPUs will be much lower than others",
+  "numbers": [],
+  "entities": [
+   "NCCL",
+   "5-GPU penalty"
+  ],
+  "time_period": "2021-11-23",
+  "region": "global",
+  "confidence": "high",
+  "source_note_id": "why-is-the-bandwidth-utilization-of-7-gpus-much-lower-than-that-of-6-8-gpus-for"
+ }
+]

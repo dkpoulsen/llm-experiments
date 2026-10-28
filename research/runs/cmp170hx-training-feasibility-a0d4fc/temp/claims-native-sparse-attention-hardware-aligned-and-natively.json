@@ -1,0 +1,173 @@
+[
+  {
+    "claim": "NSA's Triton kernel beats Triton FlashAttention-2 by 6.3x forward and 3.4x backward at 32k context length (and 9.0x/6.0x at 64k), measured on A100 \u2014 i.e. blockwise sparse attention is already a net training win at 32k, unlike token-granular sparse attention.",
+    "stance": "refutes",
+    "stance_target": "Any blanket claim that sparse attention cannot pay off at 32k training context",
+    "evidence_type": "empirical",
+    "scope_conditions": "Triton-based NSA kernel vs Triton-based FlashAttention-2 kernel on A100; same backend for fairness",
+    "quoted_support": "our NSA achieves progressively greater speedups as context length increases, up to 9.0x forward and 6.0x backward speedup at 64k context-length. Notably, the speed advantage becomes more pronounced with longer sequences.",
+    "numbers": [
+      "2.1x fwd / 1.1x bwd at 8k",
+      "3.8x fwd / 2.0x bwd at 16k",
+      "6.3x fwd / 3.4x bwd at 32k",
+      "9.0x fwd / 6.0x bwd at 64k",
+      "11.6x decode at 64k"
+    ],
+    "entities": [
+      "NSA",
+      "FlashAttention-2",
+      "Triton",
+      "A100",
+      "32k context"
+    ],
+    "time_period": "2025",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "native-sparse-attention-hardware-aligned-and-natively"
+  },
+  {
+    "claim": "NSA's training regime is 8k then 32k: both the full-attention baseline and NSA are pretrained on 270B tokens of 8k-length texts, then continued-trained and SFT'd on 32k-length texts with YaRN \u2014 a direct precedent for sparse attention trained at 32k.",
+    "stance": "supports",
+    "stance_target": "The feasibility of a sparse-attention experiment at 32k training context",
+    "evidence_type": "empirical",
+    "scope_conditions": "27B-parameter backbone, 260B tokens; continued training and SFT on 32k texts with YaRN",
+    "quoted_support": "Both Full Attention and sparse attention models are pretrained on 270B tokens of 8k-length texts, followed by continued training and supervised fine-tuning on 32k-length texts with YaRN (Peng et al., 2024) to achieve long-context adaptation.",
+    "numbers": [
+      "270B tokens at 8k",
+      "32k continued training + SFT",
+      "27B parameters",
+      "260B tokens"
+    ],
+    "entities": [
+      "NSA",
+      "YaRN",
+      "32k training",
+      "27B model"
+    ],
+    "time_period": "2025",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "native-sparse-attention-hardware-aligned-and-natively"
+  },
+  {
+    "claim": "Token-granular selection forces loading many individual tokens from the KV cache, which prevents efficient adaptation of FlashAttention-style kernels that rely on contiguous memory access and blockwise computation, degrading training efficiency.",
+    "stance": "supports",
+    "stance_target": "The claim that CSA2's token-level selection (m=1 decoder layers) is the hardware-unfriendly case",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Section 2.2 The Myth of Trainable Sparsity",
+    "quoted_support": "Token-granular selection strategy used in approaches like HashAttention (Desai et al., 2024) leads to the need to load a large number of individual tokens from the KV cache during attention computation. This non-contiguous memory access prevents efficient adaptation of fast attention techniques like FlashAttention, which rely on contiguous memory access and blockwise computation to achieve high throughput.",
+    "numbers": [],
+    "entities": [
+      "token-granular selection",
+      "FlashAttention",
+      "contiguous memory access",
+      "HashAttention"
+    ],
+    "time_period": "2025",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "native-sparse-attention-hardware-aligned-and-natively"
+  },
+  {
+    "claim": "Blockwise selection is required for efficient computation on modern GPUs because continuous block accesses have much higher throughput than random index-based reads, and blockwise computation enables optimal Tensor Core utilization.",
+    "stance": "supports",
+    "stance_target": "Why block-level selection beats token-level selection on GPU hardware",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Section 3.1 Blockwise Selection",
+    "quoted_support": "Blockwise selection is crucial to achieve efficient computation on modern GPUs. That is because modern GPU architectures exhibit significantly higher throughput for continuous block accesses compared to random index-based reads. Also, blockwise computation enables optimal utilization of Tensor Cores.",
+    "numbers": [],
+    "entities": [
+      "blockwise selection",
+      "Tensor Cores",
+      "GPU throughput"
+    ],
+    "time_period": "2025",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "native-sparse-attention-hardware-aligned-and-natively"
+  },
+  {
+    "claim": "NSA's selection configuration is compression block 32, sliding stride 16, selected block size 64, 16 selected blocks (including 1 initial and 2 local blocks), and sliding window 512 \u2014 i.e. roughly 1,024 selected tokens plus a 512-token window at any context length.",
+    "stance": "neutral",
+    "stance_target": "A concrete, hardware-aligned sparse-attention budget to compare against CSA2's top-512",
+    "evidence_type": "empirical",
+    "scope_conditions": "Section 4 experimental setup; Section 5.1 kernel benchmark",
+    "quoted_support": "For NSA, we set compression block size l = 32, sliding stride d = 16, selected block size l' = 64, selected block count n = 16 (including fixed activating the 1 initial block and 2 local blocks), and sliding window size w = 512.",
+    "numbers": [
+      "compression block 32",
+      "sliding stride 16",
+      "selected block 64",
+      "16 selected blocks",
+      "sliding window 512",
+      "~1,024 selected tokens"
+    ],
+    "entities": [
+      "NSA",
+      "blockwise selection",
+      "sliding window"
+    ],
+    "time_period": "2025",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "native-sparse-attention-hardware-aligned-and-natively"
+  },
+  {
+    "claim": "NSA argues that discrete operations in methods like ClusterKV create discontinuities in the computational graph, and that non-trainable components are a first-order reason most sparse attention methods lack training-time support.",
+    "stance": "supports",
+    "stance_target": "The repo's claim that top-k selection is non-differentiable and needs special handling",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Section 2.2 Non-Trainable Components",
+    "quoted_support": "Non-Trainable Components. Discrete operations in methods like ClusterKV (Liu et al., ... selecting) create discontinuities in the computational graph. These non-trainable components",
+    "numbers": [],
+    "entities": [
+      "NSA",
+      "ClusterKV",
+      "computational graph",
+      "non-trainable components"
+    ],
+    "time_period": "2025",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "native-sparse-attention-hardware-aligned-and-natively"
+  },
+  {
+    "claim": "NSA's sparse model matches or beats full attention on general benchmarks despite high sparsity, with a stable and smooth pretraining loss curve that consistently outperforms the full-attention baseline.",
+    "stance": "supports",
+    "stance_target": "Whether sparse attention trained from an early stage preserves quality",
+    "evidence_type": "empirical",
+    "scope_conditions": "27B model, 260B tokens; MMLU, MMLU-PRO, CMMLU, BBH, GSM8K, MATH, DROP, MBPP, HumanEval",
+    "quoted_support": "NSA achieves superior average performance on most benchmarks despite high sparsity. ... the pretraining loss curve of our NSA and Full Attention baseline demonstrates stable and smooth decline, with NSA consistently outperforming the Full Attention model.",
+    "numbers": [
+      "27B parameters",
+      "260B tokens"
+    ],
+    "entities": [
+      "NSA",
+      "full attention",
+      "pretraining loss"
+    ],
+    "time_period": "2025",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "native-sparse-attention-hardware-aligned-and-natively"
+  },
+  {
+    "claim": "NSA's speedups are measured against a Triton FlashAttention-2 baseline on A100, not against a tuned production kernel, so the 6.3x/3.4x at 32k is a like-for-like Triton comparison rather than an absolute ceiling.",
+    "stance": "neutral",
+    "stance_target": "How much of NSA's 32k speedup would survive against a better-tuned dense baseline",
+    "evidence_type": "empirical",
+    "scope_conditions": "Section 5.1; Triton-based implementations of both NSA and FlashAttention-2",
+    "quoted_support": "We compare the Triton-based implementations of our NSA attention and Full Attention with Triton-based FlashAttention-2 to ensure fair speed comparison across the same backend.",
+    "numbers": [],
+    "entities": [
+      "NSA",
+      "FlashAttention-2",
+      "Triton",
+      "A100"
+    ],
+    "time_period": "2025",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "native-sparse-attention-hardware-aligned-and-natively"
+  }
+]

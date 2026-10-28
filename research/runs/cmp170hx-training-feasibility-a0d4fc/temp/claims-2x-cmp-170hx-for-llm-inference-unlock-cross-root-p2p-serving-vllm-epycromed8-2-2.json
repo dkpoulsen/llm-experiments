@@ -1,0 +1,58 @@
+[
+  {
+    "claim": "The wpnews.pro reprint of the CMP 170HX dual-card writeup reproduces the original gist's benchmark table exactly, so the aggregator did not distort the numbers.",
+    "stance": "supports",
+    "stance_target": "The reliability of the wpnews.pro note as evidence for the P2P and prefill claims",
+    "evidence_type": "empirical",
+    "scope_conditions": "Direct comparison of the gist (ropuls/d2978531ba3a1a183e70f62f3de2eb84) against the wpnews.pro article, both fetched 2026-10-27",
+    "quoted_support": "| no P2P (L1T W4A16 reference) | ~2500 | ~2500 | ~2500 | ~2500 | | P2P, mixed VBIOS (67 + 6D), 70 SM | 4634 | 4572 | 4543 | 4486 | | P2P, both 6D, 74 SM | 4766 | 4708 | 4669 | 4599 | | + offset +200 MHz, 200 W | 5033 | 4989 | 4951 | 4881 |",
+    "numbers": ["~2500 tok/s no P2P", "4634 tok/s 70 SM", "4766 tok/s 74 SM", "5033 tok/s with offset"],
+    "entities": ["wpnews.pro", "gist.github.com/ropuls", "NVIDIA CMP 170HX"],
+    "time_period": "2026-10",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "2x-cmp-170hx-for-llm-inference-unlock-cross-root-p2p-serving-vllm-epycromed8-2-2"
+  },
+  {
+    "claim": "The P2P recipe is amoghmunikote/cmpunlocker as the base plus three bayley/cmpunlocker patches pinned to exact commits, and the regkey alone was never verified sufficient.",
+    "stance": "neutral",
+    "stance_target": "How reproducible the P2P enablement is, which bounds how heavily the training-feasibility analysis should lean on it",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "cmpunlocker master 6c442ee, bayley patches at 5a7bb4b, ROMED8-2T host",
+    "quoted_support": "Not tested: whether the regkey alone, without the three patches, is enough. An earlier version of this gist said so; that was not verified.",
+    "numbers": ["cmpunlocker 6c442ee", "bayley 5a7bb4b", "3 patches"],
+    "entities": ["amoghmunikote/cmpunlocker", "bayley/cmpunlocker", "ForceP2P"],
+    "time_period": "2026-10",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "2x-cmp-170hx-for-llm-inference-unlock-cross-root-p2p-serving-vllm-epycromed8-2-2"
+  },
+  {
+    "claim": "The first P2P setup was not reproducible for some users, and the revised recipe pins exact commits and adds UEFI and kernel prerequisites.",
+    "stance": "neutral",
+    "stance_target": "Whether the P2P result generalises to the repo's box, which the repo's documentation does not address",
+    "evidence_type": "empirical",
+    "scope_conditions": "ROMED8-2T UEFI-only board, Proxmox VE kernel 7.0.14-pve",
+    "quoted_support": "Update 2026-10-02. The initial setup here was not reproducible for some people (P2P did not come up). This is the revised setting: amogh's cmpunlocker as the base, patched selectively with three P2P patches from bayley/cmpunlocker, pinned to exact commits",
+    "numbers": ["2026-10-02 revision"],
+    "entities": ["P2P", "ROMED8-2T", "UEFI"],
+    "time_period": "2026-10",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "2x-cmp-170hx-for-llm-inference-unlock-cross-root-p2p-serving-vllm-epycromed8-2-2"
+  },
+  {
+    "claim": "Re-enabling reserved TPCs via cmpunlocker master raises the SM count from 70 to 74 per card, which yields only about +1.8% prefill at a fixed power cap.",
+    "stance": "neutral",
+    "stance_target": "Whether SM count is a meaningful throughput lever on this card, which affects achievable TFLOPS estimates",
+    "evidence_type": "empirical",
+    "scope_conditions": "cmpunlocker master 6c442ee versus v0.4, both cards at the power cap",
+    "quoted_support": "Prefill is compute-bound, but both cards sit at the power cap, so +4 SM gave only about +1.8%. With the +200 offset the SMs pay off: about +7% decode and +6% prefill at the same 200 W",
+    "numbers": ["70 SM -> 74 SM", "+1.8% prefill", "+7% decode with offset"],
+    "entities": ["cmpunlocker", "SM count", "TPC"],
+    "time_period": "2026-10",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "2x-cmp-170hx-for-llm-inference-unlock-cross-root-p2p-serving-vllm-epycromed8-2-2"
+  }
+]

@@ -1,0 +1,72 @@
+[
+  {
+    "claim": "bf16_compress_hook casts each DDP gradient bucket to bfloat16 before the all-reduce, halving gradient bytes on the wire from 4 to 2 bytes per element.",
+    "stance": "supports",
+    "stance_target": "the repo's claim that bf16_compress_hook is a viable way to cut DDP communication volume on a bandwidth-starved fabric",
+    "evidence_type": "theoretical",
+    "scope_conditions": "PyTorch DDP with a registered comm hook; gradient bucket in fp32; NCCL backend",
+    "quoted_support": "This DDP communication hook implements a simple gradient compression approach that casts GradBucket tensor to half-precision Brain floating point format (torch.bfloat16) and then divides it by the process group size. It allreduces those bfloat16 gradient tensors.",
+    "numbers": ["2 bytes/element bf16 vs 4 bytes/element fp32", "2x reduction"],
+    "entities": ["bf16_compress_hook", "DDP", "GradBucket", "NCCL"],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "pytorch-ddp-comm-hooks-default_hookspy-bf16fp16-compress-hooks"
+  },
+  {
+    "claim": "The bf16 compression hooks are marked experimental and require NCCL later than 2.9.6.",
+    "stance": "neutral",
+    "stance_target": "the deployment caveat for using bf16_compress_hook in a training run on this box",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "PyTorch main branch, bf16_compress_hook and bf16_compress_wrapper",
+    "quoted_support": "Warning: This API is experimental, and it requires NCCL version later than 2.9.6.",
+    "numbers": ["NCCL > 2.9.6"],
+    "entities": ["bf16_compress_hook", "NCCL"],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "pytorch-ddp-comm-hooks-default_hookspy-bf16fp16-compress-hooks"
+  },
+  {
+    "claim": "The hook divides the gradient by world size before the collective specifically to avoid FP16 overflow, then decompresses in place to limit peak memory.",
+    "stance": "neutral",
+    "stance_target": "the numerical-safety design of the compression path, relevant to whether bf16 gradient sync is lossless enough for training",
+    "evidence_type": "theoretical",
+    "scope_conditions": "fp16/bf16 compress hooks",
+    "quoted_support": "Apply the division first to avoid overflow, especially for FP16. ... Decompress in place to reduce the peak memory.",
+    "numbers": [],
+    "entities": ["fp16_compress_hook", "bf16_compress_hook", "overflow"],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "pytorch-ddp-comm-hooks-default_hookspy-bf16fp16-compress-hooks"
+  },
+  {
+    "claim": "fp16_compress_wrapper and bf16_compress_wrapper can wrap an arbitrary hook such as PowerSGD, applying the low-precision cast around any gradient-compression scheme.",
+    "stance": "supports",
+    "stance_target": "the claim that bf16 casting composes with algorithmic compression rather than replacing it",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Any DDP comm hook, e.g. PowerSGD",
+    "quoted_support": "Therefore, bf16_compress_hook is equivalent to bf16_compress_wrapper(allreduce_hook). ... state = PowerSGDState(process_group=process_group, matrix_approximation_rank=1, start_powerSGD_iter=10)",
+    "numbers": [],
+    "entities": ["bf16_compress_wrapper", "PowerSGD", "allreduce_hook"],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "pytorch-ddp-comm-hooks-default_hookspy-bf16fp16-compress-hooks"
+  },
+  {
+    "claim": "allreduce_hook is a reference hook that reproduces default DDP behavior exactly, so registering it does not change results.",
+    "stance": "neutral",
+    "stance_target": "the baseline against which compression hooks are measured",
+    "evidence_type": "theoretical",
+    "scope_conditions": "DDP with allreduce_hook registered",
+    "quoted_support": "If user registers this DDP communication hook, DDP results is expected to be same as the case where no hook was registered.",
+    "numbers": [],
+    "entities": ["allreduce_hook", "DDP"],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "pytorch-ddp-comm-hooks-default_hookspy-bf16fp16-compress-hooks"
+  }
+]

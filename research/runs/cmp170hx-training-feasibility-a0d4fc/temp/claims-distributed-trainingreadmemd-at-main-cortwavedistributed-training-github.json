@@ -1,0 +1,94 @@
+[
+  {
+    "claim": "On 4x RTX 4090 with all 12 GPU pairs reporting P2P DISABLED, FSDP SHARD_GRAD_OP (the ZeRO-2-equivalent sharding mode) runs at 4.13 samples/s versus DDP's 6.90, a 1.67x step-time ratio (+67% overhead) that exceeds cc-3's 50% overturn threshold.",
+    "stance": "supports",
+    "stance_target": "cc-3's concern that ZeRO-2's byte-volume identity with DDP does not imply wall-clock parity on a host-staged fabric",
+    "evidence_type": "empirical",
+    "scope_conditions": "4x RTX 4090 24GB, PCIe 4.0 x16, topology PHB/NODE, P2P disabled, batch 1/GPU; model and sequence length NOT stated",
+    "quoted_support": "FSDP Comparison | Strategy | Samples/sec | Memory/GPU | Forward | Backward | Optimizer | DDP 6.90 21.1 GB 0.033s 0.423s 0.128s | SHARD_GRAD_OP 4.13 15.8 GB 0.323s 0.643s 0.009s",
+    "numbers": [
+      "DDP 6.90 samples/s, 21.1 GB/GPU",
+      "SHARD_GRAD_OP 4.13 samples/s, 15.8 GB/GPU",
+      "FULL_SHARD 2.88, NO_SHARD 3.88",
+      "step-time ratio 1.67x",
+      "+67% overhead"
+    ],
+    "entities": [
+      "RTX 4090",
+      "FSDP SHARD_GRAD_OP",
+      "DDP",
+      "ZeRO-2"
+    ],
+    "time_period": "2025-12",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "distributed-trainingreadmemd-at-main-cortwavedistributed-training-github"
+  },
+  {
+    "claim": "The same FSDP table shows SHARD_GRAD_OP's forward pass is 10x slower than DDP's (0.323 s vs 0.033 s) at batch 1/GPU, which identifies the regime as small-model all-gather-latency-dominated rather than a 1B/32k compute-dominated step.",
+    "stance": "refutes",
+    "stance_target": "Reading the 1.67x ratio as a valid estimate of ZeRO-2 overhead at >=1B params / 32k",
+    "evidence_type": "empirical",
+    "scope_conditions": "batch 1/GPU, 4 ranks, no sequence length stated",
+    "quoted_support": "DDP ... Forward 0.033s ... SHARD_GRAD_OP ... Forward 0.323s",
+    "numbers": [
+      "0.033 s vs 0.323 s forward (9.8x)",
+      "0.423 s vs 0.643 s backward (1.5x)"
+    ],
+    "entities": [
+      "FSDP all-gather",
+      "DDP"
+    ],
+    "time_period": "2025-12",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "distributed-trainingreadmemd-at-main-cortwavedistributed-training-github"
+  },
+  {
+    "claim": "The harness confirms the fabric is host-staged and asymmetric: GPU0->GPU1 measured 247 ms / 32 Gbps while GPU1->GPU0 measured 76 ms / 105 Gbps, and a cross-NUMA pair measured 233 ms / 34 Gbps, against an expected ~200 Gbps with P2P.",
+    "stance": "supports",
+    "stance_target": "The premise that every inter-GPU byte on this class of box crosses the host bridge twice",
+    "evidence_type": "empirical",
+    "scope_conditions": "RunPod, RTX 4090, check_p2p.py + bandwidth probe",
+    "quoted_support": "GPU 0 -> GPU 1: 247ms, 32 Gbps (expected: ~200 Gbps with P2P) / GPU 1 -> GPU 0: 76ms, 105 Gbps (asymmetric!) / GPU 0 -> GPU 2: 233ms, 34 Gbps (cross-NUMA)",
+    "numbers": [
+      "32 Gbps",
+      "105 Gbps",
+      "34 Gbps",
+      "~200 Gbps expected with P2P"
+    ],
+    "entities": [
+      "PCIe",
+      "P2P",
+      "NUMA",
+      "RTX 4090"
+    ],
+    "time_period": "2025-12",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "distributed-trainingreadmemd-at-main-cortwavedistributed-training-github"
+  },
+  {
+    "claim": "A separate 'bad topology' DDP run on the same 4090 class shows 2 GPUs delivering 0.29x and 4 GPUs 0.91x of single-GPU throughput, i.e. DDP itself can lose more than half its throughput on a badly-wired PCIe host.",
+    "stance": "neutral",
+    "stance_target": "The claim that DDP is unconditionally the safe topology on this fabric",
+    "evidence_type": "empirical",
+    "scope_conditions": "Vast.ai RTX 4090, batch 2, sdpa attention, rtx_4090_bad_topology.csv",
+    "quoted_support": "1 GPU 15.38 samples/s 1.00x 100% / 2 GPUs 4.50 0.29x 15% / 4 GPUs 14.01 0.91x 23%",
+    "numbers": [
+      "15.38 samples/s at 1 GPU",
+      "4.50 at 2 GPUs (0.29x)",
+      "14.01 at 4 GPUs (0.91x)",
+      "step time 0.130 s -> 0.526 s -> 0.571 s"
+    ],
+    "entities": [
+      "DDP",
+      "RTX 4090",
+      "Vast.ai"
+    ],
+    "time_period": "2025-12",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "distributed-trainingreadmemd-at-main-cortwavedistributed-training-github"
+  }
+]

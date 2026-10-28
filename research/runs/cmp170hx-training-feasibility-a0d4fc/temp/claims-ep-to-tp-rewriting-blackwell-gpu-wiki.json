@@ -1,0 +1,61 @@
+[
+  {
+    "claim": "Expert parallelism requires a token all-to-all every layer, and on a system without NVLink and without P2P atomics that all-to-all goes through the host bridge and 'tanks performance', whereas TP needs only per-layer all-reduce which NCCL ring handles tolerably over PCIe.",
+    "stance": "supports",
+    "stance_target": "cc-3's exclusion of EP from the viable topology set on a no-P2P fabric",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "Community wiki for no-NVLink workstation Blackwell GPUs; inference/serving scope; no measured numbers",
+    "quoted_support": "Expert parallelism ... demands a token all-to-all every layer. On a system without NVLink and without P2P atomics, that all-to-all goes through the host bridge and tanks performance. Tensor parallelism only requires per-layer all-reduce. NCCL ring all-reduce works tolerably over PCIe and the host bridge",
+    "numbers": [],
+    "entities": [
+      "expert parallelism",
+      "tensor parallelism",
+      "NVSHMEM",
+      "NCCL_P2P_LEVEL=PIX"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "low",
+    "source_note_id": "ep-to-tp-rewriting-blackwell-gpu-wiki"
+  },
+  {
+    "claim": "The wiki's bandwidth arithmetic puts EP at ~1 MB per layer of cross-GPU traffic versus TP at ~12 KB per layer at H=8192, N=4, top-k=8 — a ~80x difference — and claims rewriting EP as TP 'often eliminates 80%+ of communication overhead'.",
+    "stance": "supports",
+    "stance_target": "The claim that EP is the wrong topology on this fabric and TP is the cheaper alternative",
+    "evidence_type": "theoretical",
+    "scope_conditions": "H=8192, N=4, top-k=8, per token per layer; inference decode (B=1, T=1) for the TP figure",
+    "quoted_support": "EP: ~16 x 8 x 8192 = ~1 MB per layer of cross-GPU traffic / TP: ~12 KB per layer of cross-GPU traffic / A ~80x difference.",
+    "numbers": [
+      "~1 MB/layer EP",
+      "~12 KB/layer TP",
+      "~80x",
+      "80%+ communication overhead eliminated"
+    ],
+    "entities": [
+      "expert parallelism",
+      "tensor parallelism"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "low",
+    "source_note_id": "ep-to-tp-rewriting-blackwell-gpu-wiki"
+  },
+  {
+    "claim": "The wiki's scope is inference engines (vLLM, sglang, TRT-LLM) and it supplies no training measurement, so it cannot satisfy cc-3(c)'s requirement for a host-staged EP or TP TRAINING run at >=1B params.",
+    "stance": "neutral",
+    "stance_target": "Whether this source can reopen EP/TP for training",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "Wiki page 'EP-to-TP rewriting'; config examples are serving-engine YAML",
+    "quoted_support": "In an inference-engine config: # Before (EP) tensor_parallel_size: 1 expert_parallel_size: 4",
+    "numbers": [],
+    "entities": [
+      "vLLM",
+      "sglang",
+      "TRT-LLM"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "ep-to-tp-rewriting-blackwell-gpu-wiki"
+  }
+]

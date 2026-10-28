@@ -1,0 +1,143 @@
+[
+  {
+    "claim": "DietGPU's ANS entropy codec runs at ~250-410 GB/s and its floating-point codec at ~250-600 GB/s for reasonable data sizes on an A100.",
+    "stance": "supports",
+    "stance_target": "GPU lossless compression throughput is orders of magnitude above a slow interconnect",
+    "evidence_type": "empirical",
+    "scope_conditions": "NVIDIA A100 GPU, reasonable data sizes",
+    "quoted_support": "ANS entropy codec : a generalized byte-oriented range-based ANS (rANS) entropy encoder and decoder, that operates at throughputs around 250-410 GB/s for reasonable data sizes on an A100 GPU. Floating point codec : ... This operates at around 250-600 GB/s for reasonable data sizes on an A100 GPU.",
+    "numbers": [
+      "250-410 GB/s",
+      "250-600 GB/s",
+      "A100"
+    ],
+    "entities": [
+      "DietGPU",
+      "ANS",
+      "rANS",
+      "A100"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "DietGPU is explicitly designed for communicating over local interconnects (PCIe/NVLink) and remote interconnects (Ethernet/InfiniBand).",
+    "stance": "supports",
+    "stance_target": "lossless compression is a legitimate collective-communication optimisation",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "ML/HPC communication",
+    "quoted_support": "an extension to the above to handle fast lossless compression and decompression of unstructured floating point data, for use in ML and HPC applications, especially in communicating over local interconnects (PCIe / NVLink) and remote interconnects (Ethernet / InfiniBand).",
+    "numbers": [],
+    "entities": [
+      "DietGPU",
+      "PCIe",
+      "NVLink",
+      "InfiniBand"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "On a bandwidth-starved fabric the compression compute is effectively free: 250-600 GB/s codec throughput versus ~0.75 GiB/s collective bandwidth on the CMP 170HX box.",
+    "stance": "supports",
+    "stance_target": "lossless compression's compute cost is not the binding constraint on a Gen2 x4 box",
+    "evidence_type": "theoretical",
+    "scope_conditions": "A100 codec throughput vs CMP 170HX link bandwidth",
+    "quoted_support": "This operates at around 250-600 GB/s for reasonable data sizes on an A100 GPU.",
+    "numbers": [
+      "250-600 GB/s",
+      "0.75 GiB/s"
+    ],
+    "entities": [
+      "DietGPU",
+      "CMP 170HX"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "medium"
+  },
+  {
+    "claim": "DietGPU provides both C++ (raw device pointers) and Python/PyTorch tensor APIs.",
+    "stance": "neutral",
+    "stance_target": "integration surface of the compression library",
+    "evidence_type": "empirical",
+    "scope_conditions": "DietGPU library",
+    "quoted_support": "Both APIs are available in both C++ (raw device pointers) and Python/PyTorch (PyTorch tensor) API forms.",
+    "numbers": [],
+    "entities": [
+      "DietGPU",
+      "PyTorch"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "The repository was archived by its owner on 14 Jun 2026 and is now read-only, so it is not an actively maintained dependency.",
+    "stance": "refutes",
+    "stance_target": "DietGPU is a maintained production dependency",
+    "evidence_type": "empirical",
+    "scope_conditions": "facebookresearch/dietgpu GitHub",
+    "quoted_support": "This repository was archived by the owner on Jun 14, 2026. It is now read-only.",
+    "numbers": [],
+    "entities": [
+      "DietGPU",
+      "Meta"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "The README labels DietGPU a \"very early alpha preview ... still under rapid development\", so its maturity claim is weak even before archival.",
+    "stance": "refutes",
+    "stance_target": "DietGPU is production-ready",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "DietGPU README",
+    "quoted_support": "(NOTE: very early alpha preview of the library; it is still under rapid development)",
+    "numbers": [],
+    "entities": [
+      "DietGPU"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "DietGPU contains the first publicly available GPU-based generalized ANS compressor/decompressor, modelled on Yann Collet's FSE library.",
+    "stance": "neutral",
+    "stance_target": "provenance of the ANS implementation",
+    "evidence_type": "historical",
+    "scope_conditions": "DietGPU, author Jeff Johnson",
+    "quoted_support": "It also contains the first publicly available GPU-based generalized asymmetric numeral system (ANS) compressor and decompressor. It is a GPU analogue to Yann Collet's FSE (Finite State Entropy) ANS library.",
+    "numbers": [],
+    "entities": [
+      "DietGPU",
+      "ANS",
+      "FSE",
+      "Yann Collet"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "medium"
+  },
+  {
+    "claim": "ZipCCL's measurement that DietGPU-compressed all-gather was slower than plain NCCL all-gather shows a naive DietGPU integration is not a drop-in win.",
+    "stance": "refutes",
+    "stance_target": "DietGPU can be dropped into a training loop and immediately save bandwidth",
+    "evidence_type": "empirical",
+    "scope_conditions": "Llama3-8B all-gather on TorchTitan, as measured by ZipCCL",
+    "quoted_support": "DietGPU-compressed All-Gather performs slower than the baseline NCCL All-Gather",
+    "numbers": [],
+    "entities": [
+      "DietGPU",
+      "ZipCCL",
+      "NCCL"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "medium"
+  }
+]

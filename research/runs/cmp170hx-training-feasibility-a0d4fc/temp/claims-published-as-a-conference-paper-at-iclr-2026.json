@@ -1,0 +1,158 @@
+[
+  {
+    "claim": "Measured end-to-end TRAINING latency on Llama3-8B / Qwen3-14B / Qwen2.5-32B at 32K-64K shows FSA up to 2.47x and on average 1.86x faster than full attention, and up to 1.25x / on average 1.09x faster than vanilla NSA.",
+    "stance": "refutes",
+    "stance_target": "cc-4's committed claim that NSA at 32k delivers a 6.3x-forward / 3.4x-backward module-level win worth -39% to -54% of step time",
+    "evidence_type": "empirical",
+    "scope_conditions": "NVIDIA H20 (148 TFLOPS, 4 TB/s) and H200 (989 TFLOPS, 4.8 TB/s) over NVLink 450 GB/s; BF16 training; Llama3-8B, Qwen3-14B, Qwen2.5-32B; 32K and 64K sequence lengths; pipeline parallelism when the model does not fit one GPU",
+    "quoted_support": "FSA achieves up to 1.25x speedup and on average 1.09x speedup compared to NSA, and delivers up to 2.47x speedup and an average of 1.86x speedup compared to full attention.",
+    "numbers": [
+      "up to 2.47x / avg 1.86x vs full attention",
+      "up to 1.25x / avg 1.09x vs NSA",
+      "32K and 64K sequence lengths",
+      "Llama3-8B, Qwen3-14B, Qwen2.5-32B"
+    ],
+    "entities": [
+      "FSA",
+      "NSA",
+      "full attention",
+      "Llama3-8B",
+      "Qwen3-14B",
+      "Qwen2.5-32B",
+      "H20",
+      "H200"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "published-as-a-conference-paper-at-iclr-2026"
+  },
+  {
+    "claim": "Dividing the two reported averages implies vanilla NSA is only ~1.71x faster than full attention end-to-end in training on average, which is inside cc-4's 2x threshold for weakening the NSA substitution.",
+    "stance": "refutes",
+    "stance_target": "The 'run NSA instead, it is worth -39% to -54% of step time' recommendation",
+    "evidence_type": "statistical",
+    "scope_conditions": "Derived by dividing the reported FSA-vs-full-attention average (1.86x) by the reported FSA-vs-NSA average (1.09x); not a directly reported NSA-vs-full-attention figure",
+    "quoted_support": "FSA achieves up to 1.25x speedup and on average 1.09x speedup compared to NSA, and delivers up to 2.47x speedup and an average of 1.86x speedup compared to full attention.",
+    "numbers": [
+      "1.86 / 1.09 = ~1.71x implied NSA-vs-full-attention average"
+    ],
+    "entities": [
+      "NSA",
+      "full attention",
+      "FSA"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "published-as-a-conference-paper-at-iclr-2026"
+  },
+  {
+    "claim": "At 32K sequence length with one query head per GQA group, vanilla NSA is consistently SLOWER than full attention, per the paper's own text.",
+    "stance": "refutes",
+    "stance_target": "The claim that NSA is a net training win at 32k on this class of hardware",
+    "evidence_type": "empirical",
+    "scope_conditions": "32K sequence length, GQA group size g=1; H20/H200; Triton NSA vs Triton FlashAttention",
+    "quoted_support": "vanilla NSA lags behind full attention in many tested cases, even with its sparse attention mechanism. For example, when the sequence length is 32K, one GQA group contains one query head, NSA consistently falls short of full attention, while FSA demonstrates superior performance than full attention.",
+    "numbers": [
+      "32K sequence length",
+      "g = 1 query head per GQA group"
+    ],
+    "entities": [
+      "NSA",
+      "full attention",
+      "GQA"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "published-as-a-conference-paper-at-iclr-2026"
+  },
+  {
+    "claim": "The full-attention baseline is 'an efficient Triton-based Flash Attention kernel (Triton, 2024)', not CUDA FlashAttention-2, so every NSA-vs-full-attention ratio in this paper understates NSA's disadvantage against a CUDA FA2 baseline.",
+    "stance": "supports",
+    "stance_target": "cc-4's rationale that a Triton baseline inflates the apparent sparse-attention payoff",
+    "evidence_type": "empirical",
+    "scope_conditions": "Baselines section of the experimental setup",
+    "quoted_support": "We utilize an efficient Triton-based Flash Attention kernel(Triton, 2024) for fair comparison.",
+    "numbers": [],
+    "entities": [
+      "Triton FlashAttention",
+      "FlashAttention-2",
+      "CUDA"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "published-as-a-conference-paper-at-iclr-2026"
+  },
+  {
+    "claim": "At kernel level FSA beats full attention by up to 6.4x / avg 2.4x on H20 and up to 4.9x / avg 2.3x on H200, while FSA beats NSA by up to 3.5x / avg 1.8x on H20 and up to 2.9x / avg 1.4x on H200 — so NSA's own kernel advantage over full attention is only ~1.3-1.6x on average.",
+    "stance": "refutes",
+    "stance_target": "The 6.3x/3.4x module-level figures being read as NSA's advantage over full attention",
+    "evidence_type": "empirical",
+    "scope_conditions": "Single-GPU kernel benchmarks, (BK,T) in {(64,16),(128,8)}, g in {1,2,4,8}, sequence lengths {8K,16K,32K,64K}",
+    "quoted_support": "FSA achieves up to 3.5x speedup and on average 1.8x lower kernel latency on H20 GPUs, and up to 2.9x speedup and on average 1.4x lower kernel latency on H200 GPUs compared to NSA ... FSA achieves up to 6.4x speedup and on average 2.4x lower kernel latency on H20 GPUs, and up to 4.9x speedup and on average 2.3x lower kernel latency on H200 GPUs compared to full attention.",
+    "numbers": [
+      "H20: FSA 3.5x/1.8x vs NSA; 6.4x/2.4x vs full",
+      "H200: FSA 2.9x/1.4x vs NSA; 4.9x/2.3x vs full",
+      "implied NSA vs full ~1.3x (H20) / ~1.6x (H200)"
+    ],
+    "entities": [
+      "FSA",
+      "NSA",
+      "full attention",
+      "H20",
+      "H200"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "published-as-a-conference-paper-at-iclr-2026"
+  },
+  {
+    "claim": "The token-selection phase dominates NSA attention cost at up to 79% (avg 65%) of total attention overhead, and FSA's gains come from reordering that phase (KV blocks outer, queries inner) rather than from changing the NSA algorithm.",
+    "stance": "neutral",
+    "stance_target": "Where the sparse-attention cost actually sits at long context",
+    "evidence_type": "empirical",
+    "scope_conditions": "Breakdown experiments across all evaluated NSA configurations",
+    "quoted_support": "the token selection phase dominates overall attention computation performance, accounting for up to 79% and on average 65% of total attention overhead across all evaluated configurations",
+    "numbers": [
+      "up to 79%",
+      "avg 65%",
+      "up to 7.6x / avg 3.4x selection speedup"
+    ],
+    "entities": [
+      "token selection",
+      "NSA",
+      "FSA"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "published-as-a-conference-paper-at-iclr-2026"
+  },
+  {
+    "claim": "The evaluation hardware is H20 and H200 only; no A100/sm_80 end-to-end training measurement appears in this paper, so the ratios transfer to a CMP 170HX by ratio only.",
+    "stance": "neutral",
+    "stance_target": "The evidence tier of this source for an sm_80 box",
+    "evidence_type": "empirical",
+    "scope_conditions": "Experimental setup: 'We use two GPU types for evaluations: NVIDIA H20 GPUs ... and NVIDIA H200 GPUs'",
+    "quoted_support": "We use two GPU types for evaluations: NVIDIA H20 GPUs (NVIDIA, 2024b), which provide 148 TFLOPS tensor core computational power and 4 TB/s memory bandwidth; and NVIDIA H200 GPUs (NVIDIA, 2024c), which deliver 989 TFLOPS tensor core computational power and 4.8 TB/s memory bandwidth.",
+    "numbers": [
+      "H20 148 TFLOPS / 4 TB/s",
+      "H200 989 TFLOPS / 4.8 TB/s",
+      "NVLink 450 GB/s"
+    ],
+    "entities": [
+      "H20",
+      "H200",
+      "A100",
+      "sm_80"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "published-as-a-conference-paper-at-iclr-2026"
+  }
+]

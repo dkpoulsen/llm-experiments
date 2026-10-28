@@ -1,0 +1,16 @@
+{
+  "ok": true,
+  "data": {
+    "note_id": "you-only-cache-once",
+    "title": "You Only Cache Once:",
+    "url": "https://arxiv.org/abs/2405.05254",
+    "domain": "arxiv.org",
+    "provider": "crawl4ai",
+    "path": "research/notes/you-only-cache-once.md",
+    "word_count": 8270,
+    "assets": [],
+    "raw_file": "raw/you-only-cache-once.pdf"
+  },
+  "vault": "/home/dkp/.thinkrail/worktrees/llm-experiments/workspace-1",
+  "timestamp": "2026-10-27T10:41:55.195560+00:00"
+}

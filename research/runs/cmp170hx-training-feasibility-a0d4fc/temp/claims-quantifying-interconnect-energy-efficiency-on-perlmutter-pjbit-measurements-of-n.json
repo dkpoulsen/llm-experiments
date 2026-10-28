@@ -1,0 +1,231 @@
+[
+  {
+    "claim": "Dynamic energy per bit on Perlmutter: NVLink 70.9 +/- 1.0 pJ/bit and PCIe (host<->GPU) 167.9 +/- 10.5 pJ/bit, so a bit moved over PCIe into/out of the GPU costs ~2.4x what it costs over NVLink.",
+    "stance": "supports",
+    "stance_target": "PCIe is the energy-expensive path relative to NVLink",
+    "evidence_type": "empirical",
+    "scope_conditions": "Perlmutter (HPE Cray EX), A100 GPUs, NERSC; microbenchmarks at near-peak bandwidth",
+    "quoted_support": "NVLink and PCIe demonstrated highly stable power profiles, yielding 70.9 pJ/bit and 167.9 pJ/bit, respectively.",
+    "numbers": [
+      "70.9 pJ/bit",
+      "167.9 pJ/bit",
+      "2.4x"
+    ],
+    "entities": [
+      "NVLink",
+      "PCIe",
+      "A100",
+      "Perlmutter",
+      "NERSC"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "The NIC+PCIe host-side path costs only 4.1 +/- 3.2 pJ/bit because it bypasses the GPU entirely, versus 167.9 pJ/bit for a GPU PCIe transfer.",
+    "stance": "supports",
+    "stance_target": "the GPU's PCIe attachment, not the wire, is what makes GPU PCIe transfers expensive",
+    "evidence_type": "empirical",
+    "scope_conditions": "host DRAM -> CPU IMC -> PCIe root complex -> Cassini NIC DMA",
+    "quoted_support": "The derived average energy efficiency for the active sender NIC+PCIe is 4.1 pJ/bit (standard error: 3.2 pJ/bit).",
+    "numbers": [
+      "4.1 pJ/bit",
+      "3.2 pJ/bit",
+      "167.9 pJ/bit"
+    ],
+    "entities": [
+      "Cassini NIC",
+      "PCIe",
+      "A100"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "The mechanism is an 'Active Tax': waking an A100's command processor, memory fabric and PCIe PHY from deep idle to P0 costs approximately 50 W of uncore power.",
+    "stance": "supports",
+    "stance_target": "a fixed power penalty dominates GPU PCIe transfers, independent of payload",
+    "evidence_type": "empirical",
+    "scope_conditions": "A100 GPU, PCIe H2D/D2H transfers",
+    "quoted_support": "Waking the NVIDIA A100 GPU’s command processor, memory fabric, and PCIe PHY from a deep idle state to an active state (P0) requires approximately 50 W of uncore power.",
+    "numbers": [
+      "50 W",
+      "P0"
+    ],
+    "entities": [
+      "A100",
+      "PCIe PHY",
+      "uncore"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "The measured H2D run shows GPU0 drawing 55.00 W at 24.94 GB/s (of a 32 GB/s PCIe Gen4 peak) and D2H 55.50 W at 24.53 GB/s - transfer power is dominated by the wake-up cost, not the payload.",
+    "stance": "supports",
+    "stance_target": "GPU PCIe transfer power is largely payload-independent",
+    "evidence_type": "empirical",
+    "scope_conditions": "Perlmutter A100, H2D/D2H microbenchmarks",
+    "quoted_support": "H2D ... 55.00 ... 24.94 32 / D2H ... 55.50 ... 24.53 32",
+    "numbers": [
+      "55.00 W",
+      "24.94 GB/s",
+      "32 GB/s",
+      "55.50 W",
+      "24.53 GB/s"
+    ],
+    "entities": [
+      "A100",
+      "PCIe Gen4",
+      "Perlmutter"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "The GPU DMA engine costs about 48 pJ/bit at 93.55 GB/s, derived from ~36 W of differential GPU power during P2P tests.",
+    "stance": "neutral",
+    "stance_target": "energy cost of the GPU DMA engine itself",
+    "evidence_type": "empirical",
+    "scope_conditions": "A100 P2P over NVLink, 93.55 GB/s",
+    "quoted_support": "This yields approximately 36 W at a bandwidth of βP2P = 93.55 GB/s, which equates to an energy cost of 48 pJ/bit.",
+    "numbers": [
+      "36 W",
+      "93.55 GB/s",
+      "48 pJ/bit"
+    ],
+    "entities": [
+      "A100",
+      "DMA engine",
+      "NVLink"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "The microbenchmarks achieved a high percentage of theoretical peak bandwidth (93.55 of 100 GB/s NVLink P2P; 24.94 of 32 GB/s PCIe H2D), which was necessary to make the dynamic power signal measurable.",
+    "stance": "neutral",
+    "stance_target": "methodological precondition for the pJ/bit measurements",
+    "evidence_type": "empirical",
+    "scope_conditions": "Perlmutter A100 microbenchmarks",
+    "quoted_support": "As shown, these microbenchmarks achieved a high percentage of their respective theoretical peaks. This high utilization was essential for elevating the network’s dynamic power consumption, rendering these otherwise subtle signals measurable.",
+    "numbers": [
+      "93.55 GB/s",
+      "100 GB/s",
+      "24.94 GB/s",
+      "32 GB/s"
+    ],
+    "entities": [
+      "NVLink",
+      "PCIe",
+      "Perlmutter"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "On a no-P2P box every collective stages through host RAM, so each GPU pays the 167.9 pJ/bit PCIe path energy AND the ~50 W uncore wake-up tax on every transfer.",
+    "stance": "supports",
+    "stance_target": "no-P2P collectives carry a double energy penalty on PCIe-attached GPUs",
+    "evidence_type": "theoretical",
+    "scope_conditions": "no-P2P fabric, host-staged collectives",
+    "quoted_support": "In contrast, the host-to-NIC data path entirely bypasses the GPU. The data flows directly from the host DRAM, through the highly efficient CPU Integrated Memory Controller (IMC) and PCIe Root Complex, and into the NIC’s DMA engine, avoiding the massive GPU uncore wakeup penalty entirely.",
+    "numbers": [
+      "167.9 pJ/bit",
+      "50 W"
+    ],
+    "entities": [
+      "PCIe",
+      "NVLink",
+      "A100",
+      "CMP 170HX"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "medium"
+  },
+  {
+    "claim": "On a 250 W-capped card a ~50 W uncore tax is 20% of the power budget spent moving bits rather than doing math - an efficiency argument for large-batch, low-frequency communication over per-layer all-to-alls.",
+    "stance": "supports",
+    "stance_target": "DDP with large global batches is the energy-efficient topology on this box",
+    "evidence_type": "theoretical",
+    "scope_conditions": "250 W power cap, no-P2P fabric",
+    "quoted_support": "requires approximately 50 W of uncore power",
+    "numbers": [
+      "50 W",
+      "250 W",
+      "20%"
+    ],
+    "entities": [
+      "CMP 170HX",
+      "A100",
+      "PCIe"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "medium"
+  },
+  {
+    "claim": "The measured pJ/bit figures are notably higher than vendor specifications, which the authors attribute to outdated literature parameters and undefined component boundaries.",
+    "stance": "neutral",
+    "stance_target": "reliability of vendor interconnect energy figures",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "NVLink and PCIe on Perlmutter",
+    "quoted_support": "These numbers are notably higher than those provided in vendor specifications.",
+    "numbers": [
+      "70.9 pJ/bit",
+      "167.9 pJ/bit"
+    ],
+    "entities": [
+      "NVLink",
+      "PCIe"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "medium"
+  },
+  {
+    "claim": "The methodology is software-centric: it correlates controlled stress on one component with job- and rack-level power telemetry, separating dynamic energy from constant-power overhead, because interconnects lack dedicated hardware sensors.",
+    "stance": "neutral",
+    "stance_target": "how interconnect energy can be measured without hardware sensors",
+    "evidence_type": "theoretical",
+    "scope_conditions": "HPE Cray EX with Cray telemetry + NVIDIA DCGM",
+    "quoted_support": "By correlating controlled stress on specific network components with job- and rack-level power telemetry, we isolate each component’s energy consumption, quantifying dynamic energy per bit (pJ/bit) for active communication while separating constant-power overhead.",
+    "numbers": [],
+    "entities": [
+      "DCGM",
+      "CrayPat",
+      "Perlmutter",
+      "HPE Cray EX"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "Caveat: measured on A100/PCIe Gen4 with full Cray telemetry; the CMP 170HX has weaker telemetry and a Gen2 x4 link, so absolute pJ/bit will differ, though the direction (PCIe >> NVLink plus a fixed wake-up tax) is architectural.",
+    "stance": "neutral",
+    "stance_target": "transferability of pJ/bit figures to the CMP 170HX box",
+    "evidence_type": "theoretical",
+    "scope_conditions": "A100 PCIe Gen4 vs GA100 PCIe Gen2 x4",
+    "quoted_support": "We evaluate this methodology on Perlmutter, an HPE Cray EX system based on NVIDIA A100 GPUs at the National Energy Research Scientific Computing Center (NERSC).",
+    "numbers": [
+      "PCIe Gen4",
+      "Gen2 x4"
+    ],
+    "entities": [
+      "A100",
+      "CMP 170HX",
+      "Perlmutter"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "medium"
+  }
+]

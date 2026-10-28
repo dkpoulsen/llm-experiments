@@ -1,0 +1,16 @@
+{
+  "ok": true,
+  "data": {
+    "note_id": "geofp8-geometry-aware-fp8-gradient",
+    "title": "GeoFP8: Geometry-Aware FP8 Gradient",
+    "url": "https://arxiv.org/abs/2607.07494",
+    "domain": "arxiv.org",
+    "provider": "crawl4ai",
+    "path": "research/notes/geofp8-geometry-aware-fp8-gradient.md",
+    "word_count": 8948,
+    "assets": [],
+    "raw_file": "raw/geofp8-geometry-aware-fp8-gradient.pdf"
+  },
+  "vault": "/home/dkp/.thinkrail/worktrees/llm-experiments/workspace-1",
+  "timestamp": "2026-10-27T10:47:09.761442+00:00"
+}

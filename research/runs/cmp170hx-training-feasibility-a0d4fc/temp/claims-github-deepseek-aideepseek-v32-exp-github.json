@@ -1,0 +1,60 @@
+[
+  {
+    "claim": "DeepSeek's own V3.2-Exp release notes record a RoPE implementation discrepancy in the indexer module: the indexer's RoPE input requires a non-interleaved layout while MLA's RoPE expects an interleaved layout, and the bug was only fixed in November 2025.",
+    "stance": "neutral",
+    "stance_target": "The implementation risk of reproducing DSA/CSA2 indexers",
+    "evidence_type": "anecdotal",
+    "scope_conditions": "Repository update note dated 2025.11.17",
+    "quoted_support": "We have identified that previous versions of the inference demo code contained an implementation discrepancy in Rotary Position Embedding (RoPE) within the indexer module, potentially leading to degraded model performance. Specifically, the input tensor to RoPE in the indexer module requires a non-interleaved layout, whereas RoPE in the MLA module expects an interleaved layout.",
+    "numbers": [],
+    "entities": [
+      "RoPE",
+      "indexer",
+      "MLA",
+      "DeepSeek-V3.2-Exp"
+    ],
+    "time_period": "2025",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "github-deepseek-aideepseek-v32-exp-github"
+  },
+  {
+    "claim": "DeepSeek states that DSA delivers substantial improvements in long-context training and inference efficiency while maintaining virtually identical model output quality, and that the training configuration was deliberately aligned with V3.1-Terminus to isolate the effect of sparse attention.",
+    "stance": "supports",
+    "stance_target": "Whether sparse attention can be introduced without a quality regression",
+    "evidence_type": "empirical",
+    "scope_conditions": "DeepSeek-V3.2-Exp release; benchmark table vs V3.1-Terminus",
+    "quoted_support": "DeepSeek Sparse Attention (DSA) achieves fine-grained sparse attention for the first time, delivering substantial improvements in long-context training and inference efficiency while maintaining virtually identical model output quality.",
+    "numbers": [
+      "MMLU-Pro 85.0 vs 85.0",
+      "AIME 2025 88.4 vs 89.3",
+      "Codeforces 2046 vs 2121"
+    ],
+    "entities": [
+      "DSA",
+      "DeepSeek-V3.2-Exp",
+      "DeepSeek-V3.1-Terminus"
+    ],
+    "time_period": "2025",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "github-deepseek-aideepseek-v32-exp-github"
+  },
+  {
+    "claim": "DSA was released as an experimental intermediate step toward a next-generation architecture, explicitly framed as exploring and validating training and inference efficiency optimizations for long-context scenarios rather than as a production-final design.",
+    "stance": "neutral",
+    "stance_target": "How settled the DSA/CSA design is",
+    "evidence_type": "anecdotal",
+    "scope_conditions": "Repository introduction",
+    "quoted_support": "an experimental version of our model. As an intermediate step toward our next-generation architecture, V3.2-Exp builds upon V3.1-Terminus by introducing DeepSeek Sparse Attention - a sparse attention mechanism designed to explore and validate optimizations for training and inference efficiency in long-context scenarios.",
+    "numbers": [],
+    "entities": [
+      "DSA",
+      "DeepSeek-V3.2-Exp"
+    ],
+    "time_period": "2025",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "github-deepseek-aideepseek-v32-exp-github"
+  }
+]

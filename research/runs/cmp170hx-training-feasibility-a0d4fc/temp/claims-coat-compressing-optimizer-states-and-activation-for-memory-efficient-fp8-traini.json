@@ -1,0 +1,246 @@
+[
+  {
+    "claim": "COAT reduces end-to-end training memory footprint by 1.54x versus BF16 while achieving nearly lossless performance across LLM pretraining, fine-tuning and VLM training.",
+    "stance": "supports",
+    "stance_target": "FP8 optimizer-state and activation compression is a large memory lever",
+    "evidence_type": "empirical",
+    "scope_conditions": "LLM pretraining, SFT and VLM training",
+    "quoted_support": "Experiments demonstrate that COAT effectively reduces end-to-end training memory footprint by 1.54× compared to BF16 while achieving nearly lossless performance across various tasks",
+    "numbers": [
+      "1.54x"
+    ],
+    "entities": [
+      "COAT",
+      "BF16",
+      "FP8"
+    ],
+    "time_period": "2024",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "COAT achieves a 1.43x end-to-end training speedup versus BF16, on par with or surpassing Transformer Engine's speedup.",
+    "stance": "supports",
+    "stance_target": "FP8 memory compression also converts into wall-clock speedup",
+    "evidence_type": "empirical",
+    "scope_conditions": "H100 training runs",
+    "quoted_support": "COAT also achieves a 1.43× end-to-end training speedup compared to BF16, performing on par with or surpassing TransformerEngine's speedup.",
+    "numbers": [
+      "1.43x"
+    ],
+    "entities": [
+      "COAT",
+      "BF16",
+      "Transformer Engine"
+    ],
+    "time_period": "2024",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "COAT enables doubling the batch size in distributed training settings, which is directly relevant to amortising communication overhead.",
+    "stance": "supports",
+    "stance_target": "memory compression buys larger global batches, which is the lever for reducing DDP communication fraction",
+    "evidence_type": "empirical",
+    "scope_conditions": "distributed training on H100",
+    "quoted_support": "COAT enables efficient full-parameter training of large models on fewer GPUs, and facilitates doubling the batch size in distributed training settings",
+    "numbers": [
+      "2x batch size"
+    ],
+    "entities": [
+      "COAT",
+      "FSDP"
+    ],
+    "time_period": "2024",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "The worked example is Llama-2-13B on 8x80GB H100 under FSDP, i.e. a sharded-data-parallel topology.",
+    "stance": "neutral",
+    "stance_target": "topology in which COAT's memory savings were measured",
+    "evidence_type": "empirical",
+    "scope_conditions": "Llama-2-13B, 8x H100 80GB, FSDP",
+    "quoted_support": "End-to-end per-GPU memory com-parison when training Llama-2-13B on 8×80G H100 using FSDP.",
+    "numbers": [
+      "Llama-2-13B",
+      "8x H100",
+      "80 GB",
+      "FSDP"
+    ],
+    "entities": [
+      "COAT",
+      "Llama-2-13B",
+      "FSDP",
+      "H100"
+    ],
+    "time_period": "2024",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "Dynamic Range Expansion shifts optimizer-state distributions to better fill the FP8 representable range, cutting quantisation error.",
+    "stance": "supports",
+    "stance_target": "optimizer states can be quantised to FP8 with low error if the range is aligned",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Adam-family optimizer states",
+    "quoted_support": "Dynamic Range Expansion, which aligns optimizer state distributions more closely with the FP8 representation range, thereby reducing quantization error",
+    "numbers": [],
+    "entities": [
+      "COAT",
+      "FP8",
+      "optimizer states"
+    ],
+    "time_period": "2024",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "Mixed-Granularity Activation Quantization combines per-tensor and per-group strategies to cut activation memory.",
+    "stance": "supports",
+    "stance_target": "activation memory is a first-order training cost that can be compressed",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Transformer activations",
+    "quoted_support": "Mixed-Granularity Activation Quantization, which optimizes activation memory using a combination of per-tensor and per-group quantization strategies",
+    "numbers": [],
+    "entities": [
+      "COAT",
+      "activation memory"
+    ],
+    "time_period": "2024",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "Prior FP8 frameworks (including FP8-LM) leave activations in higher precision and the second-order momentum in FP16, so they capture only part of FP8's memory advantage.",
+    "stance": "refutes",
+    "stance_target": "existing FP8 frameworks fully exploit FP8's memory potential",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "FP8-LM, Transformer Engine",
+    "quoted_support": "they do not tackle the memory consumption of activations and still leave the optimizer's second-order momentum in higher precision",
+    "numbers": [],
+    "entities": [
+      "COAT",
+      "FP8-LM",
+      "Transformer Engine"
+    ],
+    "time_period": "2024",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "The activation memory problem becomes more critical when optimizer, gradient and weights are sharded across GPUs (FSDP/ZeRO), because activations are not sharded.",
+    "stance": "supports",
+    "stance_target": "sharded-data-parallel training shifts the memory bottleneck onto activations",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "FSDP/ZeRO sharding",
+    "quoted_support": "The memory problem of activations becomes even more critical when optimizer, gradient, and weights are sharded across",
+    "numbers": [],
+    "entities": [
+      "COAT",
+      "FSDP",
+      "ZeRO",
+      "activation memory"
+    ],
+    "time_period": "2024",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "FP8 training is tied to Hopper: the paper frames FP8 as practical only \"with the introduction of Nvidia's Hopper GPU architecture\".",
+    "stance": "refutes",
+    "stance_target": "COAT's memory savings are available on Ampere-generation GA100 hardware",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "H100 (sm_90) vs GA100 (sm_80)",
+    "quoted_support": "With the introduction of Nvidia's Hopper GPU architecture, FP8 is emerging as a practical",
+    "numbers": [
+      "H100",
+      "sm_90",
+      "GA100",
+      "sm_80"
+    ],
+    "entities": [
+      "COAT",
+      "FP8",
+      "H100",
+      "GA100",
+      "CMP 170HX"
+    ],
+    "time_period": "2024",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "FP8's theoretical promise is 2x speed and half the memory footprint, but realising it requires quantising optimizer states, gradients, weights and activations - not just GEMM compute.",
+    "stance": "supports",
+    "stance_target": "FP8 speedups require end-to-end FP8, not just FP8 matmuls",
+    "evidence_type": "theoretical",
+    "scope_conditions": "FP8 training frameworks",
+    "quoted_support": "potential to (1) double the speed and (2) halve the memory footprint. To achieve practical speedup,",
+    "numbers": [
+      "2x",
+      "0.5x memory"
+    ],
+    "entities": [
+      "COAT",
+      "FP8"
+    ],
+    "time_period": "2024",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "The second-order momentum is harder to quantise than the first-order momentum, and activation spikes make activation quantisation harder still.",
+    "stance": "neutral",
+    "stance_target": "which tensors resist FP8 quantisation",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "optimizer states and activations",
+    "quoted_support": "tization than first-order momentum (Fishman et al., 2024), and activations' large spikes also make",
+    "numbers": [],
+    "entities": [
+      "COAT",
+      "FP8",
+      "second-order momentum"
+    ],
+    "time_period": "2024",
+    "region": "",
+    "confidence": "medium"
+  },
+  {
+    "claim": "COAT is released as open code (NVlabs/COAT), making it a directly reproducible baseline.",
+    "stance": "neutral",
+    "stance_target": "reproducibility of the COAT results",
+    "evidence_type": "empirical",
+    "scope_conditions": "NVlabs GitHub",
+    "quoted_support": "The code is available at https://github.com/NVlabs/COAT.",
+    "numbers": [],
+    "entities": [
+      "COAT",
+      "NVlabs"
+    ],
+    "time_period": "2024",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "Transferability caveat: COAT's 1.54x memory reduction is measured on H100 with FP8 tensor-core support; on GA100/sm_80 the same compression would need emulation, and the paper does not measure that path.",
+    "stance": "neutral",
+    "stance_target": "applicability of COAT to the CMP 170HX box",
+    "evidence_type": "theoretical",
+    "scope_conditions": "H100 vs GA100",
+    "quoted_support": "The code is available at https://github.com/NVlabs/COAT.",
+    "numbers": [
+      "1.54x",
+      "sm_90",
+      "sm_80"
+    ],
+    "entities": [
+      "COAT",
+      "CMP 170HX",
+      "GA100"
+    ],
+    "time_period": "2024",
+    "region": "",
+    "confidence": "medium"
+  }
+]

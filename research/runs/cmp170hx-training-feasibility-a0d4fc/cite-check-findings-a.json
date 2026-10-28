@@ -1,0 +1,50 @@
+[
+  {
+    "pair_index": 2,
+    "sentence": "a sanitized NCCL receipt on three cards at Gen2 x16 behind PLX switches measures 6.63–6.68 GB/s host-staged copy [[readmemd]] (T2)",
+    "note_id": "readmemd",
+    "cited_note_id": "readmemd",
+    "verdict": "partial",
+    "severity": "minor",
+    "problem": "Configuration is right (three cards, Gen2 x16, two PLX PEX 8747 switches, sanitized receipt) but the magnitude is not. The note's host-staged copy measurement is cuMemcpyPeer at 256 MiB = 6.21–6.30 GB/s; 6.68 GB/s is the note's single-card D2H reference (a different configuration, not a host-staged inter-card copy), and 6.63 GB/s appears nowhere in this note — it is the ocl_pcie_bw figure from physical-modsmd / pcie-subsystemmd on a different rig. The report's own Source Tensions section already uses the correct 6.21–6.30 GB/s figure for this rig, so §1 is internally inconsistent.",
+    "evidence": "readmemd Results table: `cuMemcpyPeer`, 256 MiB | 6.21–6.30 GB/s (single-card D2H: 6.68 GB/s). No 6.63 anywhere in the note.",
+    "correct_note_id": null,
+    "suggested_fix": "Change the number to 6.21–6.30 GB/s host-staged copy (cuMemcpyPeer) against a 6.68 GB/s single-card D2H reference. If the 6.63–6.67 figure is wanted, cite [[physical-modsmd]] or [[pcie-subsystemmd]] and label it ocl_pcie_bw on a four-card rig, not the three-card NCCL receipt."
+  },
+  {
+    "pair_index": 4,
+    "sentence": "At Gen2 x16, NCCL reaches 3.69–4.24 GB/s busbw against a 6.63–6.68 GB/s one-way rate — 53–64% of the link [[readmemd]] (T2/T4)",
+    "note_id": "readmemd",
+    "cited_note_id": "readmemd",
+    "verdict": "partial",
+    "severity": "minor",
+    "problem": "The busbw half is supported (3.69 / 3.85 / 4.24 GB/s). The one-way-rate half is not: the note's one-way figures are 6.68 GB/s (single-card D2H reference) and 6.21–6.30 GB/s (cuMemcpyPeer host-staged copy); 6.63 GB/s is absent. The derived efficiency band is also off at the low end — 3.69/6.68 = 55.2%, so the band is 55–64%, not 53–64%.",
+    "evidence": "readmemd: busbw 3.69 GB/s (same-switch pair), 3.85 GB/s (cross-switch pair), 4.24 GB/s (all three); cuMemcpyPeer 6.21–6.30 GB/s; D2H reference 6.68 GB/s.",
+    "correct_note_id": null,
+    "suggested_fix": "Use 6.68 GB/s (single-card D2H reference) as the one-way rate and 55–64% as the efficiency band; or use 6.21–6.30 GB/s and 59–68%. Drop the 6.63 lower bound, which is not in this note."
+  },
+  {
+    "pair_index": 10,
+    "sentence": "The only figure with a full receipt chain is the 180 W one: 77.7 / 76.4 / 74.6 / 78.5 TFLOP/s per card over a ten-minute `gpu-burn -tc`, peak core 63 °C against an 80 °C stop rule, so the shortfall from 202 TFLOPS is not thermal throttling [[readmemd-2]], [[2026-09-02-cmp170hx-health-gateipynb]] (T2)",
+    "note_id": "2026-09-02-cmp170hx-health-gateipynb",
+    "cited_note_id": "2026-09-02-cmp170hx-health-gateipynb",
+    "verdict": "partial",
+    "severity": "minor",
+    "problem": "The cited note does not contain the receipt chain. Its body is the NCCL all_reduce.cu source (25.6k chars of C++, NVIDIA copyright), not the health-gate notebook: no 77.7 / 76.4 / 78.5 per-card figures, no 180 W cap, no ten-minute gpu-burn -tc, no 63 °C peak, no 80 °C stop rule, no 202 TFLOPS comparison. The only support is a one-line provenance note naming 'the 74.6-78.5 TFLOP/s tensor-core gate figure'. The full receipt is in [[readmemd-2]], which the sentence already cites.",
+    "evidence": "Note body = all_reduce.cu (AllReduceGetBw / ncclTestEngine); sole relevant text: 'UNDERSTANDING.md cites this notebook as the receipt for the 74.6-78.5 TFLOP/s tensor-core gate figure'.",
+    "correct_note_id": "readmemd-2",
+    "suggested_fix": "Drop the [[2026-09-02-cmp170hx-health-gateipynb]] citation — [[readmemd-2]] carries the per-card receipt — or re-ingest the notebook so the note actually contains the results table."
+  },
+  {
+    "pair_index": 17,
+    "sentence": "What remains is the bubble: (5−1)/32 = 12.5% for 1F1B at 32 micro-batches, ~4.2% for zero-bubble schedules, and under 4.5% measured for RoundPipe with asynchronous optimizer updates [[efficient-training-on-multiple-consumer-gpus-with]] (T2/T3)",
+    "note_id": "efficient-training-on-multiple-consumer-gpus-with",
+    "cited_note_id": "efficient-training-on-multiple-consumer-gpus-with",
+    "verdict": "partial",
+    "severity": "minor",
+    "problem": "The RoundPipe clause is supported ('driving the absolute bubble ratio down to below 4.5%'). The ~4.2% zero-bubble figure is not in this note — it mentions Zero-Bubble schedules only qualitatively — and belongs to [[zero-bubble-pipeline-parallelism]] ('bubble size is reduced to a third of 1F1B's size', i.e. 12.5%/3 ≈ 4.2%). The 1F1B figure also conflicts with this note's own formula: the note gives the bubble as (S−1)/(M+S−1), which at S=5, M=32 is 11.1%, not (S−1)/M = 12.5%.",
+    "evidence": "RoundPipe note: 'pipeline bubble of (S−1)/(M+S−1)'; 'RoundPipe with asynchronous optimizer updates ... driving the absolute bubble ratio down to below 4.5%'. No 4.2% anywhere; zero-bubble note: 'bubble size is reduced to a third of 1F1B's size'.",
+    "correct_note_id": "zero-bubble-pipeline-parallelism",
+    "suggested_fix": "Split the citation: keep [[efficient-training-on-multiple-consumer-gpus-with]] for the <4.5% RoundPipe figure and add [[zero-bubble-pipeline-parallelism]] for the ~4.2% ZB-H1 figure, or delete the zero-bubble clause. Optionally state that the exact 1F1B bubble is (S−1)/(M+S−1) = 11.1% and 12.5% is the (S−1)/M approximation."
+  }
+]

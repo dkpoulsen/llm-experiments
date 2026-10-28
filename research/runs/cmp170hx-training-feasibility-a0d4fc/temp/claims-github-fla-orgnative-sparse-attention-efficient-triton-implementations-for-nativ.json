@@ -1,0 +1,83 @@
+[
+  {
+    "claim": "fla-org's Triton NSA reimplementation reports at T=16,384 a forward of 20.165 ms vs flash 53.634 ms (2.66x) and a backward of 116.298 ms vs flash_bwd 204.354 ms (1.76x) — well below the NSA paper's 3.8x/2.0x at the same length.",
+    "stance": "refutes",
+    "stance_target": "The NSA paper's headline module-level speedup ratios being reproducible",
+    "evidence_type": "empirical",
+    "scope_conditions": "benchmarks/benchmark_nsa.py output table; Triton NSA vs Triton flash; hardware not stated in the README",
+    "quoted_support": "Performance: T nsa nsa_bwd flash flash_bwd ... 16384.0 20.164879 116.297920 53.633568 204.353607",
+    "numbers": [
+      "T=16384: 20.165 vs 53.634 ms fwd (2.66x)",
+      "116.298 vs 204.354 ms bwd (1.76x)",
+      "T=8192: 9.954 vs 13.465 (1.35x fwd), 49.575 vs 52.567 (1.06x bwd)"
+    ],
+    "entities": [
+      "NSA",
+      "Triton",
+      "FlashAttention",
+      "fla-org"
+    ],
+    "time_period": "2025-03",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "github-fla-orgnative-sparse-attention-efficient-triton-implementations-for-nativ"
+  },
+  {
+    "claim": "At T=4,096 the same table shows NSA SLOWER than flash in both directions (4.870 vs 3.520 ms forward = 0.72x; 23.083 vs 14.193 ms backward = 0.61x), so the sparse-attention win is length-dependent and absent below ~8k.",
+    "stance": "refutes",
+    "stance_target": "Any claim that NSA is uniformly faster than full attention",
+    "evidence_type": "empirical",
+    "scope_conditions": "Same benchmark table, T=4096 row",
+    "quoted_support": "4096.0 4.869712 23.082577 3.520352 14.193248",
+    "numbers": [
+      "T=4096: 4.870 vs 3.520 ms fwd (0.72x)",
+      "23.083 vs 14.193 ms bwd (0.61x)"
+    ],
+    "entities": [
+      "NSA",
+      "Triton",
+      "FlashAttention"
+    ],
+    "time_period": "2025-03",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "github-fla-orgnative-sparse-attention-efficient-triton-implementations-for-nativ"
+  },
+  {
+    "claim": "The repository ships full NSA training support via `flame` (announced 2025-03-15) and a `parallel_nsa` op whose q/k/v tensors require grad, i.e. a Triton autograd-capable NSA kernel that is arch-portable in principle.",
+    "stance": "supports",
+    "stance_target": "The existence of a runnable NSA training kernel that could be ported to sm_80",
+    "evidence_type": "empirical",
+    "scope_conditions": "README News and Usage sections",
+    "quoted_support": "[2025-03-15] We now add full support for NSA training with `flame`.",
+    "numbers": [],
+    "entities": [
+      "flame",
+      "parallel_nsa",
+      "Triton",
+      "NSA"
+    ],
+    "time_period": "2025-03",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "github-fla-orgnative-sparse-attention-efficient-triton-implementations-for-nativ"
+  },
+  {
+    "claim": "The repo does not state a tested A100/sm_80 receipt or a hardware specification for its benchmark table, so its sm_80 runnability is inferred from Triton portability rather than measured.",
+    "stance": "neutral",
+    "stance_target": "The evidence tier of the fla-org benchmark for an sm_80 box",
+    "evidence_type": "empirical",
+    "scope_conditions": "Full README; no GPU model named in the Benchmarks section",
+    "quoted_support": "To measure the efficiency of NSA: python benchmarks/benchmark_nsa.py",
+    "numbers": [],
+    "entities": [
+      "A100",
+      "sm_80",
+      "Triton"
+    ],
+    "time_period": "2025-03",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "github-fla-orgnative-sparse-attention-efficient-triton-implementations-for-nativ"
+  }
+]

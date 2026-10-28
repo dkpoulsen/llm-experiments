@@ -1,0 +1,44 @@
+[
+  {
+    "claim": "Existing collective communication libraries do not achieve the performance their analytical models predict on PCIe-dependent systems, because transfers slow down when multiple transfers traverse the CPU in a particular pattern due to NUMA architecture.",
+    "stance": "supports",
+    "stance_target": "the repo's measured ~0.75 GiB/s NCCL all-reduce: the gap between nominal link rate and achieved collective bandwidth is a known, structural property of PCIe-dependent systems",
+    "evidence_type": "empirical",
+    "scope_conditions": "PCIe-dependent systems: GPUs communicating through the CPU PCIe host bridge, possibly across NUMA nodes or CPU sockets, with no NVLink and no external PCIe switches",
+    "quoted_support": "We found that existing collective communication libraries do not achieve the target performance that their performance model estimates in PCIe-dependent systems. One of the reasons is that transfers slow down when multiple transfers go through the CPU in a specific pattern due to NUMA architectures.",
+    "numbers": [],
+    "entities": ["NCCL", "TCCL", "NUMA", "PCIe host bridge"],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "github-mcrltccl-thunder-research-groups-collective-communication-library-github"
+  },
+  {
+    "claim": "Poor placement of bounce buffers when GPUs communicate via CPU memory is a second, independent cause of collective slowdown on PCIe-dependent systems, and neither congestion pattern appears when communication uses links outside the CPU.",
+    "stance": "supports",
+    "stance_target": "the claim that host-staged collectives need explicit buffer-placement tuning that NVLink-class systems never require",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "host-staged GPU-to-GPU communication via CPU memory",
+    "quoted_support": "Another is the poor placement of the bounce buffers when GPUs communicate via CPU memory. Such congestion patterns are not identified or avoided by the existing collective communication libraries because the phenomenon does not appear when communication utilizes links outside the CPU.",
+    "numbers": [],
+    "entities": ["bounce buffer", "CPU memory", "NUMA"],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "github-mcrltccl-thunder-research-groups-collective-communication-library-github"
+  },
+  {
+    "claim": "TCCL is a drop-in replacement for NCCL on PCIe-dependent systems: it ships as libnccl.so, is selected with NCCL_ALGO=TCCL plus a path-information XML file, and uses a profiled pathfinder because the number of candidate communication paths grows exponentially with GPU count.",
+    "stance": "neutral",
+    "stance_target": "whether the box's collective bottleneck can be attacked with existing open-source tooling rather than custom code",
+    "evidence_type": "empirical",
+    "scope_conditions": "TCCL runtime fork of NCCL; pathfinder is an MPI program profiled per cluster",
+    "quoted_support": "The runtime is a modification of NCCL such that the paths collective communication operations use are replaced with the paths found by the pathfinder while allowing a transparent interface to use TCCL without any code changes... Since the number of possible communication paths increases exponentially with the number of GPUs in a cluster, it is infeasible to brute-force search all the communication paths.",
+    "numbers": [],
+    "entities": ["TCCL", "NCCL", "pathfinder", "libnccl.so"],
+    "time_period": "2024-2025",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "github-mcrltccl-thunder-research-groups-collective-communication-library-github"
+  }
+]

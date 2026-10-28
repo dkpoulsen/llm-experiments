@@ -1,0 +1,68 @@
+[
+  {
+    "claim": "The community Ampere port of FlashMLA ships a warp-specialized SM80 kernel, but its only entry point is flash_mla_with_kvcache (paged-KV decode) — there is no training or backward API.",
+    "stance": "supports",
+    "stance_target": "cc-4's claim that the only sm_80 sparse-MLA path is inference-only",
+    "evidence_type": "empirical",
+    "scope_conditions": "pzhao-eng/FlashMLA branch a100_replace; README Usage section",
+    "quoted_support": "Warp-specialized SM80 kernel (warp_spec=True): splits 8 warps into 4 consumer (QK^T GEMM + softmax) and 4 producer (global memory loads) ... o_i, lse_i = flash_mla_with_kvcache(q_i, kvcache_i, block_table, cache_seqlens, dv, tile_scheduler_metadata, num_splits, causal=True, warp_spec=True)",
+    "numbers": [
+      "8 warps",
+      "block size 32"
+    ],
+    "entities": [
+      "FlashMLA",
+      "SM80",
+      "Ampere",
+      "paged KV cache"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "github-pzhao-engflashmla-github"
+  },
+  {
+    "claim": "The Ampere port's performance is poor by the author's own admission — up to 464 GB/s memory-bound and 59 TFLOPS compute-bound on A100 SXM against peaks of 2,039 GB/s and 312 TFLOPS.",
+    "stance": "neutral",
+    "stance_target": "Whether an sm_80 port would be competitive even if it existed",
+    "evidence_type": "empirical",
+    "scope_conditions": "README benchmark note, CUDA 12.8, A100 SXM",
+    "quoted_support": "Due to the different architectures, the performance of Ampere is currently poor due to register overflow ... It is able up to 464 GB/s in memory-bound configuration and 59 TFLOPS in computation-bound configuration on A100 SXM",
+    "numbers": [
+      "464 GB/s",
+      "59 TFLOPS",
+      "2,039 GB/s peak",
+      "312 TFLOPS peak",
+      "~23% of peak bandwidth",
+      "~19% of peak FLOPS"
+    ],
+    "entities": [
+      "A100 SXM",
+      "FlashMLA",
+      "Ampere"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "github-pzhao-engflashmla-github"
+  },
+  {
+    "claim": "This is the strongest candidate found for an sm_80 sparse-MLA kernel and it is decode-only, so it does not satisfy cc-4(a)'s requirement of an sm_80 DSA/CSA2 forward+backward training kernel.",
+    "stance": "supports",
+    "stance_target": "The committed position that CSA2 at 32k on sm_80 remains a porting project",
+    "evidence_type": "empirical",
+    "scope_conditions": "Full README; only flash_mla_with_kvcache exposed",
+    "quoted_support": "Usage ... from flash_mla import get_mla_metadata, flash_mla_with_kvcache",
+    "numbers": [],
+    "entities": [
+      "sm_80",
+      "DSA",
+      "CSA2",
+      "backward"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "github-pzhao-engflashmla-github"
+  }
+]

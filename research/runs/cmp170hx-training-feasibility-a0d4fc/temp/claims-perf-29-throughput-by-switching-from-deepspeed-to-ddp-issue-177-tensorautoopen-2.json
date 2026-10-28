@@ -1,0 +1,113 @@
+[
+  {
+    "claim": "On 8x A100 80GB with an NV12 NVSwitch fabric, plain DDP beats DeepSpeed ZeRO-2 by 2.90x in samples/s (83.1 vs 28.7) on the same model and hardware, and by 1.96x after a bf16-Adam-state bug was fixed (4 GPUs: 30.2 vs 15.4 samples/s).",
+    "stance": "supports",
+    "stance_target": "cc-3's premise that ZeRO-2's 'exactly 2-Psi' byte identity does not imply DDP-identical wall-clock",
+    "evidence_type": "empirical",
+    "scope_conditions": "pi05 / PaliGemma+Gemma-expert ~3.4B params, accelerate harness, 8x A100 80GB NV12 NVSwitch; post-fix re-bench on 4x A100",
+    "quoted_support": "switching the training script to plain DDP (distributed_type: MULTI_GPU) ... gives 2.90x more samples/s ... The real same-hardware DDP-over-ZeRO-2 win at 4 GPUs is ~1.96x, not the 2.90x originally claimed",
+    "numbers": [
+      "ZeRO-2 28.7 samples/s (3,909 ms)",
+      "DDP 83.1 samples/s (1,155 ms)",
+      "2.90x",
+      "post-fix 1.96x (30.2 vs 15.4 s/s)"
+    ],
+    "entities": [
+      "DeepSpeed ZeRO-2",
+      "DDP",
+      "A100 80GB",
+      "NVSwitch"
+    ],
+    "time_period": "2026-04",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "perf-29-throughput-by-switching-from-deepspeed-to-ddp-issue-177-tensorautoopen-2"
+  },
+  {
+    "claim": "The 2.9x gap is explicitly NOT bandwidth: the fabric is NV12 NVSwitch, NCCL initialises P2P/CUMEM/read on 24 channels, an 8 GB bf16 reduce-scatter should take ~25 ms, and every communication-overlap knob produced zero improvement.",
+    "stance": "refutes",
+    "stance_target": "Reading this source as evidence about PCIe fabric behaviour",
+    "evidence_type": "empirical",
+    "scope_conditions": "nvidia-smi topo -m, NCCL init log, overlap_comm/contiguous_gradients/reduce_bucket_size/allgather_bucket_size/round_robin_gradients A/B",
+    "quoted_support": "Adding overlap_comm: true, contiguous_gradients: true, reduce_bucket_size: 5e8, allgather_bucket_size: 5e8, round_robin_gradients: true to the DeepSpeed config produced zero measurable improvement (3071 ms -> 3093 ms backward on 4-rank ZeRO-2)",
+    "numbers": [
+      "NV12 NVSwitch",
+      "24 NCCL channels",
+      "~25 ms expected reduce-scatter for 8 GB bf16",
+      "3,071 -> 3,093 ms (no change)"
+    ],
+    "entities": [
+      "NCCL",
+      "NVSwitch",
+      "reduce-scatter",
+      "DeepSpeed"
+    ],
+    "time_period": "2026-04",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "perf-29-throughput-by-switching-from-deepspeed-to-ddp-issue-177-tensorautoopen-2"
+  },
+  {
+    "claim": "The overhead is host-side: single-GPU backward is 641 ms versus 3,071 ms on 4-rank ZeRO-2, and the ~2.4 s delta is CPU-side Python execution of DeepSpeed's per-parameter post-accumulation hooks stalling the next kernel launch.",
+    "stance": "supports",
+    "stance_target": "The mechanism by which ZeRO-2 can lose wall-clock independent of the wire",
+    "evidence_type": "empirical",
+    "scope_conditions": "Same script and model, 4-rank ZeRO-2 bs=12 vs single GPU bs=13",
+    "quoted_support": "The extra ~2400 ms on multi-GPU is not GPU compute and not GPU communication. It's CPU-side Python execution of post-accumulation hooks DeepSpeed installs on every parameter tensor",
+    "numbers": [
+      "forward 391 vs 376 ms",
+      "backward 3,071 vs 641 ms",
+      "total 3,468 vs 1,025 ms",
+      "~2.4 s delta"
+    ],
+    "entities": [
+      "DeepSpeed per-parameter hooks",
+      "ZeRO-2",
+      "DDP bucket hooks"
+    ],
+    "time_period": "2026-04",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "perf-29-throughput-by-switching-from-deepspeed-to-ddp-issue-177-tensorautoopen-2"
+  },
+  {
+    "claim": "The pathology scales with the number of small parameter tensors, so it is worst for models with hundreds of distinct small tensors (LayerNorm, bias, gate projections, expert weights) and is fabric-independent — it would bite on a CMP 170HX box too.",
+    "stance": "supports",
+    "stance_target": "The risk that ZeRO-2 on a many-expert MoE costs wall-clock for host reasons even on a slow fabric",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "PaliGemma + Gemma expert; HF benchmarks with few large tensors do not reproduce it",
+    "quoted_support": "Pi05 is the bad case: PaliGemma + Gemma expert have hundreds of distinct small tensors (every LayerNorm, embed, gate proj, bias), each one paying the Python hook cost.",
+    "numbers": [
+      "hundreds of small tensors"
+    ],
+    "entities": [
+      "MoE experts",
+      "LayerNorm",
+      "DeepSpeed hooks"
+    ],
+    "time_period": "2026-04",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "perf-29-throughput-by-switching-from-deepspeed-to-ddp-issue-177-tensorautoopen-2"
+  },
+  {
+    "claim": "ZeRO-2 backward time got worse going from 4 to 8 GPUs (3,071 -> 3,442 ms) even with overlap_comm enabled, which the authors read as conclusive evidence the bottleneck is host-side rather than bandwidth-limited.",
+    "stance": "supports",
+    "stance_target": "The claim that more ranks do not simply add wire cost but add host coordination pressure",
+    "evidence_type": "empirical",
+    "scope_conditions": "4-rank vs 8-rank ZeRO-2, same model, overlap_comm enabled",
+    "quoted_support": "ZeRO-2 backward actually got worse going from 4 to 8 GPUs (3071 ms -> 3442 ms) even with overlap_comm enabled. More ranks = more coordination pressure on the same per-parameter Python pathway.",
+    "numbers": [
+      "3,071 ms at 4 ranks",
+      "3,442 ms at 8 ranks"
+    ],
+    "entities": [
+      "ZeRO-2",
+      "overlap_comm"
+    ],
+    "time_period": "2026-04",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "perf-29-throughput-by-switching-from-deepspeed-to-ddp-issue-177-tensorautoopen-2"
+  }
+]

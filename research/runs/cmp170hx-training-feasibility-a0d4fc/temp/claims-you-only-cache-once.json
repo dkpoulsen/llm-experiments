@@ -1,0 +1,165 @@
+[
+  {
+    "claim": "YOCO's cross-layer KV sharing delivers only 2x inference memory reduction and 2.87x prefill speedup at 32K tokens, versus more than 9x memory reduction and 71.8x prefill speedup at 1M \u2014 the same long-context-only payoff pattern seen across CSA2, IndexCache, LSA and HySparse2.",
+    "stance": "supports",
+    "stance_target": "The repo's claim that cross-layer KV sharing's published wins are long-context wins that shrink at 32k",
+    "evidence_type": "empirical",
+    "scope_conditions": "3B YOCO model; profiling across context lengths",
+    "quoted_support": "Even for a 3B model, the overall inference memory consumption can be reduced by two times for 32K tokens and by more than nine times for 1M tokens. The prefill stage is speeded up by 71.8x for the 1M context and 2.87x for the 32K input.",
+    "numbers": [
+      "2x memory reduction at 32K",
+      ">9x at 1M",
+      "2.87x prefill speedup at 32K",
+      "71.8x at 1M",
+      "512K prefill 180 s -> <6 s"
+    ],
+    "entities": [
+      "YOCO",
+      "KV cache",
+      "prefill latency",
+      "32K context"
+    ],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "you-only-cache-once"
+  },
+  {
+    "claim": "YOCO reduces KV cache memory by about 80x for 65B models by caching global KV once in a self-decoder and reusing it in a cross-decoder via cross-attention.",
+    "stance": "supports",
+    "stance_target": "The magnitude of cross-layer KV sharing at large model scale",
+    "evidence_type": "empirical",
+    "scope_conditions": "65B model; inference profiling",
+    "quoted_support": "In particular, the memory of KV caches can be reduced by about 80x for 65B models.",
+    "numbers": [
+      "~80x KV cache reduction at 65B"
+    ],
+    "entities": [
+      "YOCO",
+      "self-decoder",
+      "cross-decoder",
+      "KV cache"
+    ],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "you-only-cache-once"
+  },
+  {
+    "claim": "YOCO's computation flow enables prefill to early-exit without changing the final output, which is the structural mechanism behind its prefill speedup.",
+    "stance": "supports",
+    "stance_target": "Whether cross-layer KV sharing can reduce prefill compute, not just memory",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Decoder-decoder architecture",
+    "quoted_support": "Additionally, the computation flow enables prefilling to early exit without changing the final output, thereby significantly speeding up the prefill stage.",
+    "numbers": [],
+    "entities": [
+      "YOCO",
+      "prefill",
+      "early exit"
+    ],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "you-only-cache-once"
+  },
+  {
+    "claim": "YOCO scales a 3B model to trillions of training tokens with results on par with Transformers, and extends context to 1M with near-perfect needle retrieval \u2014 evidence that cross-layer KV sharing is trainable at scale rather than an inference-only trick.",
+    "stance": "supports",
+    "stance_target": "Whether cross-layer KV sharing is trainable, not just an inference optimization",
+    "evidence_type": "empirical",
+    "scope_conditions": "3B YOCO scaled to trillions of tokens; 1M context extension",
+    "quoted_support": "Specifically, we scale up the 3B YOCO model to trillions of training tokens, attaining results on par with ... We also extend the context length of YOCO to 1M tokens, achieving near perfect needle retrieval accuracy.",
+    "numbers": [
+      "3B model",
+      "trillions of tokens",
+      "1M context"
+    ],
+    "entities": [
+      "YOCO",
+      "training tokens",
+      "needle retrieval"
+    ],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "you-only-cache-once"
+  },
+  {
+    "claim": "The self-decoder still needs to store a bounded number of local caches; 'only caches once' refers strictly to the global KV cache, so cross-layer sharing does not eliminate all KV storage.",
+    "stance": "neutral",
+    "stance_target": "How literal the 'cache once' claim is",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Footnote 2",
+    "quoted_support": "The word 'once' refers to global KV cache. Strictly, self-decoder also needs to store a certain number of caches. As the self-decoder utilizes an efficient attention module, the cache size is bounded to a constant",
+    "numbers": [],
+    "entities": [
+      "YOCO",
+      "global KV cache",
+      "self-decoder"
+    ],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "you-only-cache-once"
+  },
+  {
+    "claim": "A 512K-token KV cache occupies about 86 GB of GPU memory even with KV quantization, which exceeds a single H100-80GB \u2014 the motivating memory pressure that cross-layer sharing addresses.",
+    "stance": "neutral",
+    "stance_target": "How large KV caches get at long context relative to 64 GB cards",
+    "evidence_type": "empirical",
+    "scope_conditions": "Example calculation with KV quantization",
+    "quoted_support": "512K tokens occupy about 86GB GPU memory, which is even larger than the capacity of one H100-80GB GPU.",
+    "numbers": [
+      "512K tokens -> ~86 GB",
+      "H100-80GB"
+    ],
+    "entities": [
+      "KV cache",
+      "H100",
+      "512K context"
+    ],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "you-only-cache-once"
+  },
+  {
+    "claim": "Prefilling 450K tokens with optimized kernels takes about 110 seconds and 1M tokens about 380 seconds on the hardware YOCO profiled, making prefill latency a first-order long-context cost.",
+    "stance": "neutral",
+    "stance_target": "The prefill cost baseline that cross-layer sharing improves on",
+    "evidence_type": "empirical",
+    "scope_conditions": "Flash-Decoding and kernel fusion optimizations",
+    "quoted_support": "requires about 110 seconds to prefill 450K tokens, and 380 seconds for 1M length",
+    "numbers": [
+      "110 s for 450K",
+      "380 s for 1M"
+    ],
+    "entities": [
+      "prefill latency",
+      "Flash-Decoding"
+    ],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "you-only-cache-once"
+  },
+  {
+    "claim": "YOCO uses gated retention in the self-decoder, augmenting retention with a data-controlled gate, so the self-decoder is not full attention \u2014 the cross-decoder's quality depends on an efficient-attention encoder.",
+    "stance": "neutral",
+    "stance_target": "What the self-decoder must be for cross-layer sharing to work",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Section 1 contribution list",
+    "quoted_support": "we propose gated retention for self-decoder, which augments retention with a data-controlled",
+    "numbers": [],
+    "entities": [
+      "YOCO",
+      "gated retention",
+      "self-decoder"
+    ],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "you-only-cache-once"
+  }
+]

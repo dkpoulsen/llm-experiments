@@ -1,0 +1,16 @@
+{
+  "ok": true,
+  "data": {
+    "note_id": "github-rightnow-aistreamindex-memory-bounded-compressed-sparse-attention-via-str",
+    "title": "GitHub - RightNow-AI/StreamIndex: Memory-bounded compressed sparse attention via streaming top-k. Triton kernels for the DeepSeek-V4 lightning indexer. 32x regime extension on a single H200 | by RightNow https://www.rightnowai.co/ · GitHub",
+    "url": "https://github.com/RightNow-AI/StreamIndex",
+    "domain": "github.com",
+    "provider": "crawl4ai",
+    "path": "research/notes/github-rightnow-aistreamindex-memory-bounded-compressed-sparse-attention-via-str.md",
+    "word_count": 1209,
+    "assets": [],
+    "raw_file": null
+  },
+  "vault": "/home/dkp/.thinkrail/worktrees/llm-experiments/workspace-1",
+  "timestamp": "2026-10-27T10:42:06.176149+00:00"
+}

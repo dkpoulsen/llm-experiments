@@ -1,0 +1,115 @@
+{
+  "vault_tag": "cmp170hx-training-feasibility-a0d4fc",
+  "sources_read_in_full": [
+    "club-170hxdocsbenchmarksmd-at-main-pixelmlclub-170hx-github",
+    "readmemd",
+    "physical-modsmd",
+    "p2pmd",
+    "longcat-sparse-attention-taming-the-lightning-via",
+    "native-sparse-attention-hardware-aligned-and-natively",
+    "memory-grafting-scaling-language-model",
+    "performancemd",
+    "club-170hxdocscmp170hx-understandingmd-at-main-pixelmlclub-170hx-github",
+    "pcie-subsystemmd",
+    "conditional-memory-via-scalable-lookup",
+    "streamindex-memory-bounded-compressed-sparse"
+  ],
+  "tensions": [
+    {
+      "name": "Width is not speed — the repo conflates two independent axes",
+      "side_a": {
+        "position": "PCIe link width and PCIe generation are independent axes that must never be conflated; the capacitor mod changes width only, the unlocker changes generation only.",
+        "evidence": "physical-modsmd carries an explicit warning box: 'The capacitor mod changes link width only. It never changes PCIe generation. A cap-modded card with no unlocker installed reports x16 at PCIe 1.0. Conversely, the unlocker gives Gen2 (5 GT/s) on any card, soldered or not: only a card with no unlock installed reports Gen1. The two axes are independent and must never be conflated.' It also shows the fuse table proving the lanes are not fused off (OPT_PCIE_LANE_DISABLE = 0x00000000) and the lspci signature of a physical-layer discontinuity: 'LnkCap: Speed 2.5GT/s, Width x16' against 'LnkSta: Speed 2.5GT/s, Width x4 (downgraded)'.",
+        "proponents": ["physical-modsmd", "pcie-subsystemmd", "club-170hxdocshardwaremd-at-main-pixelmlclub-170hx-github"]
+      },
+      "side_b": {
+        "position": "The box is 'PCIe Gen2 x4', stated as a single fact, and every bandwidth figure is derived from it.",
+        "evidence": "The repo's goal-and-requirements.md and research.md both state 'PCIe Gen2 x4' as one premise and build the 0.75 GiB/s all-reduce and the whole overhead model on it. Neither doc says which of the four possible link states (Gen1 x4 ~1.0 GB/s, Gen2 x4 1.68 GB/s, Gen2 x16 ~6.7 GB/s, Gen1 x16) the measurement was taken under.",
+        "proponents": ["repo:goal-and-requirements.md", "repo:research.md"]
+      },
+      "resolution": "The repo's premise is under-specified rather than wrong, and that under-specification is the single biggest source of the 1.53x ceiling violation Locus 1 found. 'Gen2 x4' is a compound of two independently-fixable axes: the unlocker gives Gen2 at any width, the 24-capacitor mod gives x16 at any generation, and a card with neither runs Gen1 x4 at ~1.0 GB/s. The repo's 0.75 GiB/s could be any of those four states. The load-bearing reason to prefer this reading: physical-modsmd demonstrates the axes are physically separate (fuse table clear, lanes depopulated, lspci showing capability-x16/status-x4), so no single software or hardware action moves both. The report must therefore state the link state as a measured triple (generation, width, measured GB/s) and require `lspci -vv` as a pre-flight, rather than accepting 'Gen2 x4' as a premise.",
+      "origin": "orphan-scan",
+      "decision_relevance": "high"
+    },
+    {
+      "name": "The club applies a stricter evidence standard to its own numbers than the repo applies to its",
+      "side_a": {
+        "position": "A hardware number is not decision-grade until its full sanitized receipt chain is merged; unmerged receipts are 'pending evidence repair'.",
+        "evidence": "club BENCHMARKS.md states the rule explicitly: 'A row is publication-safe only when the full sanitized receipt chain (manifest, commands, redacted outputs, exact model/runtime pins) is merged in the owning model repository. Rows whose receipts are unmerged are pending evidence repair: their numbers are not decision-grade until then.' Its own all-reduce receipt (readmemd) carries a Limitations section: 'True BAR1 P2P (community fork patches) was untested here; this is the no-P2P baseline for that comparison. One probe run per pair; no cross-run error bars.'",
+        "proponents": ["club-170hxdocsbenchmarksmd-at-main-pixelmlclub-170hx-github", "readmemd"]
+      },
+      "side_b": {
+        "position": "User-reported figures (0.75 GiB/s all-reduce, 162 TFLOPS bf16, ~70x EP cost) are treated as measured facts and carry the quantitative spine of the experiment program.",
+        "evidence": "research.md §1-2 derives the overhead model from 'NCCL all-reduce across 5 GPUs ~0.75 GiB/s (measured by the user)' with no command, no message size, no algbw/busbw label, and no repetition count. goal-and-requirements.md carries '~810 TFLOPS bf16' and '~70x' the same way. None of the three has a receipt.",
+        "proponents": ["repo:research.md", "repo:goal-and-requirements.md", "repo:experiments/01-dense-baseline.md"]
+      },
+      "resolution": "By the club's own published rule, the repo's three load-bearing numbers are 'pending evidence repair' — not decision-grade. This is not a rhetorical point; it is the corpus's own standard applied consistently. The report should adopt the club's tier vocabulary and demote the repo's figures from measured to user-reported, which is exactly the evidence hierarchy the run directives already bind. The load-bearing reason: the club's numbers survive their own audit (receipts, alias-proof copies, median-of-20, busbw formula stated), while the repo's do not, so weighting them equally would invert the evidence hierarchy the run is built on.",
+      "origin": "orphan-scan",
+      "decision_relevance": "high"
+    },
+    {
+      "name": "Effect sizes are reported in three incompatible units and nobody has converted them",
+      "side_a": {
+        "position": "The memory-axis deltas are large: Memory Grafting moves the 0.92B average benchmark score from 45.62 (MoE) and 45.03 (vanilla Engram) to 46.98, and the 2.8B score from 51.95/52.43 to 53.86.",
+        "evidence": "memory-grafting-scaling-language-model abstract and Table 3/5: 'In the 2.8B-scale setting, it improves the average benchmark score from 51.95 for MoE and 52.43 for vanilla Engram to 53.86. In the 0.92B-scale setting, all grafting-model variants improve over the baselines.' These are average score points across a benchmark suite, not loss.",
+        "proponents": ["memory-grafting-scaling-language-model"]
+      },
+      "side_b": {
+        "position": "The deltas are small: published architecture effects are 0.014-0.082 nats against a 3.5%-relative single-run noise floor, so a 9B-token null is the expected result.",
+        "evidence": "moba-mixture-of-block-attention-for reports fitted-curve gaps of 0.105/0.082/0.060/0.045 nats across compute; a-hitchhikers-guide-to-scaling-law-estimation supplies the 3.5%-relative restart spread; datadecide-how-to-predict-best-pretraining-data-with-small-experiments supplies the 2pp-at-1B run-to-run noise floor.",
+        "proponents": ["moba-mixture-of-block-attention-for", "a-hitchhikers-guide-to-scaling-law-estimation", "datadecide-how-to-predict-best-pretraining-data-with-small-experiments"]
+      },
+      "resolution": "The two sides are not commensurable, and the depth investigators compared them as if they were. Score points on a 10-task average are not nats of training loss, and neither maps cleanly onto a relative-percentage noise floor. The sharper and more honest finding is therefore not 'the deltas are below noise' but '**no published Engram or CSA2 delta is reported in a unit in which a noise floor has been established**'. That is a stronger claim than 'underpowered' because it is falsifiable by a single experiment: report the delta in nats with two seeds. The load-bearing reason: the only unit with a measured noise floor is relative loss/spread, and every candidate delta in this corpus is reported in some other unit, so the comparison cannot be made from the literature at all.",
+      "origin": "comparisons",
+      "decision_relevance": "high"
+    },
+    {
+      "name": "Every sparse-attention 32k win is an adaptation-stage result, not from-scratch 32k training",
+      "side_a": {
+        "position": "Sparse attention delivers large measured 32k wins: NSA reports 6.3x forward / 3.4x backward speedup at 32k on A100 with a quality win, and LongCat's LSA claims parity with full attention and native training to 1M tokens.",
+        "evidence": "native-sparse-attention-hardware-aligned-and-natively §4.1: 'Both Full Attention and sparse attention models are pretrained on 270B tokens of 8k-length texts, followed by continued training and supervised fine-tuning on 32k-length texts with YaRN.' Its LongBench table shows NSA at 0.469 average against Full Attention 0.437. longcat-sparse-attention-taming-the-lightning-via abstract: 'LSA consistently achieves performance on par with full attention... supports native training with context lengths of up to one million tokens.'",
+        "proponents": ["native-sparse-attention-hardware-aligned-and-natively", "longcat-sparse-attention-taming-the-lightning-via"]
+      },
+      "side_b": {
+        "position": "The repo plans from-scratch 32k training as the primary experiment axis.",
+        "evidence": "experiments/01-dense-baseline.md and goal-and-requirements.md set 32k context as the training configuration from step one, with 9B tokens at 32k. No adaptation stage is planned.",
+        "proponents": ["repo:experiments/01-dense-baseline.md", "repo:goal-and-requirements.md"]
+      },
+      "resolution": "The repo's from-scratch 32k plan sits outside the regime every published sparse-attention result was measured in. NSA spent 270B tokens at 8k before touching 32k; LongCat's own Appendix A ('Training Efficiency of LSA versus Dense MLA') is where the 0.83x-at-32K figure comes from, and its abstract's 'native training to 1M' is a capability claim, not a from-scratch 32k efficiency claim. So the 6.3x/3.4x NSA speedup does not transfer as a from-scratch training number, and the report should recommend **8k pretraining followed by 32k adaptation** rather than from-scratch 32k. The load-bearing reason: adaptation also cuts the quadratic-attention penalty for most of the run, which is the dominant term in Locus 4's corrected FLOP accounting — so this recommendation improves wall-clock twice over.",
+      "origin": "orphan-scan",
+      "decision_relevance": "high"
+    },
+    {
+      "name": "P2P has two incompatible data-movement figures and the larger one is explicitly unverified",
+      "side_a": {
+        "position": "BAR1 P2P works and moves data at 1.68 GB/s each way at Gen2 x4 on 12/12 pairs.",
+        "evidence": "github-bayleycmpunlocker-a-cmpunlocker-fork-with-working-p2p-on-sys-4028gr-trt2 reports the patch working across all pairs at the one-way Gen2 x4 link rate.",
+        "proponents": ["github-bayleycmpunlocker-a-cmpunlocker-fork-with-working-p2p-on-sys-4028gr-trt2"]
+      },
+      "side_b": {
+        "position": "P2P is absent by default; the one patch that could enable it half-works (data movement 6.25 GB/s, synchronisation broken), and even if it worked the link would still be the bottleneck.",
+        "evidence": "p2pmd: 'peer-to-peer is absent on this card by default... One builder has since reported that the patch half-works on GA100: peer data movement runs at 6.25 GB/s while peer synchronisation does not work at all, which would leave NCCL and every other collective library hanging. That report is unverified, from one rig with no independent reproduction.' It also measures the absence directly: 'torch.cuda.can_device_access_peer(i,j) False for all 56 pairs (P2P-capable pairs: 0 of 56)', and states 'even if P2P worked, the link would still be the bottleneck... P2P is bandwidth-bound and buys little before Gen3.'",
+        "proponents": ["p2pmd"]
+      },
+      "resolution": "All three figures are consistent once the link state is separated. 1.68 GB/s is the one-way Gen2 x4 link rate, so P2P at x4 removes a traversal but cannot exceed the link — it is not a bandwidth fix. 6.25 GB/s is at x16 and is unverified. readmemd's no-P2P baseline at Gen2 x16 measures 6.21-6.30 GB/s host-staged copy, which already saturates the link, so P2P's only real gain there is latency (16/194 us vs 22/343 us). This resolves in favour of Locus 1's position — P2P is a latency lever, not a bandwidth lever — and it also means the repo's 'no P2P' is not the constraint it thinks it is. The load-bearing reason: the host-staged copy at x16 already reaches the link rate, so there is no bandwidth left for P2P to recover.",
+      "origin": "contradiction-graph",
+      "decision_relevance": "medium"
+    },
+    {
+      "name": "The corpus's most trustworthy sustained numbers are at 180 W, not the repo's 250 W",
+      "side_a": {
+        "position": "The decision-grade benchmarks run against a 180.00 W enforced limit, and the 74.6-78.5 TFLOP/s figure is a 10-minute gpu-burn at that cap.",
+        "evidence": "club BENCHMARKS.md power column: 'instantaneous samples 64.8-215.6 W against a 180.00 W enforced limit'. The health-gate notebook (2026-09-02-cmp170hx-health-gate.ipynb) is a 10-minute `gpu-burn -tc` run at 180 W producing per-card 77.7/76.4/74.6/78.5 TFLOP/s at peak 63 C core with no thermal throttle.",
+        "proponents": ["club-170hxdocsbenchmarksmd-at-main-pixelmlclub-170hx-github", "2026-09-02-cmp170hx-health-gateipynb", "readmemd-2"]
+      },
+      "side_b": {
+        "position": "The card's stock cap is 250 W and it delivers ~162 TFLOPS bf16, which is the basis of the ~810 TFLOPS aggregate.",
+        "evidence": "performancemd's unlock table lists 164.4-192.7 BF16; lessonsmd reports 155.7 TFLOPS on a healthy unlocked card at 250 W; the repo carries 162 TFLOPS/card.",
+        "proponents": ["performancemd", "lessonsmd", "repo:goal-and-requirements.md"]
+      },
+      "resolution": "The 74.6-78.5 figure is a **floor**, not a ceiling: it is measured at 180 W enforced, so at 250 W the sustained number should be higher — but nobody has measured it, and the 162/164-192 figures are GEMM peaks or FP32 burn-in, not sustained BF16 training at 250 W. The honest training denominator is therefore a range, **75-100 TFLOPS/card**, with the upper end unmeasured. The load-bearing reason: the only figure with a full receipt chain is the 180 W one, and the only figure with a training-shaped workload is the repo's own 91-100 end-to-end rate, so those two bound the range from below while the GEMM peaks bound it from above without evidence.",
+      "origin": "orphan-scan",
+      "decision_relevance": "medium"
+    }
+  ]
+}

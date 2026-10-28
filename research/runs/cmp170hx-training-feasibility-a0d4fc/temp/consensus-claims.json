@@ -1,0 +1,138 @@
+[
+  {
+    "claim": "Tensor parallelism is the worst topology on a PCIe fabric without NVLink: it performs 2 all-reduces per layer (86 collectives per forward on 43 layers), and measured PP beats TP by 6.6x on prefill and ~2-3x on aggregate throughput.",
+    "independent_sources": [
+      "club-170hxdocstopology-and-parallelismmd-at-main-pixelmlclub-1",
+      "github-dl4rcecmp-170hx-inference-lab-cmp-170hx-llm-inference-l",
+      "deepseek-v4-cmp170hxsettingsmd-at-317dac12bbd7f401f0538c76161b",
+      "megatron-lm-training-multi-billion-parameter-language-models-u",
+      "deepseek-v3-technical-report",
+      "on-optimizing-the-communication-of-model-parallelism"
+    ],
+    "independence_score": 6.0,
+    "evidence_tier": "measured",
+    "note": "Four independent measurements on this hardware class plus two independent primary derivations of the collective count."
+  },
+  {
+    "claim": "FSDP/ZeRO-3 moves 3-Psi bytes per step against DDP's 2-Psi, i.e. 1.5x communication volume, not 2x.",
+    "independent_sources": [
+      "pytorch-fsdp-experiences-on-scaling-fully-sharded-data-paralle",
+      "zero-memory-optimizations-toward-training-trillion-parameter-m",
+      "zero-extremely-efficient-collective-communication-for-giant",
+      "zero-3-vs-fsdp-memory-efficiency-for-llm-training-lyceum"
+    ],
+    "independence_score": 4.0,
+    "evidence_tier": "primary-derived",
+    "note": "Two independent primaries derive the same 3-Psi/2-Psi ratio; the blog restates it."
+  },
+  {
+    "claim": "Mixed-precision Adam costs 16 bytes per trainable parameter: 2 (bf16 weight) + 2 (bf16 grad) + 12 (fp32 master + two fp32 moments). Frozen parameters cost only their bf16 weight.",
+    "independent_sources": [
+      "published-as-a-conference-paper-at-iclr-2018",
+      "zero-memory-optimizations-toward-training-trillion-parameter-m",
+      "amsp-reducing-communication-overhead-of",
+      "behind-the-scenes-of-distributed-training-and-why-your-gpu-wir",
+      "zero-3-vs-fsdp-memory-efficiency-for-llm-training-lyceum"
+    ],
+    "independence_score": 5.0,
+    "evidence_tier": "primary-derived",
+    "note": "The ICLR-2018 mixed-precision paper is the origin; ZeRO, AMSP and the measured TDS run reproduce it."
+  },
+  {
+    "claim": "PWRBRK# on PCIe edge pin B30 silently caps a CMP 170HX at ~88 W / 39.3 TFLOPS, is detected with `nvidia-smi -q | grep -A1 \"HW Power Brake Slowdown\"`, and is fixed by masking B30 or using a riser that does not route it.",
+    "independent_sources": [
+      "lessonsmd",
+      "allover326deepseek-v4-cmp170hx-deepwiki",
+      "all-gbs-without-flops-nvidia-cmp-170hx-review-performance-lockdown-workaround-te",
+      "club-170hxdocshardwaremd-at-main-pixelmlclub-170hx-github"
+    ],
+    "independence_score": 4.0,
+    "evidence_tier": "measured",
+    "note": "The 155.7-vs-39.3 TFLOPS pair is the direct measurement; the other three document the mechanism and detection."
+  },
+  {
+    "claim": "DDP performs one gradient all-reduce per optimizer step, and gradient accumulation requires `model.no_sync()` on all but the final micro-step or DDP all-reduces on every micro-step.",
+    "independent_sources": [
+      "pytorch-ddp-comm-hooks-default_hookspy-bf16fp16-compress-hooks",
+      "gradient-accumulation-with-ddp-no_sync-interface-distributed-p-2",
+      "megatron-lm-training-multi-billion-parameter-language-models-u"
+    ],
+    "independence_score": 3.0,
+    "evidence_tier": "ground-truth",
+    "note": "PyTorch source plus maintainer confirmation plus the Megatron implementation."
+  },
+  {
+    "claim": "Gradient compression pays off more on slow fabrics, not less: measured gains are larger at 10 Gbps than at 200 Gbps, and coded approximate all-reduce wins on PCIe while losing on NVLink.",
+    "independent_sources": [
+      "powersgd-practical-low-rank",
+      "agoq-activation-and-gradient-quantization-for",
+      "communication-efficient-distributed-training",
+      "zipccl-efficient-lossless-data-compression-of"
+    ],
+    "independence_score": 4.0,
+    "evidence_tier": "measured",
+    "note": "Four independent compression papers converge on the same fabric-dependence."
+  },
+  {
+    "claim": "When P2P is unavailable, NCCL stages collectives through host shared memory rather than GPU-to-GPU; this is why PCIe-only all-reduce bandwidth collapses.",
+    "independent_sources": [
+      "environment-variables-nccl-2323-documentation",
+      "club-170hxdocscmp170hx-understandingmd-at-main-pixelmlclub-170hx-github",
+      "github-mcrltccl-thunder-research-groups-collective-communicati"
+    ],
+    "independence_score": 3.0,
+    "evidence_tier": "ground-truth",
+    "note": "NCCL docs state it directly; the club measures the resulting 6.21-6.30 GB/s host-staged copy rate; TCCL documents the bounce-buffer placement effect."
+  },
+  {
+    "claim": "The CMP 170HX is GA100 (sm_80) with 64 GB HBM2e after unlock, ~1.49-1.6 TB/s HBM bandwidth, 250 W stock cap, no NVLink, no ECC, and no FP8 tensor cores.",
+    "independent_sources": [
+      "specifications-cmp-170hx-documentation",
+      "club-170hxdocshardwaremd-at-main-pixelmlclub-170hx-github",
+      "github-consensus-protocolcmp170hx-cmp-170hx-technical-wiki-sil",
+      "all-gbs-without-flops-nvidia-cmp-170hx-review-performance-lockdown-workaround-te",
+      "nvidia-a100-tensor-core-gpu-data-sheet-jun21-1"
+    ],
+    "independence_score": 5.0,
+    "evidence_tier": "measured",
+    "note": "Five independent hardware references agree on the spec sheet."
+  },
+  {
+    "claim": "Dataset sizes: FineWeb-Edu is 1.3T tokens; FineMath-4+ is 9.6B tokens; Stack-Edu is ~125B tokens across 15 languages.",
+    "independent_sources": [
+      "huggingfacefwfineweb-edu-datasets-at-hugging-face",
+      "huggingfacetbfinemath-datasets-at-hugging-face-2",
+      "huggingfacetbstack-edu-datasets-at-hugging-face",
+      "smollm2-when-smol-goes-big",
+      "the-fineweb-datasets-decanting-the-web-for-the"
+    ],
+    "independence_score": 5.0,
+    "evidence_tier": "ground-truth",
+    "note": "Each dataset card is primary for its own size; SmolLM2 and the FineWeb paper corroborate."
+  },
+  {
+    "claim": "Sparse attention's advantage is context-length-dependent with a crossover well above 32k: token-granular selection loses at 32k, block-granular wins, and the published KV-cache wins are decode-side numbers.",
+    "independent_sources": [
+      "longcat-sparse-attention-taming-the-lightning-via",
+      "native-sparse-attention-hardware-aligned-and-natively",
+      "hysparse2-hybrid-sparse-attention",
+      "you-only-cache-once",
+      "periodic-weak-spots",
+      "deepseek-v41-flash"
+    ],
+    "independence_score": 6.0,
+    "evidence_tier": "measured",
+    "note": "Six independent sparse-attention papers converge on the length-dependence, though they disagree on the exact crossover."
+  },
+  {
+    "claim": "A 1M-token global batch is far below the measured critical batch size late in training (~16.8M tokens on OLMo 1B/7B), but CBS is near zero at initialization, so batch-size warmup is required.",
+    "independent_sources": [
+      "critical-batch-size-revisited-a-simple-empirical",
+      "an-empirical-model-of-large-batch-training",
+      "accurate-large-minibatch-sgd"
+    ],
+    "independence_score": 3.0,
+    "evidence_tier": "measured",
+    "note": "Merrill et al. measure the plateau; McCandlish et al. originate the noise-scale model; Goyal et al. establish the warmup requirement."
+  }
+]

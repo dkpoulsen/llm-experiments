@@ -1,0 +1,204 @@
+{
+  "critic_type": "instruction",
+  "vault_tag": "cmp170hx-training-feasibility-a0d4fc",
+  "draft_path": "research/notes/final_report_cmp170hx-training-feasibility-a0d4fc.md",
+  "query_file_path": "research/runs/cmp170hx-training-feasibility-a0d4fc/query.md",
+  "decomposition_path": "research/runs/cmp170hx-training-feasibility-a0d4fc/prompt-decomposition.json",
+  "mechanical_checks": {
+    "required_section_headings": {
+      "expected_count": 7,
+      "actual_h2_count": 8,
+      "expected": [
+        "Hardware Reality",
+        "Training Topologies",
+        "DDP Overhead Model",
+        "MoE & EP",
+        "Engram & Frozen Memory",
+        "CSA2 at 32k",
+        "Verdict"
+      ],
+      "actual": [
+        "Hardware Reality",
+        "Training Topologies",
+        "DDP Overhead Model",
+        "MoE & EP",
+        "Engram & Frozen Memory",
+        "CSA2 at 32k",
+        "Verdict",
+        "Source Tensions"
+      ],
+      "verdict": "All 7 required headings present, literal, unnumbered, spelled exactly, in order. One extra H2 ('Source Tensions') appended after the Verdict — violates 'exactly 7'.",
+      "note": "prompt-decomposition.json stores the headings in numbered+subtitled form ('## 1. Hardware Reality: Link Width, Power Brake, and What the Numbers Assume'); the spawn contract supplies the unnumbered short forms. Graded against the spawn contract's unnumbered list, which the draft matches exactly. If the numbered+subtitled form is authoritative, all 7 are wording mismatches and this becomes a restructure-level finding — flagged for the orchestrator to adjudicate, not counted as a finding here."
+    },
+    "word_count": {
+      "raw_whitespace_tokens": 8475,
+      "prose_only_excluding_tables_and_headings": 7116,
+      "target": "5000-10000 (response_format: argumentative)",
+      "verdict": "PASS — within range on both measures."
+    },
+    "citation_style": {
+      "wikilink_count": 91,
+      "unique_wikilinks": 59,
+      "numbered_references": 0,
+      "markdown_links": 0,
+      "sources_section": "none",
+      "citation_density_per_1000_prose_words": 12.8,
+      "verdict": "PASS — every citation is [[note-id]], no ## Sources, no numbered references, density above the 9/1000 floor."
+    },
+    "required_formats": {
+      "claim_by_claim_verdict_table_with_tiers": "PRESENT (Verdict section, Tier column T1-T4)",
+      "communication_cost_comparison_table": "PRESENT (Training Topologies, 7 columns across DDP/ZeRO-2/FSDP/PP/TP/EP)",
+      "memory_budget_table_7b_variants": "PRESENT (Engram & Frozen Memory, plan vs corrected)",
+      "verdict": "PASS on all three, with one gap: the claim-by-claim table has no TP row (see finding ins-06)."
+    },
+    "four_named_claims_in_order": {
+      "verdict": "PASS — Verdict (a) DDP-only-at-1M, (b) EP/TP ruled out, (c) frozen Engram fits 7B/1B on 64 GB, (d) CSA2 pays off at 32k — all four answered explicitly, in the query's order, each with a True/False verdict."
+    },
+    "committed_recommendation": {
+      "verdict": "PASS — the lede commits ('The recommendation in the repo survives'), the Verdict gives four True/False verdicts, a lever ranking, and four named measurements. No mush."
+    },
+    "evidence_tiers": {
+      "tier_labels_in_body": 98,
+      "tier_definitions": "T1 measured-on-box/user-reported, T2 community or adjacent-hardware, T3 paper-measured, T4 arithmetic — defined in the lede and applied throughout",
+      "verdict": "PASS"
+    },
+    "hedging": {
+      "verdict": "PASS — the report is unusually committed for an analyze-register draft; the few hedges ('probably', 'genuinely split') are backed by genuinely split evidence rather than evasive."
+    },
+    "readability_structural": {
+      "R1_definitions": "PASS — DDP, FSDP, PP, TP, EP, MoE, GQA, MFU, algbw/busbw, Engram, Memory Grafting, CSA2 all defined on first use",
+      "R2_citation_density": "PASS — 12.8/1000",
+      "R3_forward_analysis": "PASS — four-measurement program, lever ranking, ECC gate",
+      "R4_comparison_tables": "PASS — six tables",
+      "R5_section_primers": "PASS — all 7 H2s open with a plain-language primer before judgment",
+      "R6_comparison_axes": "PASS — the topology table carries collectives, traffic scaling, per-GPU volume, overhead, fit and verdict"
+    }
+  },
+  "findings": [
+    {
+      "id": "ins-01",
+      "severity": "critical",
+      "atomic_item": "Is the DDP overhead model (overhead = 3.6e5 / global_batch_tokens at theoretical peak) correct, and does it hold at 1M and 2M-token global batches with bf16 gradient compression?",
+      "failure_mode": "missing",
+      "location": "## DDP Overhead Model → 'The joint re-derivation' — quote: \"dividing a 2.0 GB bf16 gradient payload by 0.75 GiB/s to get 2.7 s\"",
+      "issue": "The sub-question names three components; the report answers one. The 2M-token case is never recomputed (the plan's 18% is quoted once and dropped; '2M' occurs exactly once in the whole report). bf16 gradient compression is never discussed: the only occurrence of 'compress' is inside the wikilink ID `[[pytorch-ddp-comm-hooks-default_hookspy-bf16fp16-compress-hooks]]`, and that note is cited solely for the `requires_grad=False` mechanism, not for the hook. Yet the 2.0 GB payload is only reachable with `bf16_compress_hook` under AMP, where gradients stay fp32 (4.0 GB, doubling the overhead). The vault's own interim report calls the hook 'a load-bearing premise of the feasibility claim', and the scaffold lists 'Does 0.75 GiB/s all-reduce hold with `bf16_compress_hook`, and at what message size?' as open question 2. The report's headline correction (36% → 6.6%) therefore rests on an unstated precision premise.",
+      "contract_violation": "Two of three explicitly-named components of sub_questions[3] are entirely absent; the third is answered only at 1M.",
+      "requires_orchestrator_restructure": false,
+      "recommendation": "In 'The joint re-derivation', state the precision premise explicitly: AMP keeps fp32 params and gradients, so the payload is 4.0 GB unless `bf16_compress_hook` is registered; pure-bf16 params make the hook a no-op cast. Cite [[pytorch-ddp-comm-hooks-default_hookspy-bf16fp16-compress-hooks]] for the 4→2 byte cut and [[ddp-on-a-pcie-only-4x-rtx-a6000-no-nvlink-plain-ddp-gave-2x-bf16-gradient-compre]] for the measured PCIe-only result (bf16 hook moved 4-GPU DDP from 2.06× to 2.65× at 124M and 1.91× to 2.72× at 355M). Add a 2M-token row to the overhead table (~3.3% at 450 TFLOPS with a 2.0 GB payload; ~6.6% with 4.0 GB) and state that the invariance claim holds at both 1M and 2M. Add the message-size caveat: the hook only pays above the bucket-size threshold, and sub-16 MB messages are latency-dominated rather than bandwidth-bound."
+    },
+    {
+      "id": "ins-02",
+      "severity": "major",
+      "atomic_item": "Does CSA2 compressed sparse attention pay off at 32k training context, given the non-differentiable top-k and the parallel indexer?",
+      "failure_mode": "missing",
+      "location": "## CSA2 at 32k → 'The payoff is half the headline, and its sign is not guaranteed' — quote: \"The corrected payoff is therefore −20% to −30% of step time at a 76–88% attention FLOP share\"",
+      "issue": "Both mechanisms the sub-question names are absent. 'Differentiab*' appears zero times: the report never says top-k is non-differentiable, never describes how the indexer is trained (clipped-log KL distillation against main attention), and never costs the parallel indexer's own forward+backward. That omission is material, not cosmetic — the −20% to −30% payoff estimate has no additive term for the indexer, and the vault measures it: HISA on A100 reports the indexer at 5.6 ms against 1.6 ms for the sparse MLA operator at 2048 selected tokens, i.e. the indexer is 3.5× the kernel it feeds. The scaffold's open question 5 ('given the indexer overhead') is therefore unanswered.",
+      "contract_violation": "Both named mechanisms of sub_questions[7] are entirely missing; the payoff number is computed without the cost the sub-question explicitly asks about.",
+      "requires_orchestrator_restructure": false,
+      "recommendation": "Add a subsection 'The indexer is the second attention' after 'The payoff is half the headline': (i) top-k is non-differentiable, so the indexer is trained by a clipped-log KL distillation against main attention ([[dsa_referencepy]] `ref_indexer_backward`: 'top-k remains non-differentiable and the indexer is trained against main-attention scores, not end-to-end'), which adds a second score-tensor forward+backward and a separate loss term to every step; (ii) the indexer's cost is additive and measured — HISA's A100 figure of 5.6 ms indexer vs 1.6 ms sparse MLA at 2048 selected tokens — so the −20% to −30% payoff must be netted against it; (iii) the FLOP win depends on the Full/Reindex/Reuse layer mix, which the report names but never uses (V4.1-Flash ships 2 SWA + 4 Full + 4 Reindex + 30 Reuse of 40 layers)."
+    },
+    {
+      "id": "ins-03",
+      "severity": "major",
+      "atomic_item": "Assess which LLM training experiments are feasible on a 5× NVIDIA CMP 170HX box",
+      "failure_mode": "under-covered",
+      "location": "## Verdict → '(a) DDP is the only viable topology at 1M-token global batches.' — quote: \"Feasibility here means three things at once: the experiment fits in memory, it fits in wall-clock, and its result can be measured.\"",
+      "issue": "The report sets a three-part feasibility test and then applies all three parts to only one arm. The 500M dense baseline gets memory, wall-clock (3–7 days) and measurability (0.004-nat floor); the 7B/1B frozen-Engram arm gets memory (43.1 GB) and DDP overhead (6.2%) but no wall-clock; the sparse-attention substitution arm gets kernel availability but no wall-clock and no token budget. The scaffold's modality rationale says the report 'must commit to which experiments are worth running', and the Verdict delivers claim verdicts plus a lever ranking rather than a per-experiment feasibility roster.",
+      "contract_violation": "The query's primary ask ('which experiments are feasible') is answered as claim verdicts; two of the three candidate arms are never run through the report's own feasibility test.",
+      "requires_orchestrator_restructure": false,
+      "recommendation": "Add a roster table to the Verdict with one row per arm and columns memory / wall-clock / measurable / verdict: 500M dense control (~31.8 GB; 9B tokens at 20–27k tok/s = 4–5 days; measurable at the 0.004-nat floor → GO); 7B/1B frozen Engram (43.1 GB; 9B tokens at 56.3 s per 1M-token step ≈ 6 days; measurable → GO); sparse-attention substitution arm (inherits the baseline's 3–7 days minus 20–30%; measurable only if the GQA group size is ≥4 → CONDITIONAL on the config check); MoE 7B/1B (does not fit plain DDP at 112 GB; ZeRO-2 33.6 GB or PP=5 25.8 GB → GO only with a topology change); CSA2 (no sm_80 training kernel → NO-GO)."
+    },
+    {
+      "id": "ins-04",
+      "severity": "major",
+      "atomic_item": "required_section_headings: exactly 7 headings — Hardware Reality, Training Topologies, DDP Overhead Model, MoE & EP, Engram & Frozen Memory, CSA2 at 32k, Verdict",
+      "failure_mode": "wrong-format",
+      "location": "## Source Tensions (8th H2, after the Verdict) — quote: \"Five disputes in the source base bear directly on the argument above.\"",
+      "issue": "The draft carries 8 H2s. The 7 required headings are present, literal, unnumbered, spelled exactly and in order, but '## Source Tensions' is an extra top-level section appended after the Verdict. It violates the 'exactly 7' contract, and because it follows the Verdict the report terminates on a caveat ('every wall-clock estimate here carries a 1.3× error bar from that axis alone') rather than on its committed recommendation — the opposite of what an argumentative report should do.",
+      "contract_violation": "required_section_headings specifies exactly 7; the draft has 8.",
+      "requires_orchestrator_restructure": false,
+      "recommendation": "Demote '## Source Tensions' to '### Source Tensions' so it becomes the Verdict's final subsection, and move the closing 'one-sentence inversion' paragraph ('the fabric decides what this box can attempt, not what it costs to attempt it…') to the very end so the report terminates on the recommendation rather than on the 1.3× error bar. The five disputes themselves are worth keeping — they are the adversarial layer — but not as a peer of the Verdict."
+    },
+    {
+      "id": "ins-05",
+      "severity": "major",
+      "atomic_item": "Is a ~500M dense baseline at 32k context feasible at the predicted 80-120k tok/s, and is it a sound control?",
+      "failure_mode": "under-covered",
+      "location": "## DDP Overhead Model → 'The same correction destroys the throughput prediction' — quote: \"a 500M model at 32k needs 2.554 × 10¹⁰ FLOPs per token, so the absolute maximum is 39.6k tok/s (T4)\"",
+      "issue": "The feasibility bound is computed on the configuration the report itself declares impossible two paragraphs later. 2.554 × 10¹⁰ FLOPs/token is 6 × 494M + 12 × 28 × 2048 × 32768 — i.e. hidden 2048 with 494M parameters, which the report says is really ~1.41B. On the corrected 494M/28L/d≈1216 config the per-token cost is 1.635 × 10¹⁰, so the 100%-MFU bound is ~61.8k tok/s, not 39.6k, and the predicted 80–120k is 1.3–1.9× over the ceiling rather than 2–3×. The 'sound control' half is also only implied: the report never states what the control controls for or which confounds break comparability.",
+      "contract_violation": "sub_questions[8] has two clauses; the feasibility clause is answered against a config the report rejects, and the soundness clause is not answered at all.",
+      "requires_orchestrator_restructure": false,
+      "recommendation": "Recompute the bound on the corrected config (494M/28L/d≈1216 → 1.635 × 10¹⁰ FLOPs/token → ~61.8k tok/s at 100% MFU, ~27.5k at 450 TFLOPS), restate the overshoot as 1.3–1.9×, and add a short 'Is the control sound?' paragraph: the corrected baseline is a sound control only if it trains from scratch at 32k on the same packed 9B-token stream as the Engram arm, and the sparse-attention arm is compared in the same regime rather than via 8k-then-adapt, because the adaptation route halves wall-clock but breaks comparability. Name the confound: the plan's baseline was inferred at ~4k, not 32k, so its 140k tok/s datapoint cannot calibrate a 32k control."
+    },
+    {
+      "id": "ins-06",
+      "severity": "minor",
+      "atomic_item": "whether expert and tensor parallelism are ruled out by the fabric (query) / Is tensor parallelism actually ruled out for training on this fabric, or is the ~70x estimate wrong?",
+      "failure_mode": "under-covered",
+      "location": "## Verdict → claim-by-claim table — quote: \"| EP ruled out at ~70× | ~70× | ~1.4× arithmetic; zero training-grade EP libraries | T4/T3 | Right conclusion, wrong arithmetic |\"",
+      "issue": "The claim-by-claim verdict table has an EP row but no TP row, so the query's paired claim (b) is only half-tabulated. The TP correction (≈2.8×) is stated in the body and in Verdict (b) prose, but it is never explicitly tied to the plan's ~70× estimate the way EP's is, so a reader cannot see whether the plan's TP figure was also wrong or by how much.",
+      "contract_violation": "The required claim-by-claim verdict table covers one of the two sub-claims in the query's second named claim.",
+      "requires_orchestrator_restructure": false,
+      "recommendation": "Add a TP row to the Verdict table — 'TP ruled out at ~70× | ~70× | ~2.8× arithmetic (126 GB/GPU/step, 156 s); zero training-grade TP path on a no-P2P link | T4/T3 | Right conclusion, wrong arithmetic by ~25×' — and add one sentence in 'The 70× is an aggregate-versus-per-GPU error' stating explicitly that the same aggregate-vs-per-GPU error inflates the TP estimate."
+    },
+    {
+      "id": "ins-07",
+      "severity": "minor",
+      "atomic_item": "What data pipeline (9B tokens, 75/15/10 mix, packed 32k sequences, deterministic order) is required for run comparability?",
+      "failure_mode": "under-covered",
+      "location": "## Verdict → 'The data pipeline is the part of the plan that is already right.' — quote: \"The determinism manifest is the part that must not be skipped: floating-point arithmetic order — induced by sharding topology, gradient accumulation depth or precision — produces functional divergence within 10–17% of changing the data seed\"",
+      "issue": "Three of the four named pipeline components are covered (9B tokens, 75/15/10 mix, packed 32k with cu_seqlens), but 'deterministic order' is answered with FP-arithmetic determinism rather than data-order determinism, and the Qwen3 tokenizer — a required field on the decomposition's Data pipeline entity — is never named. The paragraph also never states what the manifest must contain (shuffle seed, packing order, tokenizer hash) to make two arms comparable.",
+      "contract_violation": "sub_questions[9]'s 'deterministic order' is answered with an adjacent property (FP reduction order), and one required entity field (Qwen3 tokenizer) is absent.",
+      "requires_orchestrator_restructure": false,
+      "recommendation": "Add one sentence pinning the tokenizer ('Qwen3 tokenizer, pinned by hash in the manifest') and one specifying data-order determinism: fixed shuffle seed, fixed packing order, and a manifest recording tokenizer hash + seed + packing rule so both arms see byte-identical token streams. Keep the existing FP-order point as a separate, additional requirement rather than as the answer to 'deterministic order'."
+    }
+  ],
+  "coverage_matrix": {
+    "0": {
+      "status": "answered",
+      "justification": "'Two axes, four states' gives the four reachable link states with measured one-way rates (Gen1 x4 ~0.8–1.0, Gen2 x4 1.6–1.68, Gen1 x16 ~3.2, Gen2 x16 6.63–6.68 GB/s), scales the x16 NCCL receipt to x4 by the measured width ratio 0.253, and names `lspci -vv` per card as the settling measurement."
+    },
+    "1": {
+      "status": "answered",
+      "justification": "'The power brake, and the measurement nobody has made' gives pin B30, the ~88 W cap / ~1140 MHz / 39.3-vs-155.7 TFLOPS symptom, the `nvidia-smi -q | grep -A1 \"HW Power Brake Slowdown\"` detection command, and the mask-B30-or-use-a-riser fix."
+    },
+    "2": {
+      "status": "answered",
+      "justification": "'Training Topologies' covers DDP, FSDP/ZeRO-3, PP, TP and EP plus ZeRO-2, with a per-topology table of collectives, traffic scaling, per-GPU volume at 1M tokens, overhead, 64 GB fit and verdict."
+    },
+    "3": {
+      "status": "partial",
+      "justification": "The model is re-derived and corrected at 1M tokens (36% → 6.6%, with a six-row sensitivity table), but the 2M-token case is never recomputed and bf16 gradient compression / `bf16_compress_hook` appears nowhere despite the 2.0 GB payload depending on it."
+    },
+    "4": {
+      "status": "answered",
+      "justification": "'The 70× is an aggregate-versus-per-GPU error' corrects EP to ~1.4× (62.9 GB/GPU/step, 78 s) and re-grounds the exclusion in library availability (no training-grade EP stack without NVLink/P2P/RDMA) rather than bandwidth."
+    },
+    "5": {
+      "status": "answered",
+      "justification": "TP is corrected to ~2.8× (126 GB/GPU/step, 156 s) and ruled out on placement (collectives inside the layer, no overlap hiding place), matching Verdict (b) — though the explicit tie to the plan's ~70× figure and a TP row in the claim table are missing (ins-06)."
+    },
+    "6": {
+      "status": "answered",
+      "justification": "'Does it fit DDP on 64 GB?' gives the full budget — 24.58 GB frozen table + 14.72 GB recipient + 3.22 GB checkpointed activations + 0.62 GB fused-CE logits = 43.1 GB with 21 GB headroom — plus the 1.84 GB all-reduce at 6.2% of step time, and flags that the plan's 12 GB is one layer not two."
+    },
+    "7": {
+      "status": "partial",
+      "justification": "The payoff question is answered thoroughly (not runnable on sm_80; ~1.71× end-to-end rather than 6.3×; sign decided by GQA group size), but both mechanisms the sub-question names — non-differentiable top-k and the parallel indexer — are absent, and the indexer's measured additive cost is omitted from the payoff estimate."
+    },
+    "8": {
+      "status": "partial",
+      "justification": "Feasibility is answered (39.6k tok/s theoretical max at 100% MFU, 14–39k realistic, 3–7 days for 9B tokens) but computed on the d=2048/494M triple the report itself declares impossible — on the corrected d≈1216 config the bound is ~61.8k and the overshoot 1.3–1.9× rather than 2–3×; the 'sound control' half is only implied, with no explicit statement of what the control controls for or which confounds break comparability."
+    },
+    "9": {
+      "status": "partial",
+      "justification": "9B tokens, the 75/15/10 mix (6.75B FineWeb-Edu / 1.35B Stack-Edu / 0.9B FineMath-4+), packed 32k with cu_seqlens and a determinism manifest are all covered, but 'deterministic order' is answered as FP-arithmetic determinism rather than data-order determinism, and the Qwen3 tokenizer is never named."
+    }
+  },
+  "summary": {
+    "findings_by_severity": {"critical": 1, "major": 4, "minor": 2},
+    "sub_question_coverage": {"answered": 6, "partial": 4, "missed": 0},
+    "structural_mismatches_requiring_orchestrator": "none — the one structural defect (8th H2 'Source Tensions') is fixable by a single demotion-to-H3 edit plus a paragraph move, so it is routed to the patcher, not the orchestrator. The decomposition stores the 7 headings in numbered+subtitled form while the spawn contract supplies unnumbered short forms; the draft matches the spawn contract exactly. If the numbered form is authoritative, that is a 7-heading restructure and the orchestrator should adjudicate before Layer 7.",
+    "most_damaging": "ins-01 — sub_questions[3] names three components (model correctness, 1M and 2M batches, bf16 gradient compression) and the report answers one. The 6.6% headline depends on a precision premise the report never states: under AMP the gradient buckets are fp32 (4.0 GB, doubling the overhead) unless `bf16_compress_hook` is registered, and the vault's own interim report calls the hook 'a load-bearing premise of the feasibility claim'. The scaffold lists the same gap as open question 2."
+  }
+}

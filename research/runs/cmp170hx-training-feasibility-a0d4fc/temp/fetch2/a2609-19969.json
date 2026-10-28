@@ -1,0 +1,16 @@
+{
+  "ok": true,
+  "data": {
+    "note_id": "deepseek-v41-flash",
+    "title": "DeepSeek-V4.1-Flash:",
+    "url": "https://arxiv.org/abs/2609.19969",
+    "domain": "arxiv.org",
+    "provider": "crawl4ai",
+    "path": "research/notes/deepseek-v41-flash.md",
+    "word_count": 24845,
+    "assets": [],
+    "raw_file": "raw/deepseek-v41-flash.pdf"
+  },
+  "vault": "/home/dkp/.thinkrail/worktrees/llm-experiments/workspace-1",
+  "timestamp": "2026-10-27T10:11:51.163984+00:00"
+}

@@ -1,0 +1,43 @@
+[
+  {
+    "claim": "flash-attention's sparse MLA (DeepSeek V4) forward and backward kernels added in commit 940cd96 are SM100-only: the files are flash_fwd_mla_sm100.py, flash_bwd_mla_sm100.py, flash_bwd_mla_dq_dqv_sm100.py and flash_bwd_mla_dk_sm100.py.",
+    "stance": "supports",
+    "stance_target": "cc-4's claim that training-capable DSA kernels are Blackwell-or-newer",
+    "evidence_type": "empirical",
+    "scope_conditions": "Dao-AILab/flash-attention commit 940cd96, 2026-06-20, +5685/-1066 across 12 files",
+    "quoted_support": "[Cute,Bwd,Sm100] add sparse MLA (Deepseek v4) backward kernels (#2621) ... flash_bwd_mla_sm100.py, flash_bwd_mla_dq_dqv_sm100.py, flash_bwd_mla_dk_sm100.py, flash_fwd_mla_sm100.py",
+    "numbers": [
+      "+5685/-1066",
+      "12 files",
+      "sm100 only"
+    ],
+    "entities": [
+      "flash-attention",
+      "sparse MLA",
+      "SM100",
+      "Blackwell"
+    ],
+    "time_period": "2026-06",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "cutebwdsm100-add-sparse-mla-deepseek-v4-backward-kernels-2621-dao-ailabflash-att"
+  },
+  {
+    "claim": "The commit contains no sm_80 or sm_90 variant of the sparse MLA backward, so the upstream flash-attention project offers no Ampere training path for DSA-family sparse attention.",
+    "stance": "supports",
+    "stance_target": "The claim that no sm_80 DSA training kernel exists upstream",
+    "evidence_type": "empirical",
+    "scope_conditions": "File list in the commit diff",
+    "quoted_support": "flash_bwd_mla_sm100.py / flash_bwd_mla_dq_dqv_sm100.py / flash_bwd_mla_dk_sm100.py",
+    "numbers": [],
+    "entities": [
+      "sm_80",
+      "sm_90",
+      "SM100"
+    ],
+    "time_period": "2026-06",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "cutebwdsm100-add-sparse-mla-deepseek-v4-backward-kernels-2621-dao-ailabflash-att"
+  }
+]

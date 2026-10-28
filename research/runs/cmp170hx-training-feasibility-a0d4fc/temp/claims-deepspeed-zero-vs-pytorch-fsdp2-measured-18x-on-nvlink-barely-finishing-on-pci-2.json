@@ -1,0 +1,93 @@
+[
+  {
+    "claim": "Moving the same Qwen2.5-3B / 4-rank job from NVLink A100 to PCIe L4 raises ZeRO-2's NCCL share of kernel time from 17.3% to 50.2% and FSDP2 reshard's from 27.7% to 51.1%, i.e. communication becomes roughly half of kernel time once the wire is PCIe.",
+    "stance": "supports",
+    "stance_target": "The premise that sharded data-parallel collectives become a first-order cost on a thin wire",
+    "evidence_type": "empirical",
+    "scope_conditions": "Qwen2.5-3B bf16, micro-batch 1, seq 2048, 4 ranks, 15 steps median, n=1, defaults-vs-defaults; 4x A100 40GB NVLink vs 4x L4 24GB PCIe",
+    "quoted_support": "On PCIe, the NCCL share rises sharply for most configs (FSDP2 no-reshard 26.1%->46.7%, ZeRO-2 17.3%->50.2%)",
+    "numbers": [
+      "ZeRO-2 NCCL share 17.3% (A100) -> 50.2% (L4)",
+      "FSDP2 no-reshard 26.1% -> 46.7%",
+      "FSDP2 reshard 27.7% -> 51.1%",
+      "ZeRO-3 42.7% -> 47.5%"
+    ],
+    "entities": [
+      "DeepSpeed ZeRO-2",
+      "FSDP2",
+      "NCCL",
+      "L4",
+      "A100"
+    ],
+    "time_period": "2026-09",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepspeed-zero-vs-pytorch-fsdp2-measured-18x-on-nvlink-barely-finishing-on-pci-2"
+  },
+  {
+    "claim": "On the PCIe L4 run ZeRO-2 still reaches 1,923 tok/s and beats FSDP2 no-reshard's 1,761 tok/s, so a 50% NCCL kernel-time share does not translate into a >50% throughput penalty.",
+    "stance": "refutes",
+    "stance_target": "Equating a 50% NCCL kernel-duration share with a 50% step-time overhead",
+    "evidence_type": "empirical",
+    "scope_conditions": "Same matrix; author caveat that NCCL share 'does not map one-to-one onto pure communication-wait time'",
+    "quoted_support": "Note: the NCCL share is the ratio of NCCL kernel duration reported by the profiler; communication overlaps with compute, so it does not map one-to-one onto pure communication-wait time in wall-clock terms.",
+    "numbers": [
+      "ZeRO-2 1,923 tok/s / 4,260.5 ms",
+      "FSDP2 no-reshard 1,761 tok/s / 4,651.6 ms",
+      "FSDP2 reshard 1,218 tok/s / 6,723.9 ms",
+      "ZeRO-3 2,290 tok/s / 3,577.2 ms"
+    ],
+    "entities": [
+      "ZeRO-2",
+      "FSDP2",
+      "L4"
+    ],
+    "time_period": "2026-09",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepspeed-zero-vs-pytorch-fsdp2-measured-18x-on-nvlink-barely-finishing-on-pci-2"
+  },
+  {
+    "claim": "The matrix contains no DDP baseline at all: ZeRO-0 (pure replication) OOMs even on a 40 GB A100 with 30.01 GB resident before activations, so this study cannot produce a ZeRO-2-vs-DDP step-time ratio.",
+    "stance": "neutral",
+    "stance_target": "Whether this source can settle cc-3(a)",
+    "evidence_type": "empirical",
+    "scope_conditions": "Qwen2.5-3B, 4 ranks, A100 40GB",
+    "quoted_support": "ZeRO-0 (no sharding) | OOM ... this process has 30.01 GiB memory in use.",
+    "numbers": [
+      "30.01 GiB resident before activations",
+      "40 GB card"
+    ],
+    "entities": [
+      "ZeRO-0",
+      "DDP",
+      "A100 40GB"
+    ],
+    "time_period": "2026-09",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepspeed-zero-vs-pytorch-fsdp2-measured-18x-on-nvlink-barely-finishing-on-pci-2"
+  },
+  {
+    "claim": "On PCIe the sharding ranking flips: ZeRO-3 (2,290 tok/s) comes out ~19% ahead of ZeRO-2 (1,923 tok/s), the reverse of the A100 ranking where ZeRO-2 leads ZeRO-3 by 2.1x.",
+    "stance": "neutral",
+    "stance_target": "The assumption that the NVLink-tuned ZeRO-2 recommendation transfers unchanged to a thin wire",
+    "evidence_type": "empirical",
+    "scope_conditions": "Same matrix; author states the cause (memory pressure vs collective scheduling) is not settled",
+    "quoted_support": "On L4, ZeRO-3 (2,290 tok/s) comes out ~19% ahead of ZeRO-2 (1,923 tok/s) — the reverse of the A100 ranking.",
+    "numbers": [
+      "L4: ZeRO-3 2,290 vs ZeRO-2 1,923 (+19%)",
+      "A100: ZeRO-2 17,124 vs ZeRO-3 8,151 (2.1x)"
+    ],
+    "entities": [
+      "ZeRO-2",
+      "ZeRO-3",
+      "L4",
+      "A100"
+    ],
+    "time_period": "2026-09",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepspeed-zero-vs-pytorch-fsdp2-measured-18x-on-nvlink-barely-finishing-on-pci-2"
+  }
+]

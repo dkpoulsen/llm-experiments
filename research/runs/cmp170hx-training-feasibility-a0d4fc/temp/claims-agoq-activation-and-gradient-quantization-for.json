@@ -1,0 +1,249 @@
+[
+  {
+    "claim": "AGoQ reduces GPU memory by up to 52% and improves training speed by up to 1.34x versus Megatron-LM (with/without ZeRO), DeepSpeed and COAT on 8B-32B LLaMA models.",
+    "stance": "supports",
+    "stance_target": "activation+gradient quantisation is a viable memory-efficiency lever",
+    "evidence_type": "empirical",
+    "scope_conditions": "64-GPU A6000 cluster, 8B-32B LLaMA models",
+    "quoted_support": "the experimental results show that our AGoQ reduces the memory by up to 52% and achieves up to 1.34× improvement of training speed compared to state-of-the-art training systems Megatron-LM (w/ or w/o ZeRO), COAT and DeepSpeed with 8B to 32B LLaMA models",
+    "numbers": [
+      "52%",
+      "1.34x",
+      "8B",
+      "32B"
+    ],
+    "entities": [
+      "AGoQ",
+      "Megatron-LM",
+      "DeepSpeed",
+      "COAT",
+      "LLaMA"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "Near-4-bit activation storage cuts activation memory from 28U in Megatron-LM to 7.75U - an approximately three-fold reduction (RMSNorm 4U->0.5U, SiLU&Multiply 12U->2U, attention 5U).",
+    "stance": "supports",
+    "stance_target": "layer-aware activation quantisation substantially cuts activation memory",
+    "evidence_type": "empirical",
+    "scope_conditions": "Megatron-LM, OLMo-1B measurement",
+    "quoted_support": "Overall, activation memory drops from 28U in Megatron-LM to 7.75U in our method—an approximate three-fold reduction.",
+    "numbers": [
+      "28U",
+      "7.75U",
+      "4U",
+      "0.5U",
+      "12U",
+      "2U",
+      "5U"
+    ],
+    "entities": [
+      "AGoQ",
+      "Megatron-LM",
+      "OLMo-1B"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "Gradient memory drops 75% versus COAT and activation memory a further 30%, by storing gradients in 8-bit for local accumulation.",
+    "stance": "supports",
+    "stance_target": "8-bit gradient storage is a large memory lever",
+    "evidence_type": "empirical",
+    "scope_conditions": "OLMo-1B, comparison against COAT",
+    "quoted_support": "compared to COAT, we reduce activation memory by an additional 30% and gradient memory by 75%",
+    "numbers": [
+      "75%",
+      "30%"
+    ],
+    "entities": [
+      "AGoQ",
+      "COAT"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "The 8-bit All-Reduce is decomposed into quantise -> reduce-scatter -> re-quantise -> all-gather so the reduction happens in high precision while the wire payload stays 8-bit.",
+    "stance": "neutral",
+    "stance_target": "mechanism of AGoQ's precision-preserving 8-bit all-reduce",
+    "evidence_type": "theoretical",
+    "scope_conditions": "data-parallel training",
+    "quoted_support": "After local accumulation, GPUs perform a precision-preserved FP8 All-Reduce across GPUs",
+    "numbers": [
+      "FP8",
+      "8-bit"
+    ],
+    "entities": [
+      "AGoQ",
+      "All-Reduce"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "On a simulated 10 Gbps commodity link, the decomposed 8-bit all-reduce is 3.7x faster than the baseline at a 32 MB message (432.36 ms vs 1,603.78 ms).",
+    "stance": "supports",
+    "stance_target": "8-bit collectives pay off MORE on low-bandwidth fabrics",
+    "evidence_type": "empirical",
+    "scope_conditions": "TP=8, DP=8, 32 MB message, 10 Gbps simulated",
+    "quoted_support": "Under 10Gbps, the speedup increases to 3.7× (432.36 ms vs 1603.78 ms), confirming that our method delivers substantial communication savings across diverse bandwidth settings.",
+    "numbers": [
+      "10 Gbps",
+      "3.7x",
+      "432.36 ms",
+      "1603.78 ms",
+      "32 MB"
+    ],
+    "entities": [
+      "AGoQ",
+      "All-Reduce"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "At 200 Gbps the same comparison yields 3.4x (39.17 ms vs 131.23 ms) - a smaller relative gain than at 10 Gbps.",
+    "stance": "supports",
+    "stance_target": "compression/quantisation benefit grows as bandwidth falls",
+    "evidence_type": "empirical",
+    "scope_conditions": "TP=8, DP=8, 32 MB message, 200 Gbps",
+    "quoted_support": "At 32MB under 200Gbps, our decomposed approach achieves a 3.4× speedup (39.17 ms vs. 131.23 ms).",
+    "numbers": [
+      "200 Gbps",
+      "3.4x",
+      "39.17 ms",
+      "131.23 ms",
+      "32 MB"
+    ],
+    "entities": [
+      "AGoQ",
+      "All-Reduce"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "The primary testbed is 64x RTX A6000 over 200 Gb/s InfiniBand, and the FP8 comparison required NVIDIA Pro 6000 GPUs 'to support the FP8 format required by COAT'.",
+    "stance": "neutral",
+    "stance_target": "hardware requirements for FP8 training paths",
+    "evidence_type": "empirical",
+    "scope_conditions": "64-GPU A6000 cluster + 16x Pro 6000",
+    "quoted_support": "Experiments are mainly carried out on a 64-GPU cluster connected with 200Gb/s InfiniBand comprising 8 nodes, each of which is equipped with eight Nvidia A6000 GPUs. In the comparative experiments with COAT (Xi et al., 2025), we used two nodes, each equipped with 8 NVIDIA Pro 6000 GPUs, to support the FP8 format required by COAT.",
+    "numbers": [
+      "64 GPUs",
+      "200 Gb/s",
+      "RTX A6000",
+      "Pro 6000",
+      "FP8"
+    ],
+    "entities": [
+      "AGoQ",
+      "COAT",
+      "RTX A6000",
+      "Pro 6000"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "FP8 requires sm_89+/Hopper-class hardware; GA100 (sm_80) has no native FP8, so an 8-bit path on a CMP 170HX would need int8 or emulated FP8, which this paper does not measure.",
+    "stance": "refutes",
+    "stance_target": "AGoQ's FP8 results transfer directly to Ampere-generation mining cards",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Pro 6000 / Hopper-class vs GA100",
+    "quoted_support": "we used two nodes, each equipped with 8 NVIDIA Pro 6000 GPUs, to support the FP8 format required by COAT",
+    "numbers": [
+      "sm_80",
+      "sm_89",
+      "GA100"
+    ],
+    "entities": [
+      "AGoQ",
+      "CMP 170HX",
+      "GA100"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "medium"
+  },
+  {
+    "claim": "AGoQ preserves convergence loss on pretraining and comparable downstream accuracy on LLaMA architectures despite 4-bit activations and 8-bit gradients.",
+    "stance": "supports",
+    "stance_target": "aggressive activation/gradient quantisation can be quality-neutral",
+    "evidence_type": "empirical",
+    "scope_conditions": "LLaMA2-7B pretraining, LLaMA3-8B/LLaMA2-13B timing",
+    "quoted_support": "while achieving convergence loss on pretraining and comparable accuracy on downstream tasks with LLaMA architectures",
+    "numbers": [],
+    "entities": [
+      "AGoQ",
+      "LLaMA2-7B",
+      "LLaMA3-8B",
+      "LLaMA2-13B"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "AGoQ also supports Huawei Ascend 910 NPUs, indicating the technique is not tied to NVIDIA-specific collective libraries.",
+    "stance": "neutral",
+    "stance_target": "portability of the 8-bit collective approach",
+    "evidence_type": "empirical",
+    "scope_conditions": "Ascend 910 NPU cluster",
+    "quoted_support": "Our system also supports Huawei Ascend 910 NPUs (more results can be found in Appendix 8.2).",
+    "numbers": [],
+    "entities": [
+      "AGoQ",
+      "Ascend 910"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "medium"
+  },
+  {
+    "claim": "The 10 Gbps experiment is the closest published analogue to the CMP box's ~0.75 GiB/s (~6 Gbps) NCCL fabric, and it shows the relative win from halving payload grows as bandwidth falls.",
+    "stance": "supports",
+    "stance_target": "8-bit gradient collectives are a strong lever on a Gen2 x4 PCIe fabric",
+    "evidence_type": "theoretical",
+    "scope_conditions": "10 Gbps simulated vs 0.75 GiB/s measured on CMP 170HX",
+    "quoted_support": "We evaluated communication efficiency under two representative bandwidth conditions: 200Gbps (our primary testbed) and 10Gbps (to simulate commodity constraints).",
+    "numbers": [
+      "10 Gbps",
+      "200 Gbps",
+      "0.75 GiB/s",
+      "6 Gbps"
+    ],
+    "entities": [
+      "AGoQ",
+      "CMP 170HX"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "medium"
+  },
+  {
+    "claim": "Quantisation/dequantisation in AGoQ is fused into GEMM kernels, so the compute overhead of the 8-bit path is largely hidden rather than added to step time.",
+    "stance": "supports",
+    "stance_target": "8-bit collectives need not add measurable compute overhead",
+    "evidence_type": "empirical",
+    "scope_conditions": "Megatron-LM single-decoder-layer timing",
+    "quoted_support": "Quantization/dequantization are fused into GEMM kernels.",
+    "numbers": [],
+    "entities": [
+      "AGoQ",
+      "GEMM"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "medium"
+  }
+]

@@ -1,0 +1,90 @@
+[
+  {
+    "claim": "On a 4x RTX PRO 6000 Blackwell Max-Q workstation with PCIe 4 host links and no NVLink or InfiniBand, training a 500M-param MoE at ~100k tokens per microbatch showed gradient communication at 50% of single-step time and matmul at only ~20%.",
+    "stance": "supports",
+    "stance_target": "The premise that DDP communication dominates per-microbatch step time on a no-NVLink PCIe box",
+    "evidence_type": "empirical",
+    "scope_conditions": "4x RTX PRO 6000 Blackwell Max-Q, PCIe 4, no NVLink/IB; Qwen3-style MoE 500M total / ~330M active; ~100k tokens/microbatch; second-hand write-up of a talk",
+    "quoted_support": "on a PCIe 4 bus without high-speed interconnects, gradient communication accounted for 50% of the single-step time, while matrix multiplication took up only about 20%",
+    "numbers": [
+      "50% gradient communication",
+      "20% matmul",
+      "~100k tokens/microbatch",
+      "single All-Reduce ~0.08 s",
+      "~101,000 microbatches",
+      "~2.26 hours cumulative sync"
+    ],
+    "entities": [
+      "RTX PRO 6000 Blackwell",
+      "DDP",
+      "All-Reduce",
+      "MoE"
+    ],
+    "time_period": "2026-08",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "a-13-hour-training-experiment-on-a-pc-workstation-why-optimization-begins-with-m"
+  },
+  {
+    "claim": "Pairing the ~100k-token microbatch with gradient_accumulation=10 (effective global batch ~1M tokens) and DDP.no_sync() so the all-reduce fires only on the 10th accumulation step cut wall-clock from under 18 hours to 13.2 hours.",
+    "stance": "supports",
+    "stance_target": "The pipeline's position that DDP overhead at 1M-token global batches is small once gradient accumulation is used",
+    "evidence_type": "empirical",
+    "scope_conditions": "Same box; effective batch ~1M tokens; 10B-token dataset",
+    "quoted_support": "Zach used a microbatch size of roughly 100k tokens paired with gradient_accumulation=10, forming an effective batch size of approximately 1M tokens ... overall training time naturally plummeted from 18 hours down to 13.2 hours",
+    "numbers": [
+      "gradient_accumulation=10",
+      "~1M-token effective batch",
+      "18 h -> 13.2 h",
+      "~2.26 h of sync -> ~0.23 h"
+    ],
+    "entities": [
+      "DDP.no_sync()",
+      "gradient accumulation",
+      "1M-token global batch"
+    ],
+    "time_period": "2026-08",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "a-13-hour-training-experiment-on-a-pc-workstation-why-optimization-begins-with-m"
+  },
+  {
+    "claim": "4-GPU DDP on this PCIe-4 no-NVLink box delivered only ~2.6x over single-GPU rather than the ideal 4x.",
+    "stance": "neutral",
+    "stance_target": "The assumption that DDP scales near-linearly on a thin wire",
+    "evidence_type": "empirical",
+    "scope_conditions": "4x RTX PRO 6000, PCIe 4, no NVLink; 500M MoE",
+    "quoted_support": "Simply expanding the unoptimized baseline configuration to four-GPU DDP yielded a measured ~2.6x speedup",
+    "numbers": [
+      "~2.6x on 4 GPUs (vs 4.0x ideal)"
+    ],
+    "entities": [
+      "DDP",
+      "PCIe 4"
+    ],
+    "time_period": "2026-08",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "a-13-hour-training-experiment-on-a-pc-workstation-why-optimization-begins-with-m"
+  },
+  {
+    "claim": "The case study is a 500M-parameter model on PCIe 4 (~25 GB/s), so its absolute numbers do not transfer to a 1B+ model on PCIe Gen2 x4 (~1 GB/s); only the mechanism (accumulation amortises sync) transfers.",
+    "stance": "neutral",
+    "stance_target": "The transferability of this measurement to the CMP 170HX box",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "Author's own boundary statement: micro-level conclusions do not transfer across scale",
+    "quoted_support": "techniques effective on a single GPU may no longer hold at a different scale ... micro-level findings from small experiments cannot be treated as universal rules of thumb",
+    "numbers": [
+      "500M params",
+      "PCIe 4"
+    ],
+    "entities": [
+      "PCIe 4",
+      "CMP 170HX"
+    ],
+    "time_period": "2026-08",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "a-13-hour-training-experiment-on-a-pc-workstation-why-optimization-begins-with-m"
+  }
+]

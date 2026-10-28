@@ -1,0 +1,102 @@
+[
+  {
+    "pair_index": 41,
+    "sentence": "TileLang's own fallback to it \"runs 1.81× slower\", so an sm_80 build is possible-but-slow rather than impossible",
+    "note_id": "tilelangexamplesdeepseek_v32-at-main-tile-aitilelang-github",
+    "verdict": "partial",
+    "severity": "minor",
+    "problem": "The note's 1.81× is measured on H800 SXM (Hopper) where the PV GEMM falls back to `mma.sync` because V is not K-major — a layout-induced fallback inside an SM90 kernel, not an sm_80/Ampere measurement. The note never mentions sm_80, Ampere, or an sm_80 build, so the inference 'an sm_80 build is possible-but-slow rather than impossible' is the report's own extrapolation.",
+    "suggested_fix": "Soften to what the note supports: 'TileLang's own `mma.sync` fallback path runs 1.81× slower on H800 SXM, so an sm_80 build would be slower still — the note contains no sm_80 measurement.'",
+    "correct_note_id": null
+  },
+  {
+    "pair_index": 53,
+    "sentence": "and the indexer's cost is additive and measured at 3.5× the kernel it feeds",
+    "note_id": "dsa_referencepy",
+    "verdict": "partial",
+    "severity": "minor",
+    "problem": "dsa_referencepy supports the mechanism (top-k non-differentiable; indexer trained by a clipped-log KL gradient against main-attention scores, not end-to-end) but contains no 3.5× figure and no additive-cost measurement. The 3.5× ratio is in published-as-a-conference-paper-at-colm-2026 ('the indexer is ~3.5x the sparse-attention cost', 5.6 ms vs 1.6 ms at 64K on A100).",
+    "suggested_fix": "Add [[published-as-a-conference-paper-at-colm-2026]] after '3.5× the kernel it feeds' (or move [[dsa_referencepy]] to cover only the distillation clause).",
+    "correct_note_id": "published-as-a-conference-paper-at-colm-2026"
+  },
+  {
+    "pair_index": 56,
+    "sentence": "trailing LM loss at 32K is 1.546 against 1.464 for full attention",
+    "note_id": "github-moonshotaimoba-moba-mixture-of-block-attention-for-long-context-llms-gith",
+    "verdict": "partial",
+    "severity": "minor",
+    "problem": "The GitHub note supports only the `flash-attn==2.6.3` pin and contains none of the loss figures. The 1.546/1.464 numbers are bound to [[moba-mixture-of-block-attention-for]], where they are the multiplicative coefficients of fitted scaling-law curves (1.546·C^-0.108 vs 1.464·C^-0.097), not trailing LM-loss values at 32K; the qualitative claim (MoBA marginally worse at 32K in all five runs) is supported, but the numbers are quoted in the wrong unit/context.",
+    "suggested_fix": "Keep the GitHub citation for the pin; rewrite the loss clause as 'MoBA's fitted 32K trailing-loss curve sits above full attention's in all five runs (1.546·C^-0.108 vs 1.464·C^-0.097)' and cite [[moba-mixture-of-block-attention-for]] there.",
+    "correct_note_id": null
+  },
+  {
+    "pair_index": 60,
+    "sentence": "published architecture effects are 0.014–0.082 nats against a 3.5%-relative single-run floor",
+    "note_id": "moba-mixture-of-block-attention-for",
+    "verdict": "unsupported",
+    "severity": "critical",
+    "problem": "The MoBA note contains none of 0.014, 0.082, 'nats', or a 3.5% floor; its only effect-size numbers are the fitted coefficients 1.546/1.464. The 0.0139-nat figure is in conditional-memory-via-scalable-lookup and the 0.082-nat figure in over-tokenized-transformer-vocabulary-is-generally-worth-scaling; the 3.5% restart floor is in a-hitchhikers-guide-to-scaling-law-estimation (already cited).",
+    "suggested_fix": "Swap the citation: replace [[moba-mixture-of-block-attention-for]] with [[conditional-memory-via-scalable-lookup]], [[over-tokenized-transformer-vocabulary-is-generally-worth-scaling]]; keep [[a-hitchhikers-guide-to-scaling-law-estimation]] for the 3.5% floor.",
+    "correct_note_id": "conditional-memory-via-scalable-lookup"
+  },
+  {
+    "pair_index": 61,
+    "sentence": "published architecture effects are 0.014–0.082 nats against a 3.5%-relative single-run floor",
+    "note_id": "a-hitchhikers-guide-to-scaling-law-estimation",
+    "verdict": "partial",
+    "severity": "minor",
+    "problem": "The note supports the 3.5%-relative floor ('reported variance across random restarts ... reaches up to 3.5%') but contains no 0.014 or 0.082 nat figures; the effect-size range comes from the Engram and OverEncoding notes.",
+    "suggested_fix": "Keep this note for the floor and add [[conditional-memory-via-scalable-lookup]] and [[over-tokenized-transformer-vocabulary-is-generally-worth-scaling]] for the 0.014–0.082 range.",
+    "correct_note_id": null
+  },
+  {
+    "pair_index": 66,
+    "sentence": "74.6–78.5 TFLOP/s is a ten-minute `gpu-burn -tc` at that cap with no thermal throttle",
+    "note_id": "2026-09-02-cmp170hx-health-gateipynb",
+    "verdict": "unsupported",
+    "severity": "critical",
+    "problem": "The note body is a mis-fetched NCCL AllReduce C source dump (~25 KB of `AllReduceRunTest` code) with no health-gate data: no 180 W, no 74.6/78.5 TFLOP/s, no `gpu-burn`, no temperatures, no throttle statement. Only the 'Suggested by' line mentions the 74.6–78.5 figure. The receipt chain the sentence cites does not exist in the note.",
+    "suggested_fix": "Drop [[2026-09-02-cmp170hx-health-gateipynb]] from the sentence — [[readmemd-2]] carries the 180 W cap, the 74.6–78.5 TFLOP/s table and the 10-minute `gpu-burn -tc` with peak 63 °C against an 80 °C stop rule — or re-fetch the note before citing it.",
+    "correct_note_id": null
+  },
+  {
+    "pair_index": 73,
+    "sentence": "deploy the five-minute counter snapshot",
+    "note_id": "lessonsmd",
+    "verdict": "partial",
+    "severity": "minor",
+    "problem": "lessonsmd supports the 50% field-failure rate, the 'only above the 8 GiB region' qualifier and the full-VRAM `memtest_vulkan` gate, but contains no counter snapshot or cron. The five-minute ECC counter snapshot is in readme_enmd ('a 5-minute ECC counter snapshot cron is deployed').",
+    "suggested_fix": "Add [[readme_enmd]] after 'five-minute counter snapshot', or drop that clause.",
+    "correct_note_id": "readme_enmd"
+  },
+  {
+    "pair_index": 74,
+    "sentence": "a four-point ladder (50M / 125M / 250M / 500M) × two architectures",
+    "note_id": "a-hitchhikers-guide-to-scaling-law-estimation",
+    "verdict": "partial",
+    "severity": "minor",
+    "problem": "The note supports the methodology — estimate final loss from ~1/3 of the training trajectory, discard the first ≈10% of checkpoints, fit scaling laws rather than compare single losses — but contains no 50M/125M/250M/500M ladder and no two-architecture prescription. Those sizes are the report's own design choice, not the source's.",
+    "suggested_fix": "Keep the citation for the 1/3-budget / 10%-discard / fit-L(C) methodology and mark the ladder as the report's own design (T4), or drop the specific sizes.",
+    "correct_note_id": null
+  },
+  {
+    "pair_index": 79,
+    "sentence": "with the largest gain on code — −1.3 PPL at 2K and −2.0 at 8K on GitHub",
+    "note_id": "analysing-the-impact-of-sequence-composition",
+    "verdict": "partial",
+    "severity": "minor",
+    "problem": "The 0.762/0.986 averages and the 8.410/9.172/8.079/9.065 values are exact, but the −1.3/−2.0 GitHub deltas are INTRADoc vs UNIChunk, not vs MIXChunk, which is the baseline the sentence names. Against MIXChunk the GitHub column goes 5.531 → 4.252 (−1.28) at 2K and 7.496 → 5.010 (−2.49) at 8K, so the 8K figure is materially wrong for the stated comparison.",
+    "suggested_fix": "Either say 'INTRADoc improves over UNIChunk by −1.3 PPL at 2K and −2.0 at 8K on GitHub' (the source's comparison) or use the vs-MIXChunk deltas (−1.28 / −2.49).",
+    "correct_note_id": null
+  },
+  {
+    "pair_index": 80,
+    "sentence": "produces functional divergence within 10–17% of changing the data seed",
+    "note_id": "quantifying-pretraining-variance-data-initialization-and-floating-point-arithmet",
+    "verdict": "partial",
+    "severity": "minor",
+    "problem": "The note says FP arithmetic is 'within ~17% of data seed and ~10% of initialization seed' — the 10% is relative to the init seed, not the data seed. The sentence collapses both into a 10–17% band against the data seed.",
+    "suggested_fix": "Rewrite as 'within ~17% of changing the data seed (and ~10% of changing the initialization seed)'.",
+    "correct_note_id": null
+  }
+]

@@ -1,0 +1,199 @@
+{
+  "recommendations": [
+    {
+      "id": "rec-1",
+      "category": "make-list",
+      "severity": "major",
+      "section": "## 2. Training Topologies on a No-P2P PCIe Fabric",
+      "current": "Six ways to split a training job across five cards, and they differ in what their communication scales with. Data parallelism (DDP) replicates the model and all-reduces gradients once per optimizer step, so its traffic scales with parameter count and not with sequence length. Fully sharded data parallelism (FSDP, also called ZeRO-3) shards parameters, gradients and optimizer state, all-gathering each layer before use and reduce-scattering it after — the same parameter scaling, paid per layer. Pipeline parallelism (PP) splits the model by layer into stages and passes activations between them, so its traffic scales with tokens × hidden × stages. Tensor parallelism (TP) splits each layer's matrices across ranks and all-reduces inside every layer, so its traffic scales with tokens × hidden × layers and sits on the critical path. Expert parallelism (EP) distributes mixture-of-experts (MoE) experts across ranks and all-to-alls each token's activations to the ranks holding its experts. Sequence parallelism (SP) shards the sequence dimension across ranks and exchanges attention state per layer — Ulysses by all-to-all on the head dimension, Ring Attention by P2P ring passes of K/V blocks — and at 32k it is the standard alternative to activation checkpointing.",
+      "recommended": "Six ways to split a training job across five cards, and they differ in what their communication scales with.\n\n- **Data parallelism (DDP)** replicates the model and all-reduces gradients once per optimizer step, so its traffic scales with parameter count and not with sequence length.\n- **Fully sharded data parallelism (FSDP, also called ZeRO-3)** shards parameters, gradients and optimizer state, all-gathering each layer before use and reduce-scattering it after — the same parameter scaling, paid per layer.\n- **Pipeline parallelism (PP)** splits the model by layer into stages and passes activations between them, so its traffic scales with tokens × hidden × stages.\n- **Tensor parallelism (TP)** splits each layer's matrices across ranks and all-reduces inside every layer, so its traffic scales with tokens × hidden × layers and sits on the critical path.\n- **Expert parallelism (EP)** distributes mixture-of-experts (MoE) experts across ranks and all-to-alls each token's activations to the ranks holding its experts.\n- **Sequence parallelism (SP)** shards the sequence dimension across ranks and exchanges attention state per layer — Ulysses by all-to-all on the head dimension, Ring Attention by P2P ring passes of K/V blocks — and at 32k it is the standard alternative to activation checkpointing.",
+      "rationale": "This 1,270-character paragraph is a flat six-item definition list in disguise; bolding each topology name and breaking it into bullets lets a reader find the one they care about without re-reading the wall."
+    },
+    {
+      "id": "rec-2",
+      "category": "break-paragraph",
+      "severity": "moderate",
+      "section": "## 2. Training Topologies on a No-P2P PCIe Fabric",
+      "current": "PP=5 puts 7B/5 = 1.4B parameters per stage",
+      "recommended": "\n\nPP=5 puts 7B/5 = 1.4B parameters per stage",
+      "rationale": "Inserting a paragraph break here separates the communication-and-bubble argument from the memory-sizing argument, giving each its own paragraph in a 1,114-character block."
+    },
+    {
+      "id": "rec-3",
+      "category": "break-paragraph",
+      "severity": "moderate",
+      "section": "## 7. Verdict: Which Experiments Are Worth Running",
+      "current": "The repo already stores `cu_seqlens` per shard",
+      "recommended": "\n\nThe repo already stores `cu_seqlens` per shard",
+      "rationale": "A break here splits the diagnosis (token supply is fine, packing is the worst of four) from the one-line fix, so the actionable instruction stands on its own instead of ending a 1,092-character paragraph."
+    },
+    {
+      "id": "rec-4",
+      "category": "break-paragraph",
+      "severity": "moderate",
+      "section": "## 6. CSA2 Sparse Attention at 32k Context",
+      "current": "The Ampere port of FlashMLA exposes only paged-KV decode",
+      "recommended": "\n\nThe Ampere port of FlashMLA exposes only paged-KV decode",
+      "rationale": "The first half of this 1,073-character paragraph establishes that the stack is SM100-only; the second half is the corroborating Ampere and SGLang evidence, and the hinge deserves its own paragraph."
+    },
+    {
+      "id": "rec-5",
+      "category": "break-paragraph",
+      "severity": "moderate",
+      "section": "## 3. The DDP Overhead Model at 1M-Token Batches",
+      "current": "Second, 810 TFLOPS is a peak, not a sustained rate",
+      "recommended": "\n\nSecond, 810 TFLOPS is a peak, not a sustained rate",
+      "rationale": "The paragraph runs two numbered corrections (the FLOPs convention, then the peak-versus-sustained rate) inside one 1,057-character block; a break at 'Second' makes the two-part structure visible."
+    },
+    {
+      "id": "rec-6",
+      "category": "break-paragraph",
+      "severity": "moderate",
+      "section": "## 3. The DDP Overhead Model at 1M-Token Batches",
+      "current": "The cluster's consensus runs against intuition",
+      "recommended": "\n\nThe cluster's consensus runs against intuition",
+      "rationale": "Splitting this 1,031-character paragraph at the move from measured analogue to literature consensus separates the receipt from the interpretation that follows it."
+    },
+    {
+      "id": "rec-7",
+      "category": "make-list",
+      "severity": "moderate",
+      "section": "## 6. CSA2 Sparse Attention at 32k Context",
+      "current": "The substitution is not itself a porting project. FSA's official implementation is \"well tested with NVIDIA Ampere or Hopper GPUs (e.g., A100 SXM, H20, H100 PCIe, H100 NVL, H100 SXM, H200 SXM)\", supports \"Training and inference (prefill)\", and calls `loss.backward()` through a 65,536 + 32,768-token batch; it requires `flash-attn==2.6.3` [[github-relaxed-system-labflash-sparse-attention-efficient-implementations-of-nat]] (T2). The fla-org Triton NSA ships full training support via `flame` [[github-fla-orgnative-sparse-attention-efficient-triton-implementations-for-nativ]] (T2). MoBA is the fallback, also pinned to `flash-attn==2.6.3` [[github-moonshotaimoba-moba-mixture-of-block-attention-for-long-context-llms-gith]] (T2), but it is compute-neutral at 32k and lossy alone: its fitted 32K trailing-loss curve sits above full attention's in all five runs (1.546·C^−0.108 against 1.464·C^−0.097) [[moba-mixture-of-block-attention-for]] (T3).",
+      "recommended": "The substitution is not itself a porting project.\n\n- **FSA** — the official implementation is \"well tested with NVIDIA Ampere or Hopper GPUs (e.g., A100 SXM, H20, H100 PCIe, H100 NVL, H100 SXM, H200 SXM)\", supports \"Training and inference (prefill)\", and calls `loss.backward()` through a 65,536 + 32,768-token batch; it requires `flash-attn==2.6.3` [[github-relaxed-system-labflash-sparse-attention-efficient-implementations-of-nat]] (T2).\n- **fla-org Triton NSA** — ships full training support via `flame` [[github-fla-orgnative-sparse-attention-efficient-triton-implementations-for-nativ]] (T2).\n- **MoBA** — the fallback, also pinned to `flash-attn==2.6.3` [[github-moonshotaimoba-moba-mixture-of-block-attention-for-long-context-llms-gith]] (T2), but it is compute-neutral at 32k and lossy alone: its fitted 32K trailing-loss curve sits above full attention's in all five runs (1.546·C^−0.108 against 1.464·C^−0.097) [[moba-mixture-of-block-attention-for]] (T3).",
+      "rationale": "Three substitutable implementations with different support and caveats are enumerated in sequence; a bulleted list with bold names turns the 'run this instead' decision into something scannable."
+    },
+    {
+      "id": "rec-8",
+      "category": "break-paragraph",
+      "severity": "moderate",
+      "section": "## 4. MoE and Expert Parallelism: Ruled Out or Misjudged?",
+      "current": "TP has no equivalent hiding place at this scale",
+      "recommended": "\n\nTP has no equivalent hiding place at this scale",
+      "rationale": "This 998-character paragraph argues EP's overlap advantage and then turns to TP; the pivot at 'TP has no equivalent hiding place' is the natural place to break."
+    },
+    {
+      "id": "rec-9",
+      "category": "break-paragraph",
+      "severity": "moderate",
+      "section": "## 4. MoE and Expert Parallelism: Ruled Out or Misjudged?",
+      "current": "The one prototype that does work on PCIe without P2P, ThunderEP",
+      "recommended": "\n\nThe one prototype that does work on PCIe without P2P, ThunderEP",
+      "rationale": "The paragraph first states the negative (every EP library assumes direct GPU access) and then the exception (ThunderEP); breaking at the exception keeps the 959-character block from burying it."
+    },
+    {
+      "id": "rec-10",
+      "category": "break-paragraph",
+      "severity": "moderate",
+      "section": "## 7. Verdict: Which Experiments Are Worth Running",
+      "current": "The architecture comparison should run at 8K, not 32k",
+      "recommended": "\n\nThe architecture comparison should run at 8K, not 32k",
+      "rationale": "The GQA gate and the scaling-ladder design are two separate sequencing rules stacked in one 956-character paragraph; a break gives each rule its own block."
+    },
+    {
+      "id": "rec-11",
+      "category": "merge-paragraphs",
+      "severity": "moderate",
+      "section": "## Source Tensions",
+      "current": "**Every sparse-attention 32k win is an adaptation-stage result.** One side holds that sparse attention delivers large measured 32k wins: NSA reports 6.3× forward and 3.4× backward at 32k on A100 with a quality win, and LongCat's LSA claims parity with full attention and native training to 1M tokens [[native-sparse-attention-hardware-aligned-and-natively]], [[longcat-sparse-attention-taming-the-lightning-via]] (T3/T2). The other side plans from-scratch 32k training as the primary axis.\n\nThe plan sits outside the regime every published result was measured in: NSA spent 270B tokens at 8k before touching 32k, and LongCat's 0.83×-at-32K figure is a latency measurement, not a from-scratch efficiency claim.",
+      "recommended": "**Every sparse-attention 32k win is an adaptation-stage result.** One side holds that sparse attention delivers large measured 32k wins: NSA reports 6.3× forward and 3.4× backward at 32k on A100 with a quality win, and LongCat's LSA claims parity with full attention and native training to 1M tokens [[native-sparse-attention-hardware-aligned-and-natively]], [[longcat-sparse-attention-taming-the-lightning-via]] (T3/T2). The other side plans from-scratch 32k training as the primary axis. The plan sits outside the regime every published result was measured in: NSA spent 270B tokens at 8k before touching 32k, and LongCat's 0.83×-at-32K figure is a latency measurement, not a from-scratch efficiency claim.",
+      "rationale": "The other four Source Tensions entries are single paragraphs with the resolution folded in; this one is artificially split, so merging restores the section's consistent shape."
+    },
+    {
+      "id": "rec-12",
+      "category": "merge-paragraphs",
+      "severity": "moderate",
+      "section": "## 6. CSA2 Sparse Attention at 32k Context",
+      "current": "The plan cites NSA's 6.3× forward and 3.4× backward at 32k as evidence of a large sparse-attention win. Those are kernel-level ratios measured on 8×A100 with Triton kernels [[native-sparse-attention-hardware-aligned-and-natively]] (T3).\n\nFSA (ICLR 2026) is the measured end-to-end comparison the corpus needed: Llama3-8B, Qwen3-14B and Qwen2.5-32B at 32K and 64K in BF16, on H20 and H200 with NVLink. It reports up to 1.25× and 1.09× on average end-to-end training speedup over the Triton NSA kernel, and up to 2.47× and 1.86× on average over full attention [[published-as-a-conference-paper-at-iclr-2026]] (T3). Dividing the two averages implies NSA ≈ 1.71× full attention end-to-end, not 6.3×. The fla-org Triton implementation reproduces a shrinking advantage: 2.66× forward at 16,384 tokens, 1.35× at 8,192, and 0.72× at 4,096 — NSA is slower than flash at short context [[github-fla-orgnative-sparse-attention-efficient-triton-implementations-for-nativ]] (T2).",
+      "recommended": "The plan cites NSA's 6.3× forward and 3.4× backward at 32k as evidence of a large sparse-attention win. Those are kernel-level ratios measured on 8×A100 with Triton kernels [[native-sparse-attention-hardware-aligned-and-natively]] (T3). FSA (ICLR 2026) is the measured end-to-end comparison the corpus needed: Llama3-8B, Qwen3-14B and Qwen2.5-32B at 32K and 64K in BF16, on H20 and H200 with NVLink. It reports up to 1.25× and 1.09× on average end-to-end training speedup over the Triton NSA kernel, and up to 2.47× and 1.86× on average over full attention [[published-as-a-conference-paper-at-iclr-2026]] (T3). Dividing the two averages implies NSA ≈ 1.71× full attention end-to-end, not 6.3×. The fla-org Triton implementation reproduces a shrinking advantage: 2.66× forward at 16,384 tokens, 1.35× at 8,192, and 0.72× at 4,096 — NSA is slower than flash at short context [[github-fla-orgnative-sparse-attention-efficient-triton-implementations-for-nativ]] (T2).",
+      "rationale": "The 236-character opening paragraph is a setup fragment whose only job is to introduce the end-to-end comparison that the next paragraph delivers; merging removes a false section break inside one argument."
+    },
+    {
+      "id": "rec-13",
+      "category": "break-paragraph",
+      "severity": "moderate",
+      "section": "## 7. Verdict: Which Experiments Are Worth Running",
+      "current": "Enable it before the first long run",
+      "recommended": "\n\nEnable it before the first long run",
+      "rationale": "The ECC paragraph runs the status dispute and the operational instruction together across 975 characters; a break before the instruction separates what is contested from what to do about it."
+    },
+    {
+      "id": "rec-14",
+      "category": "merge-paragraphs",
+      "severity": "minor",
+      "section": "## 4. MoE and Expert Parallelism: Ruled Out or Misjudged?",
+      "current": "The plan's estimate — two all-to-alls per MoE layer, ~70× the compute time at 1M-token batches — divides the aggregate dispatch-plus-combine volume across all ranks (~400 GB) by the per-GPU collective rate. Each GPU sends only its share.\n\nMegatron-Core's per-GPU send volume in one all-to-all is T·K·h·(EP−1)/EP, where T is the tokens on that GPU, K is top-k, h is hidden width and EP is the expert-parallel size [[scalable-training-of-mixture-of-experts-models-with]] (T3). At a 1M-token global batch over five data-parallel ranks, T_local = 200,000; with top-k 2, hidden 2048 and EP=5, dispatch is 200,000 × 2 × 2048 × 0.8 = 6.55 × 10⁸ elements = 1.31 GB in bf16; dispatch plus combine is 2.62 GB per layer; across 24 MoE layers that is 62.9 GB per GPU per step (T4). At 0.805 GB/s that is 78 s, or 1.39× the corrected 56.3 s window.",
+      "recommended": "The plan's estimate — two all-to-alls per MoE layer, ~70× the compute time at 1M-token batches — divides the aggregate dispatch-plus-combine volume across all ranks (~400 GB) by the per-GPU collective rate. Each GPU sends only its share. Megatron-Core's per-GPU send volume in one all-to-all is T·K·h·(EP−1)/EP, where T is the tokens on that GPU, K is top-k, h is hidden width and EP is the expert-parallel size [[scalable-training-of-mixture-of-experts-models-with]] (T3). At a 1M-token global batch over five data-parallel ranks, T_local = 200,000; with top-k 2, hidden 2048 and EP=5, dispatch is 200,000 × 2 × 2048 × 0.8 = 6.55 × 10⁸ elements = 1.31 GB in bf16; dispatch plus combine is 2.62 GB per layer; across 24 MoE layers that is 62.9 GB per GPU per step (T4). At 0.805 GB/s that is 78 s, or 1.39× the corrected 56.3 s window.",
+      "rationale": "The 237-character paragraph states the error and the 596-character paragraph immediately derives the correction from it; they are one argument split by a blank line."
+    },
+    {
+      "id": "rec-15",
+      "category": "bold-keyterms",
+      "severity": "minor",
+      "section": "## 3. The DDP Overhead Model at 1M-Token Batches",
+      "current": "The net effect is 36% → 6.6%: the ratio falls 5.4×.",
+      "recommended": "The net effect is **36% → 6.6%**: the ratio falls 5.4×.",
+      "rationale": "This 51-character line is the headline result of the whole section and sits immediately above a table; bolding the ratio makes it findable on a scan."
+    },
+    {
+      "id": "rec-16",
+      "category": "bold-keyterms",
+      "severity": "minor",
+      "section": "## 7. Verdict: Which Experiments Are Worth Running",
+      "current": "Feasibility here means three things at once: the experiment fits in memory, it fits in wall-clock, and its result can be measured.",
+      "recommended": "Feasibility here means three things at once: the experiment **fits in memory**, it **fits in wall-clock**, and its result **can be measured**.",
+      "rationale": "These three criteria are the rubric the (a)–(d) verdicts are scored against, so bolding them lets a reader carry the test into the rest of the section."
+    },
+    {
+      "id": "rec-17",
+      "category": "bold-keyterms",
+      "severity": "minor",
+      "section": "## 7. Verdict: Which Experiments Are Worth Running",
+      "current": "False as stated. CSA2 is not runnable on sm_80",
+      "recommended": "**False as stated.** CSA2 is not runnable on sm_80",
+      "rationale": "The verdict word is the direct answer to one of the four research questions and is currently buried mid-paragraph behind a bolded claim; bolding it makes the answer scannable."
+    },
+    {
+      "id": "rec-18",
+      "category": "split-sentence",
+      "severity": "minor",
+      "section": "## 4. MoE and Expert Parallelism: Ruled Out or Misjudged?",
+      "current": "for a no-P2P, no-NVLink, no-RDMA fabric — the closest are VarioPath",
+      "recommended": "for a no-P2P, no-NVLink, no-RDMA fabric. The closest are VarioPath",
+      "rationale": "The 332-character sentence carries two independent claims joined by an em-dash appositive; splitting at the dash turns the second claim into a proper sentence."
+    },
+    {
+      "id": "rec-19",
+      "category": "split-sentence",
+      "severity": "minor",
+      "section": "## 6. CSA2 Sparse Attention at 32k Context",
+      "current": "and a separate loss term to every step; and the indexer's cost is additive",
+      "recommended": "and a separate loss term to every step. The indexer's cost is additive",
+      "rationale": "This 401-character sentence stacks the distillation cost and the indexer's additive cost behind a semicolon-plus-'and'; splitting gives each cost its own sentence."
+    },
+    {
+      "id": "rec-20",
+      "category": "split-sentence",
+      "severity": "minor",
+      "section": "## 2. Training Topologies on a No-P2P PCIe Fabric",
+      "current": "at eight [[pcie-110-gpu-스케일링]] (T2); on 8×A100 with NVSwitch it loses 2.90×",
+      "recommended": "at eight [[pcie-110-gpu-스케일링]] (T2). On 8×A100 with NVSwitch it loses 2.90×",
+      "rationale": "The 408-character sentence reports two opposed measurements joined by a semicolon; splitting at the semicolon makes the split verdict (wins on PCIe, loses on NVSwitch) read as two facts."
+    }
+  ],
+  "summary": {
+    "total_recommendations": 20,
+    "by_category": {
+      "merge-paragraphs": 3,
+      "break-paragraph": 9,
+      "make-list": 2,
+      "make-table": 0,
+      "bold-keyterms": 3,
+      "split-sentence": 3,
+      "remove-hr": 0,
+      "add-whitespace": 0
+    },
+    "highest_severity": "major",
+    "expected_net_char_delta": 87
+  }
+}

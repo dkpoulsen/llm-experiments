@@ -1,0 +1,90 @@
+[
+ {
+  "claim": "On 8x RTX 3090 over PCIe 4.0 x16 with BAR1 P2P enabled, NCCL all-reduce bus bandwidth reaches 24.7 GB/s versus 2.7 GB/s on NCCL's no-P2P SHM transport, a 9x collective-fabric jump.",
+  "stance": "refutes",
+  "stance_target": "cc-6's committed reading that P2P is a latency lever, not a bandwidth lever — this shows P2P IS a bandwidth lever when BAR1 covers the framebuffer and the link is wide",
+  "evidence_type": "empirical",
+  "scope_conditions": "8x RTX 3090 (GA102), EPYC Rome, four root complexes, PCIe 4.0 x16, BAR1 resized to cover the 24 GB framebuffer, patched open kernel modules + stock 610.57.04 userspace",
+  "quoted_support": "Under the hood: direct peer copies run at **23-26 GB/s** across the root complex (PCIe 4.0 x16 line rate) versus ~2 GB/s per GPU through host staging, and NCCL all-reduce bus bandwidth reaches **24.7 GB/s** versus 2.7 GB/s on NCCL's no-P2P SHM transport — a 9x collective-fabric jump",
+  "numbers": [
+   "24.7 GB/s busbw with P2P",
+   "2.7 GB/s busbw with SHM",
+   "9x jump",
+   "23-26 GB/s peer copies",
+   "~2 GB/s per GPU host staging"
+  ],
+  "entities": [
+   "NCCL",
+   "BAR1 P2P",
+   "RTX 3090",
+   "PCIe 4.0 x16",
+   "SHM transport"
+  ],
+  "time_period": "2026",
+  "region": "global",
+  "confidence": "medium",
+  "source_note_id": "github-quixiaiopen-gpu-kernel-modules-p2p-support-for-nvidia-consumer-cards-gith"
+ },
+ {
+  "claim": "BAR1 P2P requires static BAR1 to span the whole framebuffer, so BAR1 must be resized (32 GB on a 3090, 64 GiB on an unlocked CMP 170HX) before the GH100 BAR1-P2P HAL check can pass.",
+  "stance": "supports",
+  "stance_target": "the mechanism by which the 170HX's stock 64 MB BAR1 blocks BAR1 P2P, and why the memory unlock's 64 GiB BAR1 is the enabling step",
+  "evidence_type": "theoretical",
+  "scope_conditions": "NVIDIA open kernel modules, kbusIsPcieBar1P2PMappingSupported_GH100, static BAR1",
+  "quoted_support": "static BAR1 (and therefore BAR1 P2P) requires BAR1 to cover the whole framebuffer. ... BAR1 must end up covering the whole framebuffer (32 GB on a 3090). This is not cosmetic: BAR1-P2P maps peer memory",
+  "numbers": [
+   "32 GB BAR1 on a 3090",
+   "64 GiB BAR1 on an unlocked 170HX"
+  ],
+  "entities": [
+   "kbusIsPcieBar1P2PMappingSupported_GH100",
+   "static BAR1",
+   "ReBAR",
+   "cmpunlocker"
+  ],
+  "time_period": "2026",
+  "region": "global",
+  "confidence": "high",
+  "source_note_id": "github-quixiaiopen-gpu-kernel-modules-p2p-support-for-nvidia-consumer-cards-gith"
+ },
+ {
+  "claim": "The stock 610 driver already ships native BAR1 P2P for supported chips and needs no userspace changes; the fork only forces the GH100 BAR1-P2P HALs onto consumer chips that lack them.",
+  "stance": "neutral",
+  "stance_target": "whether BAR1 P2P on a 170HX requires a bespoke userspace stack (it does not)",
+  "evidence_type": "theoretical",
+  "scope_conditions": "open kernel modules 610 branch, stock 610.57.04 userspace",
+  "quoted_support": "No userspace changes: the modules pair with the stock 610.57.04 userspace",
+  "numbers": [],
+  "entities": [
+   "NVIDIA open kernel modules",
+   "BAR1 P2P",
+   "610.57.04"
+  ],
+  "time_period": "2026",
+  "region": "global",
+  "confidence": "medium",
+  "source_note_id": "github-quixiaiopen-gpu-kernel-modules-p2p-support-for-nvidia-consumer-cards-gith"
+ },
+ {
+  "claim": "The 9x P2P bandwidth ratio is measured on GA102/AD102 at PCIe 4.0 x16 and does not transfer to a GA100 at Gen2 x4, where the link itself caps busbw near 1.6 GB/s.",
+  "stance": "neutral",
+  "stance_target": "the scope limit of this counter-evidence for cc-6",
+  "evidence_type": "theoretical",
+  "scope_conditions": "consumer Ampere/Ada at Gen4 x16 vs GA100 at Gen2 x4",
+  "quoted_support": "Verified on 8x RTX 3090.",
+  "numbers": [
+   "Gen4 x16 vs Gen2 x4"
+  ],
+  "entities": [
+   "GA102",
+   "AD102",
+   "GA100",
+   "PCIe 4.0 x16",
+   "PCIe Gen2 x4"
+  ],
+  "time_period": "2026",
+  "region": "global",
+  "confidence": "high",
+  "source_note_id": "github-quixiaiopen-gpu-kernel-modules-p2p-support-for-nvidia-consumer-cards-gith"
+ }
+]

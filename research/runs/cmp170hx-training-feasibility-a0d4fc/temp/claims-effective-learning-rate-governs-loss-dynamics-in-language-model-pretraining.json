@@ -1,0 +1,64 @@
+[
+  {
+    "claim": "Repeating a Llama-124M FineWeb run while changing only the initialisation seed or data-order seed produces a pairwise mean absolute loss-trajectory discrepancy of 1.11e-2 and 1.62e-2 nats respectively - an independent measured small-scale noise floor in the 0.01-nat range.",
+    "stance": "refutes",
+    "stance_target": "the 3.5%-relative (approximately 0.1-nat) noise floor used to declare a 9B-token null uninterpretable",
+    "evidence_type": "empirical",
+    "scope_conditions": "Llama-124M on FineWeb with AdamW, batch 128, sequence length 1024; pairwise time-averaged mean absolute loss discrepancy over evaluation steps",
+    "quoted_support": "For an internal calibration, we measure run-to-run variation in our most extensively tested configuration, Llama-124M trained on FineWeb. Repeating the same configuration while changing only the initialization seed or data-order seed yields variations of 1.11x10^-2 and 1.62x10^-2, respectively, under the same metric.",
+    "numbers": [
+      "1.11e-2 nats (init seed)",
+      "1.62e-2 nats (data-order seed)",
+      "Llama-124M",
+      "batch 128",
+      "sequence 1024"
+    ],
+    "entities": [
+      "Llama-124M",
+      "FineWeb",
+      "AdamW"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "effective-learning-rate-governs-loss-dynamics-in-language-model-pretraining"
+  },
+  {
+    "claim": "There is no configuration-independent threshold for when two pretraining loss trajectories differ meaningfully, but LLM optimizer studies routinely treat 1e-2-scale loss differences as meaningful - which places the practical detection threshold at ~0.01 nats, not 0.1 nats.",
+    "stance": "refutes",
+    "stance_target": "the claim that a 9B-token run is underpowered by 2-14x because deltas sit below a 3.5%-relative floor",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "survey of optimizer/hyperparameter studies cited by the paper",
+    "quoted_support": "There is no configuration-independent threshold for when two pretraining loss trajectories differ meaningfully. Nevertheless, recent LLM optimizer studies routinely use 10^-2-scale loss differences to distinguish optimizer and hyperparameter choices.",
+    "numbers": [
+      "10^-2-scale loss differences"
+    ],
+    "entities": [
+      "optimizer studies"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "effective-learning-rate-governs-loss-dynamics-in-language-model-pretraining"
+  },
+  {
+    "claim": "ELR-collapse errors of 1.8e-3 to 2.6e-3 are 4.3-9.0x smaller than the seed-induced variation, which is the paper's evidence that seed noise dominates any architecture-level signal at this scale.",
+    "stance": "neutral",
+    "stance_target": "the relative magnitude of architecture signal versus seed noise at 124M",
+    "evidence_type": "empirical",
+    "scope_conditions": "three ELR-matched Llama-124M runs with both seeds fixed",
+    "quoted_support": "the three ELR-matched Llama-124M runs in Figures ... with both seeds fixed, have collapse errors of 1.8x10^-3, 2.5x10^-3, and 2.6x10^-3. Thus, even the largest collapse error is more than four times smaller than the lower stochastic-variation baseline; across the reported values, the difference is a factor of 4.3-9.0.",
+    "numbers": [
+      "1.8e-3 to 2.6e-3 collapse error",
+      "4.3-9.0x below seed variation"
+    ],
+    "entities": [
+      "ELR",
+      "Llama-124M"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "effective-learning-rate-governs-loss-dynamics-in-language-model-pretraining"
+  }
+]

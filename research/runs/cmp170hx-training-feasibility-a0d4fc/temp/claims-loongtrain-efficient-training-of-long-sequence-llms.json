@@ -1,0 +1,66 @@
+[
+  {
+    "claim": "End-to-end MFU for 7B-MHA and 7B-GQA on 64 A100 GPUs at 128K-1M sequence lengths ranges 0.360-0.518 for the best system, i.e. long-context MFU is comparable to short-context MFU rather than collapsing.",
+    "stance": "supports",
+    "stance_target": "the claim that the quadratic FLOPs penalty is paid in wall-clock, not amortized away, for 7B models",
+    "evidence_type": "empirical",
+    "scope_conditions": "7B-MHA and 7B-GQA, 64 A100 GPUs, d_sp=64, Selective Checkpoint++, sequence lengths 128K-1M",
+    "quoted_support": "Table 3. End-to-end training performance (MFU) of 7B-MHA and 7B-GQA on 64 GPUs with d_sp=64 ... 0.360 0.476 0.481 0.389 0.394 0.518 0.518 0.415 0.406",
+    "numbers": [
+      "MFU 0.360-0.518",
+      "64 GPUs",
+      "128K-1M sequence lengths"
+    ],
+    "entities": [
+      "LoongTrain",
+      "A100",
+      "7B"
+    ],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "loongtrain-efficient-training-of-long-sequence-llms"
+  },
+  {
+    "claim": "Naive Ring Attention's MFU is under 10% at 128K for 7B-MHA and reaches only 19.6% (GQA) / 40.6% at 1M, so the long-context penalty is dominated by implementation quality rather than by the FLOPs ratio alone.",
+    "stance": "neutral",
+    "stance_target": "how much of the long-context cost is algorithmic versus implementation",
+    "evidence_type": "empirical",
+    "scope_conditions": "64 A100 GPUs, Ring-Attention baseline, 128K and 1M",
+    "quoted_support": "the MFU is less than 10% with the sequence length of 128K ... Specifically in Ring-Attention, the MFU reaches 19.6% with the sequence length of 128K, and increases to 40.6% when the sequence length is 1M.",
+    "numbers": [
+      "<10% MFU at 128K MHA",
+      "19.6% at 128K GQA",
+      "40.6% at 1M"
+    ],
+    "entities": [
+      "Ring Attention",
+      "MFU"
+    ],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "loongtrain-efficient-training-of-long-sequence-llms"
+  },
+  {
+    "claim": "LoongTrain improves MFU by up to 2.88x versus Megatron-CP and 1.49-1.53x versus DeepSpeed Ulysses, which shows that measured long-context throughput varies by ~3x across implementations at the same FLOPs.",
+    "stance": "neutral",
+    "stance_target": "the spread of measured long-context throughput across systems",
+    "evidence_type": "empirical",
+    "scope_conditions": "7B-MHA and 7B-GQA, 64 A100 GPUs, 128K-1M",
+    "quoted_support": "Compared to DS-Ulysses, LoongTrain improves the training performance of MHA and GQA by up to 1.49x and 1.53x, respectively. Compared to Megatron-CP, LoongTrain enhances the performance of MHA and GQA by up to 2.88x and 1.33x, respectively.",
+    "numbers": [
+      "2.88x vs Megatron-CP",
+      "1.49x/1.53x vs DS-Ulysses"
+    ],
+    "entities": [
+      "LoongTrain",
+      "Megatron-CP",
+      "DeepSpeed Ulysses"
+    ],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "loongtrain-efficient-training-of-long-sequence-llms"
+  }
+]

@@ -1,0 +1,123 @@
+[
+ {
+  "claim": "On a Gen2 x4 4x CMP 170HX rig, enabling P2P is a pessimization: TP4 gains +3-6% single-stream but loses -4.4% aggregate, PP4 turns negative even single-stream (-19.1% aggregate), and c8 aggregate falls -13.6%; at Gen2-x4 bandwidth no row shows a strict win.",
+  "stance": "supports",
+  "stance_target": "cc-6's committed reading that P2P is a latency lever, not a bandwidth lever, and specifically that at the query's actual link width (Gen2 x4) P2P buys nothing",
+  "evidence_type": "empirical",
+  "scope_conditions": "4x CMP 170HX, all four slots negotiate Gen2 x4 (confirmed across cold power cycles), 74 SM, engine 1.7.0, 262144 context, P2P content check 108/108 passing",
+  "quoted_support": "**P2P direction follows layout communication volume**: TP4 (all-reduce) gains +3-6% single-stream but loses -4.4% aggregate; TP2+PP2 is roughly neutral; PP4 (stage hops) turns negative even single-stream, -19.1% aggregate. At Gen2-x4 bandwidth **no row shows a strict win**.",
+  "numbers": [
+   "+3-6% TP4 single-stream",
+   "-4.4% TP4 aggregate",
+   "-19.1% PP4 aggregate",
+   "-13.6% c8 aggregate with P2P",
+   "108/108 content check"
+  ],
+  "entities": [
+   "CMP 170HX",
+   "Gen2 x4",
+   "TP4",
+   "PP4",
+   "P2P",
+   "cmpunlocker"
+  ],
+  "time_period": "measured 2026-10-04",
+  "region": "global",
+  "confidence": "high",
+  "source_note_id": "readme_enmd"
+ },
+ {
+  "claim": "On identical software (1.6.0, both TP4, host-shm all-reduce, P2P off), a Gen2 x4 rig loses 25-29% single-stream and 44% aggregate against a Gen2 x16 rig, with KV pools differing by only 0.9%.",
+  "stance": "supports",
+  "stance_target": "the fabric being a real but sub-linear constraint: x4 vs x16 costs ~28% single-stream and ~44% aggregate throughput, not the 4x a raw link-rate ratio would predict",
+  "evidence_type": "empirical",
+  "scope_conditions": "this rig (4x CMP 170HX at Gen2 x4) vs PixelML 1.6.0 (Gen2 x16), both TP4, host-shm all-reduce, P2P off, KV pools 1,081,579 vs 1,072,150",
+  "quoted_support": "| c1 structured | 284.2 | 396.0 | -28% | ... | 8-user aggregate | 447.2 | 798.6 | -44% | ... Single-stream loses 25-29%; the aggregate gap widens to 44% as all-reduce payloads grow with batch size.",
+  "numbers": [
+   "284.2 vs 396.0 tok/s (-28%)",
+   "229.1 vs 306.2 (-25%)",
+   "136.4 vs 192.5 (-29%)",
+   "447.2 vs 798.6 (-44%)",
+   "KV pool delta 0.9%"
+  ],
+  "entities": [
+   "CMP 170HX",
+   "Gen2 x4",
+   "Gen2 x16",
+   "TP4",
+   "host-shm all-reduce"
+  ],
+  "time_period": "measured 2026-10-02",
+  "region": "global",
+  "confidence": "high",
+  "source_note_id": "readme_enmd"
+ },
+ {
+  "claim": "The x4-vs-x16 gap decomposes into a link factor of 0.72 and a layout factor of 0.78 (product ~0.56), matching the 45% total gap to the x16 reference rig, and the x4 link itself is not software-solvable.",
+  "stance": "neutral",
+  "stance_target": "whether the 5-card box's fabric can be improved by software alone",
+  "evidence_type": "empirical",
+  "scope_conditions": "same rig, 1.7.0 at 74 SM, Gen2 x4",
+  "quoted_support": "Multiplying 0.72 (link) x 0.78 (layout) ~ 0.56, plus the official 1.7.0 P2P+74SM gains, matches our 45% total gap - **no unexplained loss**. ... the x4 link itself is not software-solvable.",
+  "numbers": [
+   "link factor 0.72",
+   "layout factor 0.78",
+   "product 0.56",
+   "45% total gap"
+  ],
+  "entities": [
+   "PCIe link width",
+   "layout",
+   "CMP 170HX"
+  ],
+  "time_period": "measured 2026-10-04",
+  "region": "global",
+  "confidence": "medium",
+  "source_note_id": "readme_enmd"
+ },
+ {
+  "claim": "PP4 keeps its prefill and aggregate-throughput advantage on narrow links (x4, even x1) while TP4 needs all-x16 to reach published community numbers and degrades badly on x4.",
+  "stance": "supports",
+  "stance_target": "the report's topology prescription that pipeline parallelism is the link-tolerant route and tensor parallelism is ruled out by a narrow fabric",
+  "evidence_type": "empirical",
+  "scope_conditions": "4x CMP 170HX at Gen2 x4 and x1, engine 1.6.0/1.7.0",
+  "quoted_support": "PP4 keeps its prefill and aggregate-throughput advantage on narrow links (x4, even x1); TP4 needs all-x16 to reach published community numbers - on x4 its aggregate degrades badly.",
+  "numbers": [
+   "x4 and x1 tested",
+   "TP4 aggregate degrades on x4"
+  ],
+  "entities": [
+   "PP4",
+   "TP4",
+   "PCIe x4",
+   "PCIe x1"
+  ],
+  "time_period": "measured 2026-10-04",
+  "region": "global",
+  "confidence": "high",
+  "source_note_id": "readme_enmd"
+ },
+ {
+  "claim": "cmpunlocker v0.5 unlocked ECC (DRAM + SRAM correction) for the first time on these cards, with a perf cost of <=0.3% across four workloads, but the verification is integration-level only (no fault-injection tooling).",
+  "stance": "neutral",
+  "stance_target": "the comparability premise of the experiment program (silent corruption would invalidate it)",
+  "evidence_type": "empirical",
+  "scope_conditions": "4x CMP 170HX, cmpunlocker upstream v0.5, four-layer verification (reporting, control, hardware SEC2 payload FBPA writes, load with per-GPU 1 GB pattern x20 copy bit-verify)",
+  "quoted_support": "cmpunlocker upstream v0.5 unlocked ECC (DRAM + SRAM correction) - ECC mode Enabled for the first time, four-layer integration verification passed, perf cost <= 0.3% on all four workloads (rigor note: no fault-injection tooling available, so this is integration-level; watching for silent bit-flips).",
+  "numbers": [
+   "<=0.3% perf cost",
+   "1 GB pattern x20 copy bit-verify",
+   "~1585 GB/s aggregate copy"
+  ],
+  "entities": [
+   "cmpunlocker v0.5",
+   "ECC",
+   "SEC2",
+   "CMP 170HX"
+  ],
+  "time_period": "2026-10-06",
+  "region": "global",
+  "confidence": "medium",
+  "source_note_id": "readme_enmd"
+ }
+]

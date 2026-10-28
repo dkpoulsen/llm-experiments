@@ -1,0 +1,42 @@
+[
+  {
+    "claim": "Ring Attention makes trainable context length scale linearly with device count: a model trainable at context s on n devices becomes trainable at ns, demonstrated as 7B at 256k on 8xA100 and 65B at 1024k on TPUv4-1024.",
+    "stance": "neutral",
+    "stance_target": "whether long context is a memory problem solved by device count rather than a compute problem",
+    "evidence_type": "empirical",
+    "scope_conditions": "FSDP/TP with Jax SPMD, 2M-token batches on 8/32xA100, 4M on TPUv4-256",
+    "quoted_support": "If a model can be trained with context size s on n GPUs using the blockwise attention and feedforward, with our Ring Attention approach, it becomes possible to train a model with a context size of ns.",
+    "numbers": [
+      "7B at 256k on 8xA100",
+      "30B at 2048k on TPUv4-1024",
+      "65B at 1024k",
+      "2M-token batches"
+    ],
+    "entities": [
+      "Ring Attention",
+      "A100",
+      "TPUv4"
+    ],
+    "time_period": "2023",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "ring-attention-with-blockwise"
+  },
+  {
+    "claim": "Ring Attention argues MFU is maintained as context grows because blockwise computation is overlapped with K/V communication, but the paper's numeric MFU table did not survive text extraction, so no numeric MFU-vs-context curve is recoverable from this note.",
+    "stance": "neutral",
+    "stance_target": "whether Ring Attention can supply a measured MFU-vs-sequence-length ratio",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "Table 4 of arXiv 2310.01889, model sizes 7B-65B, context 8k-2048k",
+    "quoted_support": "As shown in Table 5.1, when comparing our approach to prior state-of-the-arts, it is evident that we can train very large context models without compromising MFU or throughput.",
+    "numbers": [],
+    "entities": [
+      "Ring Attention",
+      "MFU"
+    ],
+    "time_period": "2023",
+    "region": "global",
+    "confidence": "low",
+    "source_note_id": "ring-attention-with-blockwise"
+  }
+]

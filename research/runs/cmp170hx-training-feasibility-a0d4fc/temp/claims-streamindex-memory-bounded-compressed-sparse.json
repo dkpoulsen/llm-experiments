@@ -1,0 +1,269 @@
+[
+  {
+    "claim": "Public CSA implementations materialize a [B, S, HI, T] FP32 indexer score tensor before the top-k reduction; with V4-Flash dimensions (HI=64, compression m=4) that intermediate is 256 GB at S=65,536 and 1 TB at S=131,072 on a single batch.",
+    "stance": "refutes",
+    "stance_target": "The assumption that the attention kernel is the binding constraint for CSA at long context",
+    "evidence_type": "empirical",
+    "scope_conditions": "V4-Flash reference indexer code path (references/DeepSeek-V4-Flash/inference/model.py lines 415-423); B=1, HI=64, T=S/4, FP32",
+    "quoted_support": "The first line produces a [B, S, HI, T] FP32 tensor; the second reduces over HI. With V4-Flash dimensions (B=1, HI=64, T=S/4), this intermediate is 256 GB at S=65,536 and 4 TB at S=262,144.",
+    "numbers": [
+      "256 GB at S=65,536",
+      "1 TB at S=131,072",
+      "4 TB at S=262,144",
+      "HI=64",
+      "m=4",
+      "FP32"
+    ],
+    "entities": [
+      "CSA",
+      "lightning indexer",
+      "DeepSeek-V4-Flash",
+      "FP32 score tensor"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "streamindex-memory-bounded-compressed-sparse"
+  },
+  {
+    "claim": "At S=32,768 with V4-Flash dimensions the materialize indexer produces a 64 GB intermediate before the head-sum and peaks at 129 GB HBM on a 140 GB H200 \u2014 i.e. even at 32k the naive CSA indexer needs roughly twice the HBM of a single 64 GB CMP 170HX card.",
+    "stance": "refutes",
+    "stance_target": "The repo's implicit assumption that a 32k CSA2 experiment fits inside one 64 GB card's activation budget",
+    "evidence_type": "empirical",
+    "scope_conditions": "Single H200 SXM 140 GB HBM3e, BF16 inputs, synthetic-but-realistic V4-shaped inputs, peak measured with torch.cuda.max_memory_allocated",
+    "quoted_support": "At S=32K where both fit, the chunked path is also faster (10.3x). This is because the materialize path produces a 64 GB intermediate before the head-sum, then a separate 1 GB intermediate after.",
+    "numbers": [
+      "64 GB intermediate at S=32,768",
+      "129.00 GB peak HBM materialize",
+      "0.40 GB peak HBM chunked",
+      "317 ms materialize vs 31 ms chunked",
+      "10.3x speedup"
+    ],
+    "entities": [
+      "CSA indexer",
+      "H200",
+      "CMP 170HX 64 GB",
+      "peak HBM"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "streamindex-memory-bounded-compressed-sparse"
+  },
+  {
+    "claim": "The indexer step, not the attention kernel, gates the maximum sequence length a CSA pipeline can run: the pipeline runs out of memory in the indexer before attention executes.",
+    "stance": "refutes",
+    "stance_target": "Optimizing the sparse attention kernel first when planning a CSA experiment",
+    "evidence_type": "empirical",
+    "scope_conditions": "V4-Flash dimensions on a single H200",
+    "quoted_support": "Assuming attention is the bottleneck at long context is incorrect for CSA: the pipeline runs out of memory in the indexer step before attention runs.",
+    "numbers": [],
+    "entities": [
+      "CSA",
+      "indexer",
+      "attention kernel",
+      "OOM"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "streamindex-memory-bounded-compressed-sparse"
+  },
+  {
+    "claim": "Every public CSA pipeline the authors know of OOMs on a single H200 (140 GB) for S >= 64K with V4-Flash dimensions, before the top-k is selected and before any attention runs.",
+    "stance": "supports",
+    "stance_target": "The claim that CSA at long context is memory-gated rather than compute-gated",
+    "evidence_type": "empirical",
+    "scope_conditions": "Survey of public CSA implementations; single H200 140 GB HBM",
+    "quoted_support": "Every public CSA pipeline we are aware of OOMs on a single H200 (140 GB HBM) for S >=64K with V4-Flash dimensions, before the top-k has been selected, before any attention has run.",
+    "numbers": [
+      "140 GB HBM",
+      "OOM threshold S=65,536"
+    ],
+    "entities": [
+      "CSA",
+      "H200",
+      "OOM"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "streamindex-memory-bounded-compressed-sparse"
+  },
+  {
+    "claim": "A chunked partition-merge top-k driver is exact because the lightning-indexer score is per-key separable \u2014 once the query is fixed the score is a pure function of the key index, with no softmax or normalization coupling across keys \u2014 so per-tile top-k can be merged without approximation.",
+    "stance": "supports",
+    "stance_target": "Feasibility of a streaming/chunked top-k implementation on memory-constrained hardware",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Lightning indexer score definition; partition-merge invariance theorem",
+    "quoted_support": "The lightning-indexer score is per-key separable: once the query is fixed, the score is a pure function of the key index, with no inter-key coupling (no softmax, no normalization that mixes scores). This separability makes the top-k commute with iteration order.",
+    "numbers": [
+      "151 lines of chunked_indexer.py"
+    ],
+    "entities": [
+      "lightning indexer",
+      "partition-merge",
+      "top-k",
+      "Triton"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "streamindex-memory-bounded-compressed-sparse"
+  },
+  {
+    "claim": "The chunked indexer runs the same V4-Flash indexer to S=1,048,576 at 6.21 GB peak HBM, a 32x regime extension over the materialize path's OOM at S=65,536.",
+    "stance": "supports",
+    "stance_target": "That a 32k CSA experiment on a 64 GB card is feasible with a chunked top-k implementation",
+    "evidence_type": "empirical",
+    "scope_conditions": "Single H200 SXM 140 GB, BF16, CUDA 13, Triton 3.7, PyTorch 2.13 nightly; cS=2048, cT=8192",
+    "quoted_support": "the materialize indexer OOMs at S=65,536, our chunked indexer runs at S=1,048,576 with 6.21 GB peak HBM, a 32x regime extension.",
+    "numbers": [
+      "6.21 GB peak at S=1,048,576",
+      "0.59 GB at S=65,536",
+      "0.96 GB at S=131,072",
+      "1.71 GB at S=262,144",
+      "3.21 GB at S=524,288",
+      "32x regime extension"
+    ],
+    "entities": [
+      "StreamIndex",
+      "chunked top-k",
+      "H200",
+      "peak HBM"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "streamindex-memory-bounded-compressed-sparse"
+  },
+  {
+    "claim": "FP32 score accumulation is required for exact top-k parity: FP16 accumulation drops perfect-recall rows from 99.99% to 91.82%.",
+    "stance": "supports",
+    "stance_target": "Precision requirements for a chunked CSA indexer implementation",
+    "evidence_type": "empirical",
+    "scope_conditions": "Ablation study at V4-Flash dimensions, S=262,144",
+    "quoted_support": "FP32 score accumulation is necessary (FP16 drops perfect-recall rows from 99.99% to 91.82%).",
+    "numbers": [
+      "99.99% -> 91.82% perfect-recall rows with FP16"
+    ],
+    "entities": [
+      "FP32",
+      "FP16",
+      "top-k recall",
+      "indexer"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "streamindex-memory-bounded-compressed-sparse"
+  },
+  {
+    "claim": "Set-overlap recall against the materialize ground truth is bit-exact at small S where both fit, and across three 5-point design-space sweeps mean recall rounds to 1.0000 with minimum recall at least 0.9980 in every cell.",
+    "stance": "supports",
+    "stance_target": "That chunked top-k does not change model behaviour versus the reference implementation",
+    "evidence_type": "empirical",
+    "scope_conditions": "Sweeps over chunk size, key-tile size, top-k; synthetic-but-realistic V4-shaped inputs",
+    "quoted_support": "Set-overlap recall against the materialize ground truth is bit-exact at small S where both fit; across three 5-point design-space sweeps (chunk size, key-tile size, top-k), mean recall rounds to 1.0000 with min recall at least 0.9980 in every cell.",
+    "numbers": [
+      "mean recall 1.0000",
+      "min recall >= 0.9980"
+    ],
+    "entities": [
+      "StreamIndex",
+      "recall",
+      "top-k parity"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "streamindex-memory-bounded-compressed-sparse"
+  },
+  {
+    "claim": "Chunk size has a clear knee around cS=2048; a single chunk over T is optimal when memory allows; and a per-chunk causal mask keeps mask memory at O(cS*cT) instead of O(S*T), which is what lets the chunked path scale past S=131,072.",
+    "stance": "supports",
+    "stance_target": "Tuning guidance for implementing a chunked CSA indexer",
+    "evidence_type": "empirical",
+    "scope_conditions": "Design-space sweeps and ablations at V4-Flash dimensions",
+    "quoted_support": "A design-space and ablation study (3 sweeps, 3 ablations) showing that chunk size has a clear knee around cS=2048, single-chunk over T is optimal when memory allows, and FP32 score accumulation is necessary.",
+    "numbers": [
+      "cS=2048 knee",
+      "mask 4 GB at S=131,072/T=32,768",
+      "mask 256 GB at S=1M/T=256K if materialized"
+    ],
+    "entities": [
+      "chunk size",
+      "causal mask",
+      "StreamIndex"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "streamindex-memory-bounded-compressed-sparse"
+  },
+  {
+    "claim": "Composed with TileLang's pipelined attention at S=262,144, the materialize indexer OOMs while the chunked indexer runs in 1.97 s at 18.56 GB peak HBM, and at S=131,072 the chunked path has 1.83x lower peak HBM.",
+    "stance": "supports",
+    "stance_target": "End-to-end feasibility of a CSA pipeline at long context on limited HBM",
+    "evidence_type": "empirical",
+    "scope_conditions": "TileLang pipelined attention backend, V4-Flash dimensions, single H200",
+    "quoted_support": "at S=262,144 with V4-Flash dimensions and TileLang's pipelined attention as the backend, the materialize indexer paired with TileLang attention OOMs while the chunked-indexer path runs at 1.97 s, 18.56 GB peak.",
+    "numbers": [
+      "1.97 s at S=262,144",
+      "18.56 GB peak",
+      "1.83x lower peak HBM at S=131,072"
+    ],
+    "entities": [
+      "TileLang",
+      "StreamIndex",
+      "attention kernel",
+      "H200"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "streamindex-memory-bounded-compressed-sparse"
+  },
+  {
+    "claim": "The V4-Pro indexer (k=1024) shows the same OOM threshold at S=65,536 for the materialize path and the same 1M chunked ceiling, with peak HBM roughly 2x that of V4-Flash at the same S because k doubles.",
+    "stance": "supports",
+    "stance_target": "That the memory scaling result generalizes across CSA variants",
+    "evidence_type": "empirical",
+    "scope_conditions": "V4-Pro dimensions (HI=64, m=4, k=1024) on a single H200",
+    "quoted_support": "The V4-Pro indexer step (Table 4) shows the same OOM threshold at S=65,536 for materialize and the same 1M chunked ceiling. The peak HBM is roughly 2x that of V4-Flash because k=1024 doubles",
+    "numbers": [
+      "k=1024",
+      "2x peak HBM vs V4-Flash",
+      "OOM at S=65,536"
+    ],
+    "entities": [
+      "DeepSeek-V4-Pro",
+      "indexer",
+      "top-k"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "streamindex-memory-bounded-compressed-sparse"
+  },
+  {
+    "claim": "The paper's scope is deliberately narrow: synthetic-but-realistic inputs (no V4 checkpoint fits on one H200, since V4-Flash weights are 270 GB in FP8), the indexer step only, and an explicit non-claim about a faster attention kernel or real-checkpoint end-to-end behaviour.",
+    "stance": "neutral",
+    "stance_target": "How far the StreamIndex numbers can be trusted as end-to-end evidence",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Section 6 methodology and abstract scope statement",
+    "quoted_support": "Our contribution targets the indexer step; we make no claim of a faster attention kernel or of real-checkpoint end-to-end behavior.",
+    "numbers": [
+      "270 GB FP8 V4-Flash weights"
+    ],
+    "entities": [
+      "StreamIndex",
+      "synthetic inputs",
+      "scope"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "streamindex-memory-bounded-compressed-sparse"
+  }
+]

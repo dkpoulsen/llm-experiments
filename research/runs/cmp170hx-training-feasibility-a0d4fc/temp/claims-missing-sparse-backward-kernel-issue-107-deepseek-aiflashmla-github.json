@@ -1,0 +1,38 @@
+[
+  {
+    "claim": "FlashMLA's upstream tracker confirms the sparse attention implementation is forward-only: 'the library provides a complete forward and backward pass for dense attention, but the sparse attention implementation appears to be forward-only'.",
+    "stance": "supports",
+    "stance_target": "cc-4's claim that no sparse-MLA backward exists in FlashMLA",
+    "evidence_type": "empirical",
+    "scope_conditions": "deepseek-ai/FlashMLA issue #107, opened 2025-10-09, still open as of the fetch",
+    "quoted_support": "while the library provides a complete forward and backward pass for dense attention, but the sparse attention implementation appears to be forward-only. Will the sparse attention backward kernel be released?",
+    "numbers": [],
+    "entities": [
+      "FlashMLA",
+      "sparse attention",
+      "backward"
+    ],
+    "time_period": "2025-10",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "missing-sparse-backward-kernel-issue-107-deepseek-aiflashmla-github"
+  },
+  {
+    "claim": "No maintainer answered the request; a community reply argues a sparse backward would take far longer than reusing dense backwards because it needs atomic accumulation over misaligned K/V.",
+    "stance": "supports",
+    "stance_target": "The claim that the missing sparse backward is a hard engineering problem, not an oversight",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "Issue thread replies by sunying2018 and IISuperluminaLII",
+    "quoted_support": "This would take MUCH MUCH more amount of time to implement than using dense backwards ... sparse backwards needs atomic accumulation which is quite difficult to impediment",
+    "numbers": [],
+    "entities": [
+      "CUTLASS",
+      "atomic accumulation",
+      "sparse backward"
+    ],
+    "time_period": "2025-10",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "missing-sparse-backward-kernel-issue-107-deepseek-aiflashmla-github"
+  }
+]

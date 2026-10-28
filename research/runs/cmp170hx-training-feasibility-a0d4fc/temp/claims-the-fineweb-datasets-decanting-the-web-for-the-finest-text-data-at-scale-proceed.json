@@ -1,0 +1,44 @@
+[
+  {
+    "claim": "The FineWeb Datasets paper is published in Advances in Neural Information Processing Systems 37 (NeurIPS 2024), pages 30811-30849, held 10-15 December 2024 in Vancouver, by Penedo, Kydlicek, Allal, Lozhkov, Mitchell, Raffel, von Werra and Wolf.",
+    "stance": "neutral",
+    "stance_target": "Venue authority for the FineWeb / FineWeb-Edu dataset claims the repo's data pipeline relies on",
+    "evidence_type": "historical",
+    "scope_conditions": "NeurIPS 37 proceedings record, DOI 10.52202/079017-0970",
+    "quoted_support": "Conference: Advances in Neural Information Processing Systems 37; Date/Location: Held 10-15 December 2024, Vancouver, Canada; Pages: 30811-30849 (39 pages).",
+    "numbers": ["pages 30811-30849", "39 pages", "10-15 December 2024"],
+    "entities": ["NeurIPS 2024", "FineWeb", "Guilherme Penedo", "Hugging Face"],
+    "time_period": "2024-12",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "the-fineweb-datasets-decanting-the-web-for-the-finest-text-data-at-scale-proceed"
+  },
+  {
+    "claim": "This proceedings.com record is metadata only (169 words): it carries no abstract, no token counts and no experimental results, so it cannot support any quantitative claim about FineWeb.",
+    "stance": "neutral",
+    "stance_target": "Evidentiary completeness of this note",
+    "evidence_type": "theoretical",
+    "scope_conditions": "proceedings.com item page 079017-0970",
+    "quoted_support": "The fetched page contains item number, UPC, DOI, author list, page range, format, conference, date/location, series and publisher, plus an empty table of contents.",
+    "numbers": ["169 words"],
+    "entities": ["proceedings.com", "NeurIPS Foundation"],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "the-fineweb-datasets-decanting-the-web-for-the-finest-text-data-at-scale-proceed"
+  },
+  {
+    "claim": "The DOI 10.52202/079017-0970 resolves to a paywalled proceedings.com item record rather than to an open full text, so the arXiv preprint 2406.17557 is the practical primary source for the paper's content.",
+    "stance": "neutral",
+    "stance_target": "Which URL the pipeline should cite for FineWeb numbers",
+    "evidence_type": "theoretical",
+    "scope_conditions": "DOI resolution for the NeurIPS 37 proceedings version",
+    "quoted_support": "Format: PDF Paper Download; the page offers no inline full text and the table of contents is empty.",
+    "numbers": [],
+    "entities": ["DOI 10.52202/079017-0970", "arXiv 2406.17557"],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "the-fineweb-datasets-decanting-the-web-for-the-finest-text-data-at-scale-proceed"
+  }
+]

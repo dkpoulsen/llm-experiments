@@ -1,0 +1,45 @@
+{
+  "batch_id": 5,
+  "vault_tag": "cmp170hx-training-feasibility-a0d4fc",
+  "assigned": [
+    {"url": "https://arxiv.org/abs/2609.23898", "utility": 12, "note_id": "communication-efficient-distributed-training", "words": 8903, "verdict": "good — CERAR coded approximate all-reduce; 46-47% all-reduce time cut on A100 PCIe, 17.3% end-to-end on Pythia-1.4B"},
+    {"url": "https://arxiv.org/abs/2604.27844", "utility": 13, "note_id": "zipccl-efficient-lossless-data-compression-of", "words": 9658, "verdict": "good — bit-exact BF16 exponent compression; 1.25-1.35x comm, 1.16-1.18x end-to-end"},
+    {"url": "https://arxiv.org/abs/2607.07494", "utility": 12, "note_id": "geofp8-geometry-aware-fp8-gradient", "words": 8948, "verdict": "good — geometry-aware FP8 gradients; 75% payload cut, 7.6% end-to-end on GH200; FP8 needs sm_90"},
+    {"url": "https://arxiv.org/abs/2605.00539", "utility": 12, "note_id": "agoq-activation-and-gradient-quantization-for", "words": 9839, "verdict": "good — 8-bit all-reduce tested at simulated 10 Gbps: 3.7x speedup at 32 MB; closest analogue to this box's fabric"},
+    {"url": "https://doi.org/10.1109/hoti52880.2021.00018", "utility": 14, "note_id": "efficient-multi-path-nvlinkpcie-aware-ucx-based-collective-communication-for-dee", "words": 7750, "verdict": "good — DOI blocked by IEEE anti-bot; author-hosted PDF used. Hierarchical multi-path allreduce beats NCCL 1.25-1.38x at >=8 MB"},
+    {"url": "https://doi.org/10.1007/978-3-031-24145-1_23", "utility": 13, "note_id": "multi-gpu-gemm-algorithm", "words": 3887, "verdict": "good — Springer landing page is cookie-banner junk (deprecated as 'multi-gpu-gemm-algorithm-performance-analysis-for-nvidia-and-amd-gpus-connected'); author-hosted HSE PDF used. PCIe consumer GPUs <40% GEMM efficiency"},
+    {"url": "https://escholarship.org/uc/item/67z0d2wn", "utility": 12, "note_id": "quantifying-interconnect-energy-efficiency-on-perlmutter-pjbit-measurements-of-n", "words": 9406, "verdict": "good — item page blocked by CloudFront WAF; direct PDF route used. NVLink 70.9 vs PCIe 167.9 pJ/bit, ~50 W uncore 'Active Tax'"},
+    {"url": "https://clusterbid.com/blog/nccl-tuning-ring-tree-all-to-all-algorithms", "utility": 11, "note_id": "nccl-tuning-guide-ring-tree-and-all-to-all-algorithms-for-optimal-multi-gpu-comm", "words": 371, "verdict": "thin — vendor blog, no measurements; 5 claims only, all confidence=low. Superseded by the NCCL docs primary fetched in Phase 2"}
+  ],
+  "phase2_discovered": [
+    {"url": "https://arxiv.org/abs/1903.04611", "note_id": "evaluating-modern-gpu-interconnect-pcie", "words": 14093, "suggested_by": "efficient-multi-path-nvlinkpcie-aware-ucx-based-collective-communication-for-dee", "verdict": "good — HIGHEST-VALUE primary for this run: explicitly warns against 5-GPU NCCL rings; PCIe anti-locality NUMA effect; PCIe vs NVLink saturation at 16 MB vs 256 MB"},
+    {"url": "https://arxiv.org/abs/2310.18313", "note_id": "fp8-lm-training-fp8-large-language-models", "words": 12059, "suggested_by": "geofp8-geometry-aware-fp8-gradient", "verdict": "good — primary on FP8 all-reduce: 63-65% practical comm reduction; BF16 training still all-reduces in 32-bit; FP8 is H100-native"},
+    {"url": "https://arxiv.org/abs/2410.19313", "note_id": "coat-compressing-optimizer-states-and-activation-for-memory-efficient-fp8-traini", "words": 11398, "suggested_by": "agoq-activation-and-gradient-quantization-for", "verdict": "good — 1.54x memory reduction, doubles batch size; H100-native FP8"},
+    {"url": "https://github.com/facebookresearch/dietgpu", "note_id": "github-facebookresearchdietgpu-gpu-implementation-of-a-fast-generalized-ans-asym", "words": 2230, "suggested_by": "zipccl-efficient-lossless-data-compression-of", "verdict": "good — ground-truth code artifact; 250-600 GB/s codec throughput on A100; repo archived 2026-06-14"},
+    {"url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/env.html", "note_id": "environment-variables-nccl-2323-documentation", "words": 13967, "suggested_by": "nccl-tuning-guide-ring-tree-and-all-to-all-algorithms-for-optimal-multi-gpu-comm", "verdict": "good — primary NCCL docs; documents SHM host-memory fallback when P2P cannot happen, NCCL_P2P_LEVEL, NCCL_ALGO/NCCL_PROTO"}
+  ],
+  "failures": [
+    {"url": "https://doi.org/10.1109/hoti52880.2021.00018", "error": "JUNK_CONTENT — IEEE Xplore anti-bot (3878 bytes, 0 chars visible)", "resolution": "fetched author-hosted PDF at queensu.ca"},
+    {"url": "https://escholarship.org/uc/item/67z0d2wn", "error": "FETCH_ERROR then JUNK_CONTENT — CloudFront WAF challenge (x-amzn-waf-action: challenge)", "resolution": "fetched the item's PDF at escholarship.org/content/qt67z0d2wn/qt67z0d2wn.pdf"},
+    {"url": "https://doi.org/10.1007/978-3-031-24145-1_23", "error": "partial — landing page returned cookie banner + abstract only (1618 words)", "resolution": "fetched author-hosted HSE PDF; landing-page note deprecated"}
+  ],
+  "incidents": [
+    "Parallel fetch invocations share one crawl4ai browser context: running 7 fetches concurrently caused 3 notes to be written with another URL's content (two DOI notes got the clusterbid body) and one FETCH_ERROR. All contaminated notes were deleted and re-fetched serially. Recommend serial fetching per agent.",
+    "A concurrent fetch by another batch also clobbered one of this batch's fetches (escholarship URL returned the club-170hx TOPOLOGY-AND-PARALLELISM.md body); that note was deleted and re-fetched."
+  ],
+  "claims_total": 157,
+  "long_sources_over_5000_words": [
+    "evaluating-modern-gpu-interconnect-pcie (14.1k) — source-analyst candidate, highest value",
+    "environment-variables-nccl-2323-documentation (14.0k)",
+    "fp8-lm-training-fp8-large-language-models (12.1k)",
+    "coat-compressing-optimizer-states-and-activation-for-memory-efficient-fp8-traini (11.4k)",
+    "agoq-activation-and-gradient-quantization-for (9.8k)",
+    "zipccl-efficient-lossless-data-compression-of (9.7k)",
+    "quantifying-interconnect-energy-efficiency-on-perlmutter-pjbit-measurements-of-n (9.4k)",
+    "geofp8-geometry-aware-fp8-gradient (8.9k)",
+    "communication-efficient-distributed-training (8.9k)",
+    "efficient-multi-path-nvlinkpcie-aware-ucx-based-collective-communication-for-dee (7.8k)"
+  ],
+  "notes_added": 13,
+  "notes_deprecated": 1
+}

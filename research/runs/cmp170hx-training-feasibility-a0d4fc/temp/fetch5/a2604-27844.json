@@ -1,0 +1,16 @@
+{
+  "ok": true,
+  "data": {
+    "note_id": "zipccl-efficient-lossless-data-compression-of",
+    "title": "ZipCCL: Efficient Lossless Data Compression of",
+    "url": "https://arxiv.org/abs/2604.27844",
+    "domain": "arxiv.org",
+    "provider": "crawl4ai",
+    "path": "research/notes/zipccl-efficient-lossless-data-compression-of.md",
+    "word_count": 9658,
+    "assets": [],
+    "raw_file": "raw/zipccl-efficient-lossless-data-compression-of.pdf"
+  },
+  "vault": "/home/dkp/.thinkrail/worktrees/llm-experiments/workspace-1",
+  "timestamp": "2026-10-27T10:47:10.207512+00:00"
+}

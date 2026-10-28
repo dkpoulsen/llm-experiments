@@ -1,0 +1,104 @@
+{
+  "vault_tag": "cmp170hx-training-feasibility-a0d4fc",
+  "generated_by": "hyperresearch-corpus-critic (step 8)",
+  "query": "Assess which LLM training experiments are feasible on a 5x NVIDIA CMP 170HX box (320 GB HBM2e, ~810 TFLOPS bf16, PCIe Gen2 x4, no NVLink, no P2P) and verify the repo's four supporting claims.",
+  "most_dangerous_gap": "cc-1",
+  "cross_gap_dependency": "cc-1 is the master variable. The 88%-attention / 8.5x-6ND correction is the only thing that makes DDP overhead ~4% at 1M tokens, makes wall-clock the binding constraint, and makes the sparse-attention payoff ceiling 39-54%. If cc-1 lands a measured 32k/4k per-token cost ratio >= 0.4, then cc-2 (fabric numerator) and cc-6 (algbw vs busbw column) become decisive again, because the compute window shrinks toward the 6ND value and the repo's 36% / 54-58% overhead figures return to being the live question. Fetch cc-1 first; the other five are conditional on its outcome.",
+  "critic_notes": [
+    "Arithmetic inconsistency the drafter will inherit: comparisons.md Tension 2 states the MoE DDP overhead is '252%, not 36% - exactly the total/active ratio'. That figure divides 18.7 s of communication (28 GB at 1.5 GB/s wire) by 7.41 s of 6ND compute at 810 TFLOPS. Under Locus 4's own correction the 32k compute window for a 1B-active/24L/2048 model is ~56 s at 450 TFLOPS, so the same payload is ~33%, not 252%. The 7x total/active multiplier is real as a ratio but is applied to an uncorrected denominator. This weakens the 'PP is the topology for the MoE' claim (PP 4-14% vs DDP ~33%, not 18x better) and is the specific thing cc-3 and cc-6 test.",
+    "The prompt's suggested #2 falsifier ('<0.4 GB/s') does not actually overturn #2. At 2.0 GB payload and 56.8 s of compute, 0.4 GB/s gives 8.8% overhead, 0.2 GB/s gives 17.6%, and only <=0.1 GB/s restores the repo's ~35%. cc-2 is therefore framed around the <=0.1-0.2 GB/s band, not 0.4.",
+    "The corpus contains no on-box training, all-reduce, NCCL, DDP, PP or ZeRO measurement at all (performancemd and club-170hx BENCHMARKS both say so explicitly). Every gap below that targets a hardware number is therefore asking for a T2 community measurement or a T1 user artifact, never a T3 arithmetic estimate."
+  ],
+  "gaps": [
+    {
+      "id": "cc-1",
+      "priority": "critical",
+      "type": "overturning",
+      "target_position": "#1 - the ~90-100 TFLOPS/card (450-500 aggregate) training denominator and the claim that 6ND is invalid at 32k because attention is 88% of step FLOPs and total FLOPs are 8.5x the 6ND estimate. Downstream this also carries #2's ~4% DDP overhead, #4's -39 to -54% sparse-attention payoff, and #5's 5-12 day wall-clock.",
+      "search_queries": [
+        "long-context LLM training throughput tokens per second 32k versus 4k sequence length measured A100 1B model",
+        "Ring Attention Ulysses LoongTrain USP measured per-token training time versus sequence length scaling",
+        "attention wall-clock fraction of training step at 32k context profiler Megatron-LM context parallel 500M model"
+      ],
+      "source_type": "academic",
+      "rationale": "Four of the six committed positions are downstream of one arithmetic claim: that PaLM's 6N+12LHQT at 32k makes attention 88.3% of step FLOPs and total FLOPs 8.52x the 6ND estimate for a 494-500M/28L/2048 model. That claim is FLOP arithmetic, not wall-clock, and the corpus contains no measured 32k-vs-4k throughput ratio at all. Every long-context systems paper (Ring Attention, DeepSpeed Ulysses, LoongTrain, USP, Seq1F1B, Megatron-Core context parallel, ProLong) reports measured tok/s or ms/step at 32k-128k against a short-context baseline, and none is in the vault. If the measured per-token cost ratio at 32k is ~2-2.5x rather than 4.39x - because the 4k baseline is launch-bound at ~42% MFU while the 32k run amortizes better, or because the attention kernel runs closer to GEMM efficiency than the blended estimate assumes - then the 8.5x correction overstates the wall-clock penalty by ~1.8x, the throughput band moves from 9-22k to 16-40k tok/s, the 9B run is 2.6-6.5 days rather than 5-12, and DDP overhead at 1M tokens rises from 4.4% to ~9%. The report's central inversion ('wall-clock, not the fabric, is binding') survives qualitatively but loses its quantitative spine. The repo's own 140k tok/s / 494M datapoint is the tell: under 6ND it implies 84 TFLOPS/card (42% MFU, plausible); with attention counted at 4k it implies 163 TFLOPS/card (80% MFU, implausible). A measured curve settles which of the three repo numbers (140k tok/s, 494M, 'inferred ~4k') is wrong. Conversely, if the measured ratio is <=0.23, the position is confirmed and should be committed harder.",
+      "overturn_condition": "A measured 32k/4k per-token training cost ratio >= 0.4 for a 0.5-1B dense model on A100/H100, or a profiler-measured attention-time fraction <= 50% of step time at 32k, or MLPerf/Megatron training logs on A100-40GB showing attention is not ~88% of step FLOPs at 32k for a 500M model.",
+      "evidence_tier_target": "T2/T3 (measured on A100/H100; transfers by ratio, absolute throughput ~0.65x on 70 SMs at 250 W)"
+    },
+    {
+      "id": "cc-2",
+      "priority": "high",
+      "type": "overturning",
+      "target_position": "#2 - DDP overhead at 1M-token batches is ~4% after correction (not 36%), so the fabric is NOT the binding constraint; wall-clock is.",
+      "search_queries": [
+        "nccl-tests all_reduce_perf 5 GPUs PCIe Gen2 x4 no NVLink algbw busbw 1GB message",
+        "NCCL all-reduce 5 ranks PCIe host staged SHM bandwidth measured",
+        "5 GPU PCIe ring all-reduce NUMA congestion penalty measured Tartan"
+      ],
+      "source_type": "industry",
+      "rationale": "The fabric half of the report rests on one unverified user self-report (0.75 GiB/s) that no corpus source corroborates at 5 ranks: every receipt is 2-4 ranks, and the corpus's own band (0.93-1.07 GB/s busbw, 0.58-0.67 GB/s algbw) is derived from a 3-card x16 host and a 2-card x4 P2P copy. A 5-rank, Gen2 x4, host-staged all_reduce_perf at 1-2 GB is the missing measurement, and the Tartan/TPDS warning that 5-GPU PCIe rings are pathological ('one should avoid adopting 5 GPUs') predicts the N=5 penalty exceeds the 1.6x ring-load factor. The threshold matters and the prompt's suggested 0.4 GB/s is too high: at 2.0 GB payload against 56.8 s of compute, 0.4 GB/s is 8.8% overhead and does not overturn anything. Only <=0.1 GB/s (35%) or <=0.2 GB/s with fp32 buckets (4.0 GB payload, 35%) restores a fabric-binding overhead and falsifies 'the fabric is not the binding constraint'. If it lands in that band, the report's central inversion is wrong and the repo's original framing was right.",
+      "overturn_condition": "A 5-rank, Gen2 x4, no-P2P all_reduce_perf at 1-2 GB showing algbw <= 0.1 GB/s (or <= 0.2 GB/s with fp32 gradient buckets), i.e. a 5-GPU NUMA/ring penalty 3-5x worse than the 4-rank extrapolation.",
+      "evidence_tier_target": "T2 (community 5-rank measurement) or T1 (user's box)"
+    },
+    {
+      "id": "cc-3",
+      "priority": "critical",
+      "type": "overturning",
+      "target_position": "#3 - 'DDP only' reframed as 'data-parallel only', with ZeRO-2 (33.6 GB state, DDP-identical 2-Psi) or PP=5 (25.8 GB/card, 4-14% bubble) as the two viable routes, and EP/TP excluded by the fabric.",
+      "search_queries": [
+        "ZeRO-2 versus DDP step time PCIe no NVLink measured overhead 4x3090 8x4090",
+        "pipeline parallelism 32k sequence length PCIe no P2P throughput bubble measured 1F1B",
+        "expert parallelism training PCIe no NVLink host staged measured overhead MoE"
+      ],
+      "source_type": "academic",
+      "rationale": "This is the report's headline prescription and its least-measured claim: the locus itself rates the prescriptive half at only 50-80% because reduce-scatter throughput on this no-P2P fabric is unmeasured. Three specific measurements would break it. (a) A ZeRO-2-vs-DDP A/B on a PCIe-only no-NVLink box at >=1B params showing >50% step-time overhead. ZeRO-2's 'exactly 2-Psi' is a byte-volume identity, not a wall-clock one: it replaces one fused all-reduce with a reduce-scatter plus an all-gather, two kernel launches and a sync point, and on a host-staged fabric where every hop is two PCIe traversals the extra round trip can dominate. The corpus's own measured practitioner study (behind-the-scenes-of-distributed-training) already shows the dial flattening on a slow wire and ZeRO-1/2 losing ~20% of DDP even on a fast one - and its slow wire is 35 GB/s, ~45x faster than this box. (b) A measured 5-stage 1F1B PP step at 32k on a no-P2P box showing >60% overhead. The 4-14% bubble assumes the 134 MB hand-off hides inside a 243 ms compute window at 1.68 GB/s per direction; at an effective 0.5 GB/s under host-staged bounce-buffer contention the hand-off is 268 ms and PP becomes comm-bound. (c) A host-staged EP or TP training implementation at >=1B params showing <2x overhead, which would reopen the topology the report closes. If (a) and (b) both fail, the only viable route is the frozen-table design and the repo's original conclusion is restored - a direct reversal of Tension 2. Note also that the position's own 252% MoE figure is inconsistent with Locus 4's correction (it is ~33% at 56.8 s of compute, not 252%), so the PP-vs-DDP margin is far narrower than the report claims and a measured MoE DDP step would settle it.",
+      "overturn_condition": "A measured ZeRO-2 or 5-stage PP step on a no-P2P PCIe fabric at >=1B params / 32k showing >50% overhead; or reduce-scatter throughput <= 1/3 of all-reduce throughput on host-staged PCIe; or a host-staged EP/TP training run at >=1B params with <2x overhead.",
+      "evidence_tier_target": "T2 (community measurement on 3090/4090 PCIe) / T3 (systems-paper measurement on PCIe-only consumer GPUs)"
+    },
+    {
+      "id": "cc-4",
+      "priority": "critical",
+      "type": "overturning",
+      "target_position": "#4 - CSA2 at 32k on sm_80 is a kernel-porting project, not an experiment; run NSA instead (6.3x fwd / 3.4x bwd at 32k).",
+      "search_queries": [
+        "sparse MLA DSA backward kernel A100 sm_80 triton training implementation",
+        "StreamIndex TileLang sparse attention A100 sm_80 support backward kernel",
+        "native sparse attention NSA kernel end-to-end training speedup versus FlashAttention-2 32k A100"
+      ],
+      "source_type": "industry",
+      "rationale": "The Verdict's top lever is 'sparse attention (-39 to -54%)', and it rests on NSA's 6.3x/3.4x at 32k. Two sources would break it. (a) An sm_80 DSA/CSA2 training kernel that exists today - a Triton or CUDA sparse-MLA fwd+bwd tested on A100, or StreamIndex/TileLang/vLLM adding sm_80 backward support. The locus searched five stacks and found only vLLM's inference-only TRITON_MLA_SPARSE, but that is a fast-moving surface: FlashMLA dropped Hopper within one release, and a Triton backward is arch-portable in principle. If one appears, CSA2 becomes an experiment and 'drop CSA2' is wrong. (b) A measured NSA *end-to-end* training-step speedup at 32k against FlashAttention-2 on A100. The 6.3x/3.4x are module-level ratios, and if the baseline is a Triton full-attention kernel rather than FA2 (Triton attention typically runs 0.7-0.8x of FA2 on A100), the real end-to-end speedup could be 1.5-2x, which at an 88% attention share is a -10 to -20% step-time saving, not -39 to -54%. That would collapse the Verdict's lever ranking (sparse attention > capacitor mod > optimizer swap) and make the sparse-attention axis marginal rather than decisive. A third, cheaper falsifier: if the shipped NSA kernels are Hopper-only (as FlashMLA now is, sm_100a/sm_103a with Hopper explicitly dropped), then 'run NSA instead' is itself a porting project and the program has no runnable sparse-attention arm at all.",
+      "overturn_condition": "An sm_80 DSA/CSA2 fwd+bwd kernel tested on A100; or a measured NSA end-to-end 32k training speedup <= 2x vs FlashAttention-2 on A100; or NSA's shipped kernels being Hopper-only.",
+      "evidence_tier_target": "T2 (repo documentation / community measurement on A100 sm_80)"
+    },
+    {
+      "id": "cc-5",
+      "priority": "high",
+      "type": "overturning",
+      "target_position": "#5 - a 9B-token null is interpretable only as a bound, never a verdict; the fix is a 4-size ladder x 2 architectures at 1/3 budget (~12-35 days), not more tokens.",
+      "search_queries": [
+        "scaling law fit architecture delta exceeds run-to-run noise 9B tokens 500M parameters",
+        "seed variance language model pretraining final loss standard deviation small scale 500M",
+        "Engram n-gram memory ablation token budget loss delta 10B tokens measured"
+      ],
+      "source_type": "academic",
+      "rationale": "The 'underpowered by 2-14x' claim rests on a 3.5%-relative noise floor borrowed from a scaling-law-estimation paper measured at 1B/100B (DataDecide) and on a ln(tokens) projection of 100B-token deltas down to 9B - a projection the locus itself rates low-confidence T4. Two sources would break it. (a) A measured seed-to-seed spread for LM pretraining at ~500M params and ~9-10B tokens, not at 1B/100B. If the spread is <=1% relative (<=0.03 nats), the memory axis's 0.014-0.082 nat deltas become detectable at 9B, the single-point A/B is viable after all, and the ladder recommendation is unnecessary. Candidate sources: Wortsman et al. 'Small-scale proxies for large-scale Transformer training instabilities' (many seeds at 100M-1B), reproducibility studies of small-scale LM pretraining, and DataDecide's own 3-seed variance at the 1B/5xC rung. (b) A measured memory-axis or attention-axis delta at <=10B tokens that is >=0.1 nats. The corpus already contains a near-miss the locus under-reads: MoBA's own smallest scaling-law point (568M/10.8B) has a measured 32K gap of 0.105 nats, i.e. 3.8% relative, which is at or above the 3.5% floor - not below it. The locus's 0.060-nat figure extrapolates below the smallest measured point in its own source. If the memory axis behaves the same way (Engram's capacity ablation is monotone at 5-10B tokens), a 9B run can see the effect and the 'null is the expected result' conclusion is wrong.",
+      "overturn_condition": "A measured seed-to-seed spread <= 1% relative at ~500M params / ~9-10B tokens; or a measured architecture delta >= 0.1 nats at <=10B tokens for the memory or attention axis.",
+      "evidence_tier_target": "T3 (published measurement) or T1 (two seeds on this box, ~14 days)"
+    },
+    {
+      "id": "cc-6",
+      "priority": "high",
+      "type": "overturning",
+      "target_position": "#6 - 0.75 GiB/s is the nccl-tests busbw column, not algbw; P2P is a latency lever, not a bandwidth lever; the 24-capacitor x16 mod is the only order-of-magnitude fabric lever but its value collapses once DDP overhead is ~4%.",
+      "search_queries": [
+        "all_reduce_perf 5 ranks PCIe Gen2 x4 no P2P busbw algbw 1GB output CMP 170HX",
+        "CMP 170HX BAR1 P2P NCCL all-reduce working cmpunlocker RMForceStaticBar1 64MB BAR1",
+        "cmpunlocker P2P NCCL collective benchmark working 170HX 5 cards"
+      ],
+      "source_type": "industry",
+      "rationale": "The decisive artifact is the user's own `all_reduce_perf` output at 5 ranks, 1 MB / 100 MB / 1 GB, with both columns printed and the message size and rank count recorded - no corpus source can substitute for it, and the corpus's own club receipt is 3 cards at x16 behind PLX, not 5 cards at x4. Two readings would break the position. (a) If the user quoted the algbw column and it reads 0.75 GiB/s, the busbw reading is wrong: the fabric is then better than the corpus's 0.58-0.67 GB/s algbw band supports, which requires one traversal per hop, i.e. live P2P. (b) A working NCCL all-reduce over BAR1 P2P on a 64 MB-BAR1 GA100 at Gen2 x4 showing busbw >= 1.5 GB/s (vs ~1.0 host-staged) would flip 'P2P is a latency lever' to 'P2P is a bandwidth lever' by removing the second traversal, raising the algbw ceiling from ~0.6 to ~0.98 GiB/s and making the 0.75 GiB/s algbw reading physically available. The club's p2p.md reports the patch hangs every collective because `kbusIsPcieBar1P2PMappingSupported_GH100` needs a static BAR1 spanning the framebuffer while the 170HX has 64 MB, so a fix or a working receipt would be the break. Caveat the drafter must carry: under the corrected 56.8 s compute window, the algbw-vs-busbw question is narrative-only (4.4% either way); it becomes decisive only if cc-1 overturns the 88%-attention correction and the compute window falls back toward 7.4 s, at which point 36% vs 54-58% is the live question.",
+      "overturn_condition": "The user's own all_reduce_perf output showing 0.75 GiB/s in the algbw column at 5 ranks; or a working NCCL collective over BAR1 P2P on a 64 MB-BAR1 GA100 at Gen2 x4 with busbw >= 1.5 GB/s.",
+      "evidence_tier_target": "T1 (user's box) or T2 (community receipt on a 64 MB-BAR1 GA100)"
+    }
+  ]
+}

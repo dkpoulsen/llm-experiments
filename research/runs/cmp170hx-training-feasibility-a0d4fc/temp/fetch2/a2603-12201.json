@@ -1,0 +1,16 @@
+{
+  "ok": true,
+  "data": {
+    "note_id": "indexcache-accelerating-sparse-attention-via-cross-layer",
+    "title": "IndexCache: Accelerating Sparse Attention via Cross-Layer",
+    "url": "https://arxiv.org/abs/2603.12201",
+    "domain": "arxiv.org",
+    "provider": "crawl4ai",
+    "path": "research/notes/indexcache-accelerating-sparse-attention-via-cross-layer.md",
+    "word_count": 8771,
+    "assets": [],
+    "raw_file": "raw/indexcache-accelerating-sparse-attention-via-cross-layer.pdf"
+  },
+  "vault": "/home/dkp/.thinkrail/worktrees/llm-experiments/workspace-1",
+  "timestamp": "2026-10-27T10:12:26.272331+00:00"
+}

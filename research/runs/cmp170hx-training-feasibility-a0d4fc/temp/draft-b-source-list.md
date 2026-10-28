@@ -1,0 +1,53 @@
+# Draft B — must_read_note_ids (n=50)
+Angle: Steelman-contrarian: the fabric IS the binding constraint and the frozen-table design is the right response; the corrected numbers are arithmetic on adjacent-hardware inputs, not measurement.
+
+- interim-report-allreduce-ceiling-and-definition: Interim report — allreduce-ceiling-and-definition
+- interim-report-topology-cost-at-1m-tokens: Interim report — topology-cost-at-1m-tokens
+- interim-report-memory-budget-and-frozen-tables: Interim report — memory-budget-and-frozen-tables
+- interim-report-sustained-throughput-at-32k: Interim report — sustained-throughput-at-32k
+- interim-report-csa2-at-32k-sm80: Interim report — csa2-at-32k-sm80
+- interim-report-token-budget-and-effect-size: Interim report — token-budget-and-effect-size
+- lessonsmd: LESSONS.md
+- deepseek-v4-cmp170hxsettingsmd-at-317dac12bbd7f401f0538c76161bc7186086fb65-allov: deepseek-v4-cmp170hx/SETTINGS.md at 317dac12bbd7f401f0538c76161bc7186086fb65 · a
+- readmemd: README.md
+- p2pmd: Peer-to-peer and multi-GPU — Consensus-Protocol/cmp170hx technical wiki
+- readme_enmd: README_EN.md
+- 2026-10-01-cmp170hx-4card-bar1-p2p-plx-cudaipynb: 2026-10-01-cmp170hx-4card-bar1-p2p-plx-cuda.ipynb
+- why-is-the-bandwidth-utilization-of-7-gpus-much-lower-than-that-of-6-8-gpus-for: Why is the bandwidth utilization of 7 GPUs much lower than that of 6, 8 GPUs for
+- perf-29-throughput-by-switching-from-deepspeed-to-ddp-issue-177-tensorautoopen-2: perf: ~2.9× throughput by switching from DeepSpeed to DDP · Issue #177 · TensorA
+- distributed-trainingreadmemd-at-main-cortwavedistributed-training-github: distributed-training/README.md at main · cortwave/distributed-training · GitHub
+- pcie-110-gpu-스케일링: PCIe 1~10 GPU 스케일링
+- mobius-fine-tuning-large-scale-models-on: Mobius: Fine Tuning Large-Scale Models on
+- efficient-training-on-multiple-consumer-gpus-with: Efficient Training on Multiple Consumer GPUs with
+- zero-3-vs-fsdp-memory-efficiency-for-llm-training-lyceum: ZeRO-3 vs FSDP: Memory Efficiency for LLM Training | Lyceum
+- exploration-of-cryptocurrency-mining-specific-gpus-in-ai: Exploration of Cryptocurrency Mining-Specific GPUs in AI
+- all-gbs-without-flops-nvidia-cmp-170hx-review-performance-lockdown-workaround-te: All GB/s without FLOPS - Nvidia CMP 170HX Review, Performance Lockdown Workaroun
+- full-specifications-170th-street: Full Specifications | 170th Street
+- specifications-cmp-170hx-documentation: Specifications - CMP 170HX Documentation
+- club-170hxdocscmp170hx-understandingmd-at-main-pixelmlclub-170hx-github: club-170hx/docs/CMP170HX-UNDERSTANDING.md at main · PixelML/club-170hx · GitHub
+- performancemd: Measured performance — Consensus-Protocol/cmp170hx technical wiki
+- nvidia-a100-tensor-core-gpu-data-sheet-jun21-1: NVIDIA A100 TENSOR CORE GPU  |  DATA SHEET  |  Jun21  |  1
+- training-compute-optimal-large-language-models: Training Compute-Optimal Large Language Models
+- cramming-training-a-language-model-on-a: CRAMMING: TRAINING A LANGUAGE MODEL ON A
+- memory-grafting-scaling-language-model: Memory Grafting: Scaling Language Model
+- dr-robert-li-engram-a-critical-analysis-of-conditional-memory-as-a-sparsity-axis: Dr. Robert Li | Engram: A Critical Analysis of Conditional Memory as a Sparsity 
+- scalable-training-of-mixture-of-experts-models-with: Scalable Training of Mixture-of-Experts Models with
+- efficient-expert-parallel-communication: Efficient Expert-Parallel Communication
+- github-mcrltccl-thunder-research-groups-collective-communication-library-github: GitHub - mcrl/tccl: Thunder Research Group's Collective Communication Library · 
+- variopath-workload-aware-all-to-all-communication-for-pcie-gpu-clusters: VarioPath: Workload-Aware All-to-All Communication for PCIe GPU Clusters
+- democratizing-moe-inference-on-commodity-gpus: Democratizing MoE inference on commodity GPUs
+- longcat-sparse-attention-taming-the-lightning-via: LongCat Sparse Attention: Taming the Lightning via
+- periodic-weak-spots: Periodic Weak Spots: Phase Sensitivity from Chunked KV-Cache Compression
+- you-only-cache-once: You Only Cache Once:
+- deepseek-v41-flash: DeepSeek-V4.1-Flash:
+- streamindex-memory-bounded-compressed-sparse: StreamIndex: Memory-Bounded Compressed Sparse
+- dsa_referencepy: cuDNN Frontend DSA reference implementation (dsa_reference.py) — NVIDIA/cudnn-fr
+- deepseek-sparse-attention-dsa-nvidia-cudnn: DeepSeek Sparse Attention (DSA) — NVIDIA cuDNN
+- github-pzhao-engflashmla-github: GitHub - pzhao-eng/FlashMLA · GitHub
+- missing-sparse-backward-kernel-issue-107-deepseek-aiflashmla-github: Missing sparse backward kernel. · Issue #107 · deepseek-ai/FlashMLA · GitHub
+- feature-add-an-opt-in-sm80-fallback-for-deepseek-sparse-attention-dsa-on-nvidia: [Feature] Add an opt-in SM80 fallback for DeepSeek Sparse Attention (DSA) on NVI
+- published-as-a-conference-paper-at-iclr-2026: Published as a conference paper at ICLR 2026
+- github-fla-orgnative-sparse-attention-efficient-triton-implementations-for-nativ: GitHub - fla-org/native-sparse-attention: 🐳 Efficient Triton implementations for
+- critical-batch-size-revisited-a-simple-empirical: Critical Batch Size Revisited: A Simple Empirical Approach to Large-Batch Langua
+- an-empirical-model-of-large-batch-training: An Empirical Model of Large-Batch Training
+- a-hitchhikers-guide-to-scaling-law-estimation: A Hitchhiker's Guide to Scaling Law Estimation

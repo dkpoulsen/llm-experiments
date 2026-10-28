@@ -1,0 +1,233 @@
+[
+  {
+    "claim": "A single NVLink/PCIe path badly under-utilises intra-node GPU-GPU bandwidth; striping messages across multiple NVLink channels, memory regions and GPU streams raises UCX bandwidth 1.69x (72 -> ~122 GB/s) and Open MPI+UCX 1.84x (up to 134 GB/s).",
+    "stance": "supports",
+    "stance_target": "multi-path striping recovers bandwidth left idle by single-path transfers",
+    "evidence_type": "empirical",
+    "scope_conditions": "4x V100 32GB on IBM POWER9 AC922 (Mist, SciNet), three intra-socket NVLinks",
+    "quoted_support": "Our approach achieves 1.69x and 1.84x higher bandwidth for UCX and Open MPI + UCX, respectively.",
+    "numbers": [
+      "1.69x",
+      "1.84x",
+      "72 GB/s",
+      "122 GB/s",
+      "134 GB/s"
+    ],
+    "entities": [
+      "UCX",
+      "Open MPI",
+      "NVLink",
+      "V100",
+      "POWER9"
+    ],
+    "time_period": "2021",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "A 3-stage hierarchical, pipelined MPI_Allreduce that uses multi-path NVLink intra-socket and PCIe/X-Bus inter-socket beats NCCL by 1.38x at 1 GB messages and 1.25x at 64 MB.",
+    "stance": "supports",
+    "stance_target": "NCCL is not a hard ceiling on an intra-node PCIe/NVLink fabric",
+    "evidence_type": "empirical",
+    "scope_conditions": "single node, 4x V100, messages 512 KB-1 GB",
+    "quoted_support": "We outperform Spectrum MPI, Open MPI + UCX, MVAPICH2-GDR, and NCCL at 1GB messages by 12.25x, 15.63x, 1.47x, and 1.38x, respectively.",
+    "numbers": [
+      "1.38x",
+      "1.25x",
+      "12.25x",
+      "15.63x",
+      "1.47x",
+      "1 GB",
+      "64 MB"
+    ],
+    "entities": [
+      "MPI_Allreduce",
+      "NCCL",
+      "Spectrum MPI",
+      "MVAPICH2-GDR",
+      "HPC-X"
+    ],
+    "time_period": "2021",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "At 64 MB the hierarchical allreduce beats Spectrum MPI, Open MPI+UCX, Open MPI+HPC-X, MVAPICH2-GDR and NCCL by 11.47x, 14.33x, 1.09x, 1.26x and 1.25x respectively.",
+    "stance": "supports",
+    "stance_target": "hierarchical path selection beats single-algorithm collectives at large messages",
+    "evidence_type": "empirical",
+    "scope_conditions": "4x V100, 64 MB message",
+    "quoted_support": "The proposed algorithm outperforms Spectrum MPI, Open MPI + UCX, Open MPI + HPC-X, MVAPICH2-GDR, and NCCL with a speedup of 11.47x, 14.33x, 1.09x, 1.26x, 1.25x, respectively, for 64MB messages.",
+    "numbers": [
+      "11.47x",
+      "14.33x",
+      "1.09x",
+      "1.26x",
+      "1.25x",
+      "64 MB"
+    ],
+    "entities": [
+      "MPI_Allreduce",
+      "NCCL",
+      "Spectrum MPI",
+      "MVAPICH2-GDR",
+      "HPC-X",
+      "UCX"
+    ],
+    "time_period": "2021",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "The hierarchical allreduce outperforms NCCL for all message sizes greater than 8 MB.",
+    "stance": "supports",
+    "stance_target": "NCCL's advantage is confined to small/medium messages on this topology",
+    "evidence_type": "empirical",
+    "scope_conditions": "4x V100 single node",
+    "quoted_support": "It also outperforms Open MPI + HPC-X for all message sizes and NCCL for message sizes greater than 8MB.",
+    "numbers": [
+      "8 MB"
+    ],
+    "entities": [
+      "NCCL",
+      "MPI_Allreduce"
+    ],
+    "time_period": "2021",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "At the application layer with Horovod+TensorFlow, VGG16 gains up to 3.24x over NCCL and ResNet50 1.23x over NCCL.",
+    "stance": "supports",
+    "stance_target": "collective-level gains survive into real DL training loops",
+    "evidence_type": "empirical",
+    "scope_conditions": "Horovod 0.20.3 + TensorFlow 1.15.2, single node 4x V100",
+    "quoted_support": "For Horovod with TensorFlow and VGG16, we observe up to 2.98x, 3.42x, 3.22x, 1.23x, and 3.24x speedup over Spectrum MPI, Open MPI + UCX, Open MPI + HPC-X, MVAPICH2-GDR, and NCCL, respectively. For ResNet50, we achieve 1.50x, 1.57x, 1.22x, 1.24x, 1.23x speedup over these MPI libraries, respectively.",
+    "numbers": [
+      "3.24x",
+      "1.23x",
+      "2.98x",
+      "3.42x",
+      "3.22x",
+      "1.50x",
+      "1.57x",
+      "1.22x",
+      "1.24x"
+    ],
+    "entities": [
+      "Horovod",
+      "TensorFlow",
+      "VGG16",
+      "ResNet50",
+      "NCCL"
+    ],
+    "time_period": "2021",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "PCIe Gen4 and the POWER9 X-Bus are both ~32 GB/s, so on an NVLink-X-Bus-NVLink inter-socket path the X-Bus is the bottleneck and PCIe-X-Bus-PCIe can be the better choice for some message sizes.",
+    "stance": "supports",
+    "stance_target": "path selection must account for the slowest hop, not just the fastest link",
+    "evidence_type": "empirical",
+    "scope_conditions": "IBM AC922 topology: NVLink 25 GB/s, X-Bus 32 GB/s, PCIe Gen4 32 GB/s",
+    "quoted_support": "we use the PCIe-X-Bus-PCIe path for certain message sizes. We observed that for each message size, different",
+    "numbers": [
+      "25 GB/s",
+      "32 GB/s",
+      "PCIe Gen4",
+      "X-Bus"
+    ],
+    "entities": [
+      "NVLink",
+      "X-Bus",
+      "PCIe Gen4",
+      "IBM AC922"
+    ],
+    "time_period": "2021",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "The inter-socket stage is the bottleneck: PCIe Gen4 performs the same as the X-Bus for that stage, so the choice between NVLink-X-Bus-NVLink and PCIe-X-Bus-PCIe matters per message size.",
+    "stance": "neutral",
+    "stance_target": "how to route inter-socket traffic when no direct GPU-GPU link exists",
+    "evidence_type": "empirical",
+    "scope_conditions": "two-socket POWER9 node",
+    "quoted_support": "between NVLink and X-Bus, the bottleneck is the X-Bus, and that the performance of PCIe Gen4 is the same as X-Bus",
+    "numbers": [
+      "PCIe Gen4",
+      "X-Bus"
+    ],
+    "entities": [
+      "PCIe Gen4",
+      "X-Bus",
+      "NVLink"
+    ],
+    "time_period": "2021",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "The structural lesson for a no-P2P box: every collective round-trips through host RAM, so using ALL available paths (including host X-bus staging) rather than one at a time is the lever.",
+    "stance": "supports",
+    "stance_target": "hierarchical/multi-path collectives are the right design for a PCIe-only no-P2P fabric",
+    "evidence_type": "theoretical",
+    "scope_conditions": "intra-node collectives without direct GPU-GPU links",
+    "quoted_support": "We propose a novel data transfer mechanism that stripes the message across multiple intra-socket communication channels and multiple memory regions using multiple GPU streams to utilise all available NVLink paths.",
+    "numbers": [],
+    "entities": [
+      "UCX",
+      "MPI_Allreduce",
+      "NVLink",
+      "PCIe"
+    ],
+    "time_period": "2021",
+    "region": "",
+    "confidence": "medium"
+  },
+  {
+    "claim": "The mechanism is dated (2021, V100, NCCL 2.5.6, Open MPI 4.0.4rc2, UCX 1.8.0), so absolute speedups against modern NCCL should not be assumed.",
+    "stance": "neutral",
+    "stance_target": "recency of the measured NCCL comparison",
+    "evidence_type": "theoretical",
+    "scope_conditions": "software stack: NCCL 2.5.6, UCX 1.8.0, Open MPI 4.0.4rc2, Horovod 0.20.3",
+    "quoted_support": "For our studies, we have used Open MPI 4.0.4rc2 with UCX 1.8.0, Open MPI + HPC-X (with UCX and HCOLL) from HPC-X v2.7, Spectrum-MPI 10.3.1, MVAPICH2-GDR 2.3.5, NCCL 2.5.6, and Horovod 0.20.3 with TensorFlow 1.15.2.",
+    "numbers": [
+      "NCCL 2.5.6",
+      "UCX 1.8.0",
+      "Open MPI 4.0.4rc2",
+      "Horovod 0.20.3"
+    ],
+    "entities": [
+      "NCCL",
+      "UCX",
+      "Open MPI",
+      "Horovod"
+    ],
+    "time_period": "2021",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "The testbed has three NVLinks per intra-socket GPU pair, i.e. far more aggregate link bandwidth than a single PCIe Gen2 x4 slot; the multi-path idea transfers but the absolute numbers do not.",
+    "stance": "neutral",
+    "stance_target": "applicability of the multi-path result to a Gen2 x4 no-NVLink box",
+    "evidence_type": "theoretical",
+    "scope_conditions": "4x V100 with 3 intra-socket NVLinks vs 5x CMP 170HX with Gen2 x4 and no NVLink",
+    "quoted_support": "Each node has four Nvidia V100 (32GB) GPUs per node, with three NVLinks between intra-",
+    "numbers": [
+      "3 NVLinks",
+      "Gen2 x4"
+    ],
+    "entities": [
+      "V100",
+      "CMP 170HX",
+      "NVLink",
+      "PCIe"
+    ],
+    "time_period": "2021",
+    "region": "",
+    "confidence": "medium"
+  }
+]

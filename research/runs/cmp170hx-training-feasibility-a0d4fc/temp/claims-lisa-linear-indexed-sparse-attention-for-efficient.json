@@ -1,0 +1,200 @@
+[
+  {
+    "claim": "LISA is a plug-and-play attention replacement that requires no pretraining from scratch: a linear attention branch (O(n)) runs in parallel with a lightning indexer that selects top-M tokens for sparse self-attention, fused by a gate, reducing inference from O(n^2) to O(nM).",
+    "stance": "supports",
+    "stance_target": "The claim that sparse attention can be retrofitted onto an existing model rather than requiring from-scratch sparse pretraining",
+    "evidence_type": "empirical",
+    "scope_conditions": "Qwen2.5-1.5B and 7B backbones; DeepSeek-distilled models",
+    "quoted_support": "we propose LISA (Linear-Indexed Sparse Attention), a plug-and-play attention replacement module that requires no pretraining from scratch. ... reducing inference complexity from O(n2) to O(nM) (M << n) for generating n tokens.",
+    "numbers": [
+      "O(n^2) -> O(nM)",
+      "M=256 recommended"
+    ],
+    "entities": [
+      "LISA",
+      "linear attention",
+      "lightning indexer",
+      "sparse self-attention"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "lisa-linear-indexed-sparse-attention-for-efficient"
+  },
+  {
+    "claim": "LISA freezes all original model parameters and trains only the newly added linear-attention and indexer modules, which is what gives it the plug-and-play property and avoids catastrophic forgetting.",
+    "stance": "supports",
+    "stance_target": "The frozen-parameters retrofit strategy as an alternative to full-model sparse pretraining",
+    "evidence_type": "empirical",
+    "scope_conditions": "Two-stage training; Stage 1 freezes all original parameters",
+    "quoted_support": "During training, we freeze all original model parameters and only train the newly added linear attention parameters. ... The training strategy of LISA freezes all original parameters of the main model, only training the newly added linear attention and Indexer components.",
+    "numbers": [],
+    "entities": [
+      "LISA",
+      "frozen parameters",
+      "linear attention",
+      "indexer"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "lisa-linear-indexed-sparse-attention-for-efficient"
+  },
+  {
+    "claim": "Because top-M selection is argmax, gradients cannot flow back to the indexer; LISA therefore trains it with a per-head KL divergence loss against the teacher's attention patterns, plus candidate dropout (top-1.2M candidates with 20% random masking early, decaying) and z-loss to prevent collapse onto early tokens.",
+    "stance": "supports",
+    "stance_target": "The repo's claim that top-k selection is non-differentiable and requires a separate distillation loss",
+    "evidence_type": "empirical",
+    "scope_conditions": "Stage 2 training; per-head KL divergence loss",
+    "quoted_support": "due to the top-M (argmax) strategy, training gradients cannot flow back to the Indexer module. Their approach maintains a distillation loss to ensure Indexer updates. ... during early training, we select top-1.2M candidates and randomly mask out 20%, then reassemble M hidden states to fill the self-attention stream",
+    "numbers": [
+      "top-1.2M candidates",
+      "20% random masking",
+      "decaying dropout ratio",
+      "z-loss"
+    ],
+    "entities": [
+      "LISA",
+      "indexer",
+      "KL divergence",
+      "z-loss",
+      "dropout"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "lisa-linear-indexed-sparse-attention-for-efficient"
+  },
+  {
+    "claim": "Attention-mass capture (MASS) reaches 80% at M=256, only 6% below the oracle upper bound; it falls to 70% at M=128 and rises to 88% at M=512, making M=256 the recommended budget.",
+    "stance": "supports",
+    "stance_target": "What top-M budget is needed for sparse attention to preserve the full-attention distribution",
+    "evidence_type": "empirical",
+    "scope_conditions": "MASS metric defined as captured attention mass over the oracle top-M weights",
+    "quoted_support": "at M = 256, the MASS reaches 80%, trailing the theoretical upper bound (defined by the oracle's top-M weights) by only 6%. Performance scales predictably with the budget: the metric decreases to 70% at M = 128 and improves to 88% at M = 512.",
+    "numbers": [
+      "M=256 -> 80% MASS",
+      "6% below oracle",
+      "M=128 -> 70%",
+      "M=512 -> 88%"
+    ],
+    "entities": [
+      "MASS",
+      "top-M budget",
+      "oracle attention"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "lisa-linear-indexed-sparse-attention-for-efficient"
+  },
+  {
+    "claim": "LISA achieves a 50% inference speedup at 16K-token context while improving average reasoning accuracy by 5.6% on DeepSeek-distilled Qwen models.",
+    "stance": "supports",
+    "stance_target": "Whether sparse attention can improve quality and speed simultaneously at moderate context",
+    "evidence_type": "empirical",
+    "scope_conditions": "DeepSeek-distilled-Qwen models; AIME, MATH-500 and related reasoning benchmarks",
+    "quoted_support": "Experiments on DeepSeek-distilled-Qwen models demonstrate that LISA achieves a 50% inference speedup under 16K-token context, while improving average performance by 5.6% on reasoning benchmarks including AIME and MATH-500.",
+    "numbers": [
+      "50% inference speedup at 16K",
+      "+5.6% average accuracy"
+    ],
+    "entities": [
+      "LISA",
+      "Qwen",
+      "AIME",
+      "MATH-500"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "lisa-linear-indexed-sparse-attention-for-efficient"
+  },
+  {
+    "claim": "Each of LISA's two training stages takes approximately 240 GPU-hours on an NVIDIA H100 for the 7B retrofit, i.e. roughly 480 H100-hours total \u2014 a concrete anchor for the cost of retrofitting sparse attention onto a 7B model.",
+    "stance": "neutral",
+    "stance_target": "The training cost of a sparse-attention retrofit at 7B scale",
+    "evidence_type": "empirical",
+    "scope_conditions": "Qwen2.5-7B; Stage 1 LR 2e-5, batch 128, 2 epochs, 50-step warmup; Stage 2 1 epoch",
+    "quoted_support": "This stage takes approximately 240 GPU hours on an NVIDIA H100. ... taking approximately 240 GPU hours on an NVIDIA H100.",
+    "numbers": [
+      "240 GPU-hours per stage",
+      "~480 GPU-hours total",
+      "NVIDIA H100",
+      "7B model"
+    ],
+    "entities": [
+      "LISA",
+      "H100",
+      "Qwen2.5-7B",
+      "GPU-hours"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "lisa-linear-indexed-sparse-attention-for-efficient"
+  },
+  {
+    "claim": "LISA's Stage 1 replaces the teacher's standard attention with a fixed-budget sliding window of size M plus a linear attention branch, and retains the original standard attention every 6 layers to preserve exact retrieval capability.",
+    "stance": "neutral",
+    "stance_target": "How much full attention must be retained when retrofitting sparse attention",
+    "evidence_type": "empirical",
+    "scope_conditions": "Stage 1 architecture; every 6th layer keeps standard attention",
+    "quoted_support": "we replace the standard attention in the teacher model with our linear attention variant while retaining the original standard attention every 6 layers to preserve exact retrieval capability.",
+    "numbers": [
+      "1 in 6 layers keeps full attention",
+      "sliding window size M"
+    ],
+    "entities": [
+      "LISA",
+      "linear attention",
+      "sliding window",
+      "retrieval"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "lisa-linear-indexed-sparse-attention-for-efficient"
+  },
+  {
+    "claim": "The two-stage training pipeline is itself a cost: it increases hyperparameter-tuning difficulty and compute requirements relative to standard SFT, and the frozen-parameter design limits how much the model can adapt to the new attention pattern.",
+    "stance": "neutral",
+    "stance_target": "The hidden costs of a retrofit approach",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "Limitations section",
+    "quoted_support": "This multi-stage process increases the difficulty of hyperparameter tuning and computational resource requirements. ... While this design ensures the plug-and-play property and avoids catastrophic forgetting, it also means that the",
+    "numbers": [],
+    "entities": [
+      "LISA",
+      "two-stage training",
+      "frozen parameters"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "lisa-linear-indexed-sparse-attention-for-efficient"
+  },
+  {
+    "claim": "LISA's reported latency is measured on a single NVIDIA A100 with batch size 1 in eager mode at BF16, so its 50% speedup figure is a small-batch single-GPU inference result, not a training-throughput result.",
+    "stance": "neutral",
+    "stance_target": "Whether LISA's speedup numbers transfer to a training setting",
+    "evidence_type": "empirical",
+    "scope_conditions": "Section 4.3 Datasets & Metrics; single A100, batch 1, BF16, eager mode",
+    "quoted_support": "We measure reasoning latency on a single NVIDIA A100 GPU with a batch size of 1, using eager mode with BF16 precision.",
+    "numbers": [
+      "A100",
+      "batch size 1",
+      "BF16",
+      "eager mode"
+    ],
+    "entities": [
+      "LISA",
+      "A100",
+      "inference latency"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "lisa-linear-indexed-sparse-attention-for-efficient"
+  }
+]

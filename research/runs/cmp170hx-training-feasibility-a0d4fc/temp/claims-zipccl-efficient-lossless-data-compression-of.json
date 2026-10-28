@@ -1,0 +1,280 @@
+[
+  {
+    "claim": "BF16 exponents in LLM training tensors are highly concentrated: the top-7 most frequent exponents cover over 97% of the data.",
+    "stance": "supports",
+    "stance_target": "lossless exponent coding is viable on LLM tensors",
+    "evidence_type": "empirical",
+    "scope_conditions": "BF16 activations, gradients and parameters in LLM training",
+    "quoted_support": "In particular, for exponent-based formats like BF16, the distribution of exponent values is highly concentrated; the top-7 most frequent exponents often cover over 97% of the data",
+    "numbers": [
+      "top-7",
+      "97%",
+      "BF16",
+      "8-bit exponent"
+    ],
+    "entities": [
+      "BF16",
+      "ZipCCL"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "Encoding the BF16 exponent in 3 bits instead of 8 (7 codes + zero-point escape) yields a theoretical compression ratio up to 11 bits from 16, about 1.45x.",
+    "stance": "supports",
+    "stance_target": "lossless compression can shrink BF16 communication payload",
+    "evidence_type": "theoretical",
+    "scope_conditions": "BF16 tensors with Gaussian-like exponent distribution",
+    "quoted_support": "just 7 exponents can cover 97% of the data. Therefore, we encode exponents using these 7 values plus an additional “zero-point” flag (indicating an exponent outside the top-7 set), requiring only three bits per exponent.",
+    "numbers": [
+      "3 bits",
+      "8 bits",
+      "11 bits",
+      "16 bits",
+      "1.45x",
+      "97%"
+    ],
+    "entities": [
+      "ZipCCL",
+      "BF16"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "ZipCCL reduces communication time by up to 1.35x and delivers end-to-end training speedups of up to 1.18x with no model-quality impact.",
+    "stance": "supports",
+    "stance_target": "lossless compression is a quality-neutral communication lever",
+    "evidence_type": "empirical",
+    "scope_conditions": "64-GPU cluster of 8x RTX A6000 per node, 200 Gb/s network",
+    "quoted_support": "Evaluated on a 64-GPU cluster using both mixture-of-experts and dense transformer models, ZipCCL reduces communication time by up to 1.35× and achieves end-to-end training speedups of up to 1.18× without any impact on model quality.",
+    "numbers": [
+      "1.35x",
+      "1.18x",
+      "64 GPUs",
+      "200 Gb/s"
+    ],
+    "entities": [
+      "ZipCCL",
+      "NCCL",
+      "RTX A6000"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "Per-collective communication speedups over NCCL are 1.25x (DeepSeek-V3 all-to-all), 1.24x (Qwen3-MoE all-to-all) and 1.35x (Llama3-8B all-gather).",
+    "stance": "supports",
+    "stance_target": "lossless compression speeds up both all-to-all and all-gather",
+    "evidence_type": "empirical",
+    "scope_conditions": "64-GPU A6000 cluster, Megatron-LM and TorchTitan",
+    "quoted_support": "The results, as shown in Fig. 10, indicate that our ZipCCL achieves communication speedups of 1.25× on DeepSeek-V3, 1.24× on Qwen3-MoE, and 1.35× on Llama3-8B over NCCL.",
+    "numbers": [
+      "1.25x",
+      "1.24x",
+      "1.35x"
+    ],
+    "entities": [
+      "ZipCCL",
+      "NCCL",
+      "DeepSeek-V3",
+      "Qwen3-MoE",
+      "Llama3-8B"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "End-to-end training speedups are 1.16x (DeepSeek-V3), 1.16x (Qwen3-MoE) and 1.18x (Llama3-8B), rising with GPU count for DeepSeek-V3 (1.06x at 16 GPUs to 1.16x at 64).",
+    "stance": "supports",
+    "stance_target": "lossless compression yields real end-to-end training gains",
+    "evidence_type": "empirical",
+    "scope_conditions": "16/32/64-GPU A6000 cluster",
+    "quoted_support": "The results, as shown in Fig. 9, demonstrate that our ZipCCL achieves speedups of 1.16× on DeepSeek-V3, 1.16× on Qwen3-MoE, and 1.18× on Llama3-8B. We also evaluated scaling with GPU counts of 16, 32, and 64. As the number of GPUs increases, the speedups on DeepSeek-V3 rise from 1.06× to 1.16×",
+    "numbers": [
+      "1.16x",
+      "1.18x",
+      "1.06x",
+      "16 GPUs",
+      "64 GPUs"
+    ],
+    "entities": [
+      "ZipCCL",
+      "DeepSeek-V3",
+      "Qwen3-MoE",
+      "Llama3-8B"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "On a 16xH800 400 Gb/s cluster the end-to-end gain drops to 1.13x, showing the benefit shrinks as bandwidth rises.",
+    "stance": "supports",
+    "stance_target": "compression benefit is inversely related to available bandwidth",
+    "evidence_type": "empirical",
+    "scope_conditions": "16xH800, 400 Gb/s network",
+    "quoted_support": "We also test the performance on Qwen3-MoE and Llama3-8B on a 16-H800 clusters with 400Gb/s network. Results show that we outperform Megatron-LM by 1.13× on Qwen3-MoE and outperform TorchTitan by 1.13× on Llama3-8B.",
+    "numbers": [
+      "1.13x",
+      "16 H800",
+      "400 Gb/s"
+    ],
+    "entities": [
+      "ZipCCL",
+      "H800"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "The benefit is bandwidth-saturation dependent: compression is near-neutral for small messages and becomes significant only once the link is saturated.",
+    "stance": "supports",
+    "stance_target": "lossless compression pays off most on bandwidth-starved fabrics",
+    "evidence_type": "empirical",
+    "scope_conditions": "varying message sizes and GPU counts",
+    "quoted_support": "When the data volume is small, bandwidth cannot be fully utilized, and our ZipCCL shows very close performance to NCCL. However, as the data volume increases (which is very common in LLM training) and bandwidth is better saturated, the improvement of our ZipCCL over NCCL becomes significant: on average, we achieve 1.36× speedup for All-to-All and 1.31× for All-Gather.",
+    "numbers": [
+      "1.36x",
+      "1.31x"
+    ],
+    "entities": [
+      "ZipCCL",
+      "NCCL"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "Reduce-scatter was NOT worth compressing on their platform - the uncompressed NCCL reduce-scatter was faster - so the FSDP/DDP gradient-reduction path does not automatically inherit the gain.",
+    "stance": "refutes",
+    "stance_target": "lossless compression helps every collective equally",
+    "evidence_type": "empirical",
+    "scope_conditions": "64-GPU A6000 cluster, TorchTitan FSDP",
+    "quoted_support": "For Llama3-8B, we measured the All-Gather time, while for Reduce-Scatter, based on our analysis in §5.2, the original Reduce-Scatter implementation was found to be faster on our platform.",
+    "numbers": [],
+    "entities": [
+      "ZipCCL",
+      "Reduce-Scatter",
+      "All-Gather",
+      "FSDP"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "ZipCCL beats DietGPU: DietGPU-compressed all-gather was slower than plain NCCL all-gather, while ZipCCL achieved 1.35x.",
+    "stance": "supports",
+    "stance_target": "kernel-level engineering determines whether lossless compression pays off",
+    "evidence_type": "empirical",
+    "scope_conditions": "Llama3-8B all-gather on TorchTitan",
+    "quoted_support": "The results indicate that DietGPU-compressed All-Gather performs slower than the baseline NCCL All-Gather, whereas our approach achieves a 1.35× speedup.",
+    "numbers": [
+      "1.35x"
+    ],
+    "entities": [
+      "ZipCCL",
+      "DietGPU",
+      "NCCL"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "The scheme is bit-exact (lossless), so unlike FP8/quantisation approaches it carries no convergence or accuracy risk.",
+    "stance": "supports",
+    "stance_target": "lossless compression is safer than lossy gradient compression for training",
+    "evidence_type": "theoretical",
+    "scope_conditions": "any BF16 training workload",
+    "quoted_support": "By leveraging data redundancy and entropy coding (e.g., Huffman [11], ANS [6]), lossless compression provides a bit-exact representation without any information loss.",
+    "numbers": [],
+    "entities": [
+      "ZipCCL",
+      "Huffman coding",
+      "ANS"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "The compression target is the exponent field only; sign and mantissa bits are stored unchanged, so decompression is a table lookup plus bit recombination.",
+    "stance": "neutral",
+    "stance_target": "mechanism of ZipCCL's compression",
+    "evidence_type": "theoretical",
+    "scope_conditions": "BF16 tensors",
+    "quoted_support": "For the BF16 case, this compression reduces the exponent storage from 8 bits to 3 bits",
+    "numbers": [
+      "8 bits",
+      "3 bits"
+    ],
+    "entities": [
+      "ZipCCL",
+      "BF16"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "ZipCCL is integrated at the collective level (all-to-all, all-gather, reduce-scatter) inside Megatron-LM and TorchTitan, not at the optimizer level, so it is orthogonal to the training recipe.",
+    "stance": "neutral",
+    "stance_target": "where in the stack the compression sits",
+    "evidence_type": "empirical",
+    "scope_conditions": "Megatron-LM and TorchTitan",
+    "quoted_support": "We integrate our ZipCCL on top of the widely used Megatron-LM [29] and TorchTitan [22] LLM training systems.",
+    "numbers": [],
+    "entities": [
+      "ZipCCL",
+      "Megatron-LM",
+      "TorchTitan"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "Transferability caveat: the primary testbed is 200 Gb/s (25 GB/s) per node, roughly 25-30x the CMP box's ~0.75 GiB/s collective bandwidth, so the measured 1.3x is a floor rather than a ceiling for a Gen2 x4 fabric.",
+    "stance": "neutral",
+    "stance_target": "applicability of ZipCCL's measured gains to the CMP 170HX box",
+    "evidence_type": "theoretical",
+    "scope_conditions": "200 Gb/s A6000 cluster vs 5x CMP 170HX Gen2 x4",
+    "quoted_support": "Experiments are mainly carried out on a 64-GPU cluster comprising four interconnected nodes with 200Gb/s network, each of which is equipped with eight Nvidia RTX A6000 GPUs.",
+    "numbers": [
+      "200 Gb/s",
+      "25 GB/s",
+      "0.75 GiB/s"
+    ],
+    "entities": [
+      "ZipCCL",
+      "CMP 170HX",
+      "RTX A6000"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "medium"
+  },
+  {
+    "claim": "The adaptive switcher selects collectives from a cost model over measured bandwidth, latency and compression ratio, so the library can decline to compress when it would not pay.",
+    "stance": "neutral",
+    "stance_target": "robustness of ZipCCL across fabrics",
+    "evidence_type": "theoretical",
+    "scope_conditions": "heterogeneous clusters",
+    "quoted_support": "This ensures robustness across different",
+    "numbers": [],
+    "entities": [
+      "ZipCCL"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "medium"
+  }
+]

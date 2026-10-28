@@ -1,0 +1,43 @@
+[
+  {
+    "claim": "NVIDIA NeMo AutoModel ships a DeepSeek-V4 sparse MLA backward implemented in TileLang, exposing preprocess/bwd/postprocess plus sparse_mqa_bwd_interface(q, kv, attn_sink, o, do, topk_idxs, lse, ...) with int32 top-k indices and fp32 LSE from the forward.",
+    "stance": "supports",
+    "stance_target": "The claim that a production DSA-family training backward exists, but in the TileLang/SM90 stack",
+    "evidence_type": "empirical",
+    "scope_conditions": "NVIDIA NeMo AutoModel nightly API docs, deepseek_v4 kernels",
+    "quoted_support": "sparse_mqa_bwd_interface(q, kv, attn_sink, o, do, topk_idxs, lse, sm_scale=None, return_dkv_accum_dtype=False) ... Backward interface for V4 sparse MQA attention.",
+    "numbers": [
+      "block_size=32",
+      "topk int32",
+      "lse fp32 [B,S,H]"
+    ],
+    "entities": [
+      "NeMo AutoModel",
+      "TileLang",
+      "DeepSeek V4",
+      "sparse MLA backward"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "nemo_automodelcomponentsmodelsdeepseek_v4kernelstilelang_sparse_mla_bwd"
+  },
+  {
+    "claim": "The NeMo documentation carries no sm_80 claim for this kernel, consistent with the TileLang sparse-MLA stack being benchmarked only on H800/H200 (SM90).",
+    "stance": "supports",
+    "stance_target": "The claim that the DSA training backward is not available on Ampere",
+    "evidence_type": "empirical",
+    "scope_conditions": "API docs page; no arch statement present",
+    "quoted_support": "_bwd_threads_for_heads(num_heads: int) -> int ... Threads per backward kernel: 128 for up to 16 heads, 256 for up to 32, 512 beyond.",
+    "numbers": [],
+    "entities": [
+      "sm_80",
+      "TileLang",
+      "SM90"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "nemo_automodelcomponentsmodelsdeepseek_v4kernelstilelang_sparse_mla_bwd"
+  }
+]

@@ -1,0 +1,89 @@
+[
+  {
+    "claim": "FSA is explicitly tested on NVIDIA Ampere GPUs including A100 SXM, with fp16/bf16, head dim <=256, GQA group sizes 1-16, and supports both training and inference prefill.",
+    "stance": "refutes",
+    "stance_target": "cc-4's third falsifier that 'run NSA instead' would itself be a Hopper-only porting project",
+    "evidence_type": "empirical",
+    "scope_conditions": "README 'Features' and 'FSA is currently well tested with' section",
+    "quoted_support": "FSA is currently well tested with: NVIDIA Ampere or Hopper GPUs (e.g., A100 SXM, H20, H100 PCIe, H100 NVL, H100 SXM, H200 SXM); Datatype of fp16 and bf16; ... Training and inference (prefill).",
+    "numbers": [
+      "A100 SXM",
+      "head dim <=256",
+      "GQA 1-16",
+      "flash-attn==2.6.3"
+    ],
+    "entities": [
+      "FSA",
+      "A100 SXM",
+      "Ampere",
+      "NSA"
+    ],
+    "time_period": "2025-08",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "github-relaxed-system-labflash-sparse-attention-efficient-implementations-of-nat"
+  },
+  {
+    "claim": "The README's usage example backpropagates through a variable-length batch of 65,536 + 32,768 tokens via loss.backward(), demonstrating a runnable sm_80-capable NSA-family training path at 32k+ context.",
+    "stance": "supports",
+    "stance_target": "The feasibility of an NSA-family sparse-attention training arm on sm_80",
+    "evidence_type": "empirical",
+    "scope_conditions": "README usage snippet: seqlens = torch.LongTensor([65536, 32768]); loss = (y * torch.randn_like(y)).sum(-1).mean(); loss.backward()",
+    "quoted_support": "seqlens = torch.LongTensor([65536, 32768]).int().cuda() ... loss = (y * torch.randn_like(y)).sum(-1).mean() loss.backward()",
+    "numbers": [
+      "65,536",
+      "32,768",
+      "bf16"
+    ],
+    "entities": [
+      "FSA",
+      "FlashSparseAttention",
+      "autograd"
+    ],
+    "time_period": "2025-08",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "github-relaxed-system-labflash-sparse-attention-efficient-implementations-of-nat"
+  },
+  {
+    "claim": "FSA's kernel argument is that NSA's selected-attention kernel must pad GQA groups below 8 to hardware tile minimums, wasting memory traffic and FLOPs, and FSA fixes this by looping KV blocks outer and query tokens inner across main/reduction/online-softmax kernels.",
+    "stance": "neutral",
+    "stance_target": "Why vanilla NSA underperforms at small GQA group sizes",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Method section; warp-level MMA requires >=8 on Hopper and Triton thread-block tiles >=16",
+    "quoted_support": "when GQA group size is not sufficiently large, NSA selected attention kernel must pad data to satisfy hardware requirements on the matrix dimensions of matrix multiplication ... FSA exchanges the kernel loop order of original NSA kernel design",
+    "numbers": [
+      "warp MMA min 8 (Hopper)",
+      "Triton tile min 16"
+    ],
+    "entities": [
+      "NSA",
+      "FSA",
+      "GQA",
+      "warp-level MMA"
+    ],
+    "time_period": "2025-08",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "github-relaxed-system-labflash-sparse-attention-efficient-implementations-of-nat"
+  },
+  {
+    "claim": "FSA requires flash-attn==2.6.3 as a dependency, which pins the full-attention baseline to an older CUDA FA release rather than the newest FA version.",
+    "stance": "neutral",
+    "stance_target": "The comparability of any FSA-vs-FA measurement to a current FA2/FA3 baseline",
+    "evidence_type": "empirical",
+    "scope_conditions": "requirements.txt / Installation section",
+    "quoted_support": "flash-attn ==2.6.3",
+    "numbers": [
+      "flash-attn 2.6.3"
+    ],
+    "entities": [
+      "flash-attn",
+      "FSA"
+    ],
+    "time_period": "2025-08",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "github-relaxed-system-labflash-sparse-attention-efficient-implementations-of-nat"
+  }
+]

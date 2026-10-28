@@ -1,0 +1,186 @@
+---
+title: deepseek-v4-cmp170hx/SETTINGS.md at 317dac12bbd7f401f0538c76161bc7186086fb65
+  · allover326/deepseek-v4-cmp170hx · GitHub
+id: deepseek-v4-cmp170hxsettingsmd-at-317dac12bbd7f401f0538c76161bc7186086fb65-allov
+tags:
+- cmp170hx-training-feasibility-a0d4fc
+- cmp-170hx
+- pipeline-parallel
+- tensor-parallel
+- pcie-gen2-x4
+- no-p2p
+- vllm-tuning
+- deepseek-v4-flash
+created: '2026-10-27T11:03:29.958961Z'
+updated: '2026-10-27T19:00:31.404334Z'
+source: https://github.com/allover326/deepseek-v4-cmp170hx/blob/317dac12/SETTINGS.md
+source_domain: github.com
+fetched_at: '2026-10-27T11:03:29.339444Z'
+fetch_provider: crawl4ai
+status: review
+type: note
+tier: ground_truth
+content_type: code
+deprecated: false
+summary: 'The highest-value hardware-tuning document in this batch: the full annotated
+  vLLM launch configuration for DeepSeek-V4-Flash-0731 on 4x CMP 170HX with --pipeline-parallel-size
+  4. States PP beats TP by 6.6x on prefill (5,321 vs 801 tok/s at 77k context) and
+  roughly 2x on aggregate decode, with the mechanism spelled out: tensor parallel
+  performs 2 all-reduces per layer x 43 layers = 86 collectives per forward, each
+  moving tokens x hidden bytes, so doubling tokens doubles both compute and communication
+  and a communication-bound setup stays communication-bound at every sequence length
+  - which is why TP prefill measures flat at ~800 tok/s from 1.5k to 77k tokens. PP
+  moves the same payload only 3 times (one hand-off per stage boundary) and overlaps
+  it with compute: ~28x less data on the wire. Characterises the fabric as PCIe Gen2
+  x4 with no P2P, ~1.0 GB/s measured bus bandwidth, ''close to the worst case for
+  TP''.
+
+
+  Also documents several constraints that bear on training feasibility: fp8 KV cache
+  works correctly on sm_80 because the conversion is software (only fp8 math needs
+  sm_89+); PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True is a hard failure at model
+  load on these cards (cannot map 20 MB with 28.6 GiB free), i.e. CUDA VMM appears
+  broken on GA100 CMP parts; --enforce-eager costs ~12x (8-10 tok/s) so CUDA graphs
+  are mandatory; TP3 is arithmetically impossible for this checkpoint (64 heads and
+  256 experts do not divide by 3); VLLM_PP_LAYER_PARTITION 12,12,12,7 removes an 8.7
+  GiB rank imbalance and grows the KV pool ~85%. Honest limits: TTFT at 1M context
+  is 9.2 minutes with decode ~40 tok/s, and retrieval accuracy degrades with depth
+  (~100% at 150k to ~30% at 900k), which the author calls architectural rather than
+  a tuning problem.'
+utility_score: 16.0
+---
+
+[Skip to content](https://github.com/allover326/deepseek-v4-cmp170hx/blob/317dac12/SETTINGS.md#start-of-content)
+You signed in with another tab or window. [Reload](https://github.com/allover326/deepseek-v4-cmp170hx/blob/317dac12/SETTINGS.md) to refresh your session. You signed out in another tab or window. [Reload](https://github.com/allover326/deepseek-v4-cmp170hx/blob/317dac12/SETTINGS.md) to refresh your session. You switched accounts on another tab or window. [Reload](https://github.com/allover326/deepseek-v4-cmp170hx/blob/317dac12/SETTINGS.md) to refresh your session. Dismiss alert
+## Collapse file tree
+## Files
+View file on default branch
+Search this repository(forward slash)` forward slash/`
+/
+# SETTINGS.md
+Copy path
+More file actions
+More file actions
+## Latest commit
+and
+[Thinking recovers much of the lost long-context recall (61.4% -> 80.7…](https://github.com/allover326/deepseek-v4-cmp170hx/commit/317dac12bbd7f401f0538c76161bc7186086fb65)
+Open commit details
+Aug 7, 2026
+[317dac1](https://github.com/allover326/deepseek-v4-cmp170hx/commit/317dac12bbd7f401f0538c76161bc7186086fb65) · Aug 7, 2026
+## History
+[History](https://github.com/allover326/deepseek-v4-cmp170hx/commits/317dac12bbd7f401f0538c76161bc7186086fb65/SETTINGS.md)
+Open commit details
+History
+192 lines (153 loc) · 11 KB
+/
+# SETTINGS.md
+Copy path
+## File metadata and controls
+  * Preview
+  * 
+
+192 lines (153 loc) · 11 KB
+Copy raw file
+Download raw file
+Outline
+Edit and raw actions
+# Every setting, and why it has that value
+The full command the numbers in [RESULTS.md](https://github.com/allover326/deepseek-v4-cmp170hx/blob/317dac12bbd7f401f0538c76161bc7186086fb65/RESULTS.md) were produced with:
+
+```
+docker run -d --name dsv4 --runtime=nvidia -e NVIDIA_VISIBLE_DEVICES=0,1,2,3 \
+  -e HF_HUB_OFFLINE=1 -e VLLM_WORKER_MULTIPROC_METHOD=spawn \
+  -v /path/to/DeepSeek-V4-Flash-0731:/model \
+  -v $R/config/speculative.py:/vllm/vllm/config/speculative.py:ro \
+  -v $R/v1/worker/gpu/pp_utils.py:/vllm/vllm/v1/worker/gpu/pp_utils.py:ro \
+  -v $R/v1/worker/gpu/model_runner.py:/vllm/vllm/v1/worker/gpu/model_runner.py:ro \
+  -v $R/v1/worker/gpu/spec_decode/dspark/utils.py:/vllm/vllm/v1/worker/gpu/spec_decode/dspark/utils.py:ro \
+  -v $R/model_executor/layers/sparse_attn_indexer.py:/vllm/vllm/model_executor/layers/sparse_attn_indexer.py:ro \
+  --shm-size=16g -p 8098:8000 \
+  dsv4-a100:devel vllm serve /model --served-model-name dsv4s \
+  --pipeline-parallel-size 4 \
+  --kv-cache-dtype fp8 \
+  --block-size 256 \
+  --max-model-len 32768 \
+  --max-num-batched-tokens 2048 \
+  --gpu-memory-utilization 0.85 \
+  --max-num-seqs 8 \
+  --trust-remote-code \
+  --no-enable-flashinfer-autotune \
+  --tokenizer-mode deepseek_v4 \
+  --speculative-config '{"method":"dspark","num_speculative_tokens":5}'
+```
+
+`$R` is the `vllm/` directory of your patched checkout. The image installs vLLM with `pip install -e .`, so `/vllm/vllm/...` is live code — bind-mounting the five patched files applies them with **no rebuild**.
+## The settings that matter most
+###  `--pipeline-parallel-size 4` ← not tensor parallel
+The single highest-impact choice. On these cards PP beats TP by **6.6× on prefill** (5,321 vs 801 tok/s at 77k context) and roughly 2× on aggregate decode.
+Why: tensor parallel performs **2 all-reduces per layer × 43 layers = 86 collectives** per forward, each moving `tokens × hidden` bytes. Double the tokens and you double both compute and communication, so a communication-bound setup stays communication-bound at _every_ sequence length — which is exactly why TP prefill measures flat at ~800 tok/s from 1.5k to 77k tokens. Pipeline parallel moves the same payload only **3 times** (one hand-off per stage boundary) and overlaps it with compute: **~28× less data on the wire**.
+The CMP 170HX is PCIe **Gen2 x4 with no P2P** (~1.0 GB/s measured bus bandwidth), which is close to the worst case for TP. On a machine with NVLink the trade-off would look completely different.
+### `--speculative-config '{"method":"dspark","num_speculative_tokens":5}'`
+  * **`dspark`, not`mtp`.** DeepSeek-V4-Flash-0731 replaced the single MTP layer with a 3-layer DSpark stack (`mtp.{0,1,2}` + `markov_head` + `confidence_head`). `method:"mtp"` KeyErrors on `mtp_block.main_norm`.
+  * **5, and 5 exactly.** vLLM enforces `num_speculative_tokens >= dspark_block_size` (5 for this checkpoint) — below that the block/Markov machinery gets an unsupported layout and produces _garbled output_ , not merely lower acceptance. Above is worse in practice: **7 measured 60.3 tok/s vs 5's 98.1** , because acceptance never extends past ~3 tokens so the extra drafts are pure waste.
+  * Worth **+1.93×** decode over the same config without it, and unlike on TP it keeps winning under load (see RESULTS).
+
+
+### `--gpu-memory-utilization 0.85`
+Not higher. Raising it takes headroom away from activations and CUDA-graph capture; at **0.90 with the DSpark draft resident, capture OOMs**. The KV pool you would gain is memory you cannot spend — at the ~128k usable ceiling a single context costs only about 6 GiB, and the pool at 0.85 already reports 1.8M tokens at `max-model-len 131072`.
+### `--max-num-batched-tokens 2048`
+Do **not** lower it: without it, activation memory during profiling eats the KV pool and the engine dies with "No available memory for the cache blocks".
+Raising it is pointless — measured twice, on two different stacks. 2048 → 8192 moved prefill by ~4% (890 → 924 tok/s) and **halved the KV pool** (58,538 → 29,867 tokens). Prefill is not chunk-size bound.
+### `--kv-cache-dtype fp8`
+Effectively required. DeepSeek-V4 asserts `fp8_ds_mla layout only supports fp8 kv-cache`. FP8 KV does work correctly on sm_80 — the conversion is software; only FP8 _math_ needs sm_89+.
+### `--no-enable-flashinfer-autotune`
+FlashInfer's JIT runs at engine init and is a **hard requirement** (removing the package gives `ModuleNotFoundError`), so the container must be able to compile it. See [docker/Dockerfile.devel](https://github.com/allover326/deepseek-v4-cmp170hx/blob/317dac12bbd7f401f0538c76161bc7186086fb65/docker/Dockerfile.devel) for why the base image needs a real CUDA toolkit rather than pip CUDA wheels.
+### `--tokenizer-mode deepseek_v4`
+From the working launch command in [vllm#50576](https://github.com/vllm-project/vllm/issues/50576).
+###  `--max-model-len` — ★ set it to what you need, up to the model maximum
+**Previous versions of this file said a larger value gives you LESS usable context. That was a symptom of the[logits-buffer bug](https://github.com/allover326/deepseek-v4-cmp170hx/blob/317dac12bbd7f401f0538c76161bc7186086fb65/RESULTS.md#-context-ceiling--solved) and is withdrawn.** With `DSV4_LOGITS_ROW_CHUNK` set, the full 1,048,576 works:  
+| `--max-model-len`  | highest verified prompt  | `DSV4_LOGITS_ROW_CHUNK`  |  
+| --- | --- | --- |  
+| 393,216  | 388,505 (one-shot)  | 256  |  
+|  **1,048,576** (model max)  |  **1,047,736** (one-shot)  | **128**  |  
+| **1,048,576**  |  **1,002,852** (**405-turn conversation**)  |  
+⚠️ **Those first two rows are one-shot prefills.** A long _conversation_ on `128` dies at ~718–733k with a CUDA illegal memory access — see [accumulated vs one-shot](https://github.com/allover326/deepseek-v4-cmp170hx/blob/317dac12bbd7f401f0538c76161bc7186086fb65/RESULTS.md#accumulated-conversation--one-shot-prefill). Chunk size costs almost nothing (TTFT 7.48 s at `64` vs 7.08 s at `128`, measured at 750k), so **if in doubt use 64**.
+The only reason not to set the maximum is **time** , not capacity: TTFT at 1M is **9.2 minutes** and decode drops to ~40 tok/s. Pick the profile that matches your workload —
+  * everyday, ≤388k, one-shot documents → `--max-model-len 393216`, `DSV4_LOGITS_ROW_CHUNK=256`
+  * full 1M, one-shot documents → `--max-model-len 1048576`, `DSV4_LOGITS_ROW_CHUNK=128`
+  * ★ **long conversations / agents (any max-model-len) →`DSV4_LOGITS_ROW_CHUNK=64`**
+
+
+⚠️ **None of these settings change retrieval accuracy** , which degrades with depth regardless (~100% at 150k → ~30% at 900k). That is architectural, not a tuning problem. See [RESULTS](https://github.com/allover326/deepseek-v4-cmp170hx/blob/317dac12bbd7f401f0538c76161bc7186086fb65/RESULTS.md#retrieval-accuracy-vs-depth--the-window-is-reachable-not-uniformly-usable).
+###  `--reasoning-parser deepseek_v4` — ★ set it even if you never enable thinking
+`thinking=False` is the default on 0731, so most people never see this. But the moment thinking is on, the `<think>` delimiters are **special tokens** and get stripped on decode — so **without this flag the reasoning text arrives inside`content` with nothing marking it as reasoning**, and replies literally begin _"We need answer classic. Need be careful. User asks…"_. With the flag it lands in its own field and `content` stays a clean answer. The flag is inert when thinking is off, so there is no reason not to set it.
+⚠️ On this build the returned field is **`reasoning`**, not`reasoning_content`. A client reading only the latter sees zero thinking and cannot distinguish a thinking run from a non-thinking one.
+**Enabling thinking** (worth it — [+19 points of long-context recall](https://github.com/allover326/deepseek-v4-cmp170hx/blob/317dac12bbd7f401f0538c76161bc7186086fb65/RESULTS.md#thinking-recovers-a-lot-of-the-lost-long-context-recall--the-effort-level-does-not)): per request via `"chat_template_kwargs": {"thinking": true, "reasoning_effort": "high"}`, or server-side with `--default-chat-template-kwargs`. **Use`high` , not `max`** — `max` thinks 2.7× harder for identical recall. A top-level `reasoning_effort` body param is the ambiguous path; it changes behaviour but `/tokenize` cannot see it.
+### `--max-num-seqs 8`
+Raise for serving. 128 was used for the concurrency sweeps and behaves well; DSpark keeps winning all the way to 64 concurrent requests on PP.
+###  `--block-size 256`, `--trust-remote-code`
+Standard for this model.
+## Environment variables  
+| var  | value  | why  |  
+| --- | --- | --- |  
+| `NVIDIA_VISIBLE_DEVICES`  | `0,1,2,3`  |  **All four cards. Three does not work** — see RESULTS.  |  
+| `VLLM_WORKER_MULTIPROC_METHOD`  | `spawn`  | Required; fork deadlocks with CUDA already initialised.  |  
+| `HF_HUB_OFFLINE`  | Local weights only; avoids a hub call on every start.  |  
+| `CUDA_HOME`  | set in image  | The devel image sets `/usr/local/cuda`.  |  
+| **`DSV4_LOGITS_ROW_CHUNK`** |  for conversations; `256`/`128` for one-shot  | ★ **The context-ceiling fix** ([patch 0006](https://github.com/allover326/deepseek-v4-cmp170hx/blob/317dac12bbd7f401f0538c76161bc7186086fb65/patches/0006-logits-row-chunk.patch)). Row-chunks the sparse indexer's `[M, N]` float32 logits transient. `0` = original upstream path, which dies at ~134k. **One-shot prefill:** `256` reaches ~957,600, `128` reaches 1,047,736. **Accumulating conversation:** `128` dies at ~718–733k (reproduced twice); **`64`reached 1,002,852 over 405 turns.** Costs almost nothing (TTFT 7.48 s vs 7.08 s at 750k). Affects only whether it crashes — **not** retrieval accuracy.  |  
+| **`VLLM_PP_LAYER_PARTITION`** | `12,12,12,7`  | Rebalances the 43 layers off pipeline rank 3, which uniquely carries `lm_head` **and** the DSpark drafter. **Does not affect the context ceiling** — but it removes an 8.7 GiB rank imbalance and grows the KV pool **~85%** (798,660 → 1,476,563 at `max-model-len 163840`). Must be 4 entries summing to 43.  |  
+⚠️ **Do not bother with`PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True`** — it is a hard failure at model load on these cards: `expandable_segments: memory mapping failed with OOM on device 3 while trying to map 20971520 bytes (free: 28626452480)`, i.e. it cannot map 20 MB with 28.6 GiB free. CUDA VMM appears broken on GA100 CMP parts.
+`--shm-size=16g` on the container — the default 64 MB is not enough for multiprocess workers.
+## Benchmarking-only flags
+Not for production, but required to reproduce the numbers:
+  * **`--no-enable-prefix-caching`**— without it, repeated benchmark prompts hit the prefix cache and prefill numbers become fiction (a 100k-token prompt appearing to prefill in 0.5 s was how this was caught).
+  * **`ignore_eos: true`**in the request — otherwise the speculative and non-speculative configs generate _different numbers of tokens_ and the comparison is meaningless.
+  * **`stream_options: {include_usage: true}`**— under speculative decoding a single SSE chunk carries several tokens (roughly the acceptance length), so a harness that counts chunks under-reports by that factor. Rate against the server's own`completion_tokens`.
+  * **Discard the first request after boot** — it carries Triton JIT compilation and reads roughly 4× low.
+
+
+## Things deliberately NOT set  
+| flag  | why not  |  
+| --- | --- |  
+| `--enforce-eager`  |  **Never.** 8–10 tok/s, i.e. worse than no speculative decoding at all. CUDA graphs are worth ~12×.  |  
+| `--tensor-parallel-size`  | PP wins on this hardware; see above. TP3 is also arithmetically impossible (64 heads, 256 experts don't divide by 3).  |  
+| `--quantization`  | The checkpoint's format is auto-detected. Forcing it breaks MoE scale loading.  |  
+| `VLLM_SM86_SPLITK=0`  | Helped ~8% on the _older_ overlay stack at low TP. Untested on this branch; the kernel it targets may not be in this path.  |  
+You can’t perform that action at this time. 

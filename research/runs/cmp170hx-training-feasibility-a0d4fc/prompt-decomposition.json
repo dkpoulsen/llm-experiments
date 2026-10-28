@@ -1,0 +1,211 @@
+{
+  "sub_questions": [
+    "What is the actual negotiated PCIe link width and speed per card, and how much does Gen2 x4 vs x16 change every communication number?",
+    "Does the PWRBRK# power-brake trap silently invalidate throughput measurements, and how is it detected?",
+    "Which training topologies (DDP, FSDP/ZeRO-3, PP, TP, EP) are viable on a PCIe Gen2 x4 fabric with no NVLink and no P2P?",
+    "Is the DDP overhead model (overhead = 3.6e5 / global_batch_tokens at theoretical peak) correct, and does it hold at 1M and 2M-token global batches with bf16 gradient compression?",
+    "Is expert parallelism actually ruled out for training on this fabric, or is the ~70x estimate wrong?",
+    "Is tensor parallelism actually ruled out for training on this fabric, or is the ~70x estimate wrong?",
+    "Does freezing Engram memory tables (Memory Grafting) make a 7B-total / ~1B-trainable model fit DDP on 64 GB cards, and what is the real memory arithmetic?",
+    "Does CSA2 compressed sparse attention pay off at 32k training context, given the non-differentiable top-k and the parallel indexer?",
+    "Is a ~500M dense baseline at 32k context feasible at the predicted 80-120k tok/s, and is it a sound control?",
+    "What data pipeline (9B tokens, 75/15/10 mix, packed 32k sequences, deterministic order) is required for run comparability?"
+  ],
+  "entities": [
+    {
+      "name": "NVIDIA CMP 170HX",
+      "type": "hardware",
+      "required_fields": [
+        "GA100 die",
+        "64 GB HBM2e after unlock",
+        "250 W cap",
+        "measured bf16/fp32 TFLOPS",
+        "PCIe Gen1 vs Gen2 vs Gen3 fuse state"
+      ]
+    },
+    {
+      "name": "PCIe Gen2 x4 fabric",
+      "type": "hardware",
+      "required_fields": [
+        "negotiated width per slot",
+        "no NVLink",
+        "no P2P",
+        "all-reduce bandwidth",
+        "host-bridge round trip"
+      ]
+    },
+    {
+      "name": "PWRBRK# power brake",
+      "type": "hardware-fault",
+      "required_fields": [
+        "edge pin B30",
+        "88 W / 39.3 TFLOPS symptom",
+        "detection command",
+        "fix"
+      ]
+    },
+    {
+      "name": "DDP",
+      "type": "topology",
+      "required_fields": [
+        "gradient all-reduce payload",
+        "no_sync() requirement",
+        "overhead vs batch size",
+        "bf16_compress_hook"
+      ]
+    },
+    {
+      "name": "FSDP / ZeRO-3",
+      "type": "topology",
+      "required_fields": [
+        "all-gather + reduce-scatter per layer",
+        "overhead multiplier vs DDP",
+        "when it becomes necessary"
+      ]
+    },
+    {
+      "name": "Pipeline parallelism",
+      "type": "topology",
+      "required_fields": [
+        "activation hand-off volume",
+        "stage-boundary frequency",
+        "measured PP vs TP on this box"
+      ]
+    },
+    {
+      "name": "Tensor parallelism",
+      "type": "topology",
+      "required_fields": [
+        "all-reduce per layer",
+        "all-reduce count per forward",
+        "viability on no-P2P link"
+      ]
+    },
+    {
+      "name": "Expert parallelism",
+      "type": "topology",
+      "required_fields": [
+        "two all-to-alls per MoE layer",
+        "payload at 1M-token batches",
+        "viability on no-P2P link"
+      ]
+    },
+    {
+      "name": "MoE",
+      "type": "architecture-axis",
+      "required_fields": [
+        "total vs active params",
+        "expert count",
+        "routing",
+        "dropless vs dropless-MoE implementations"
+      ]
+    },
+    {
+      "name": "Engram",
+      "type": "architecture-axis",
+      "required_fields": [
+        "hashed n-gram conditional memory",
+        "learned vs frozen tables",
+        "per-token FLOP cost",
+        "VRAM cost"
+      ]
+    },
+    {
+      "name": "Memory Grafting",
+      "type": "architecture-axis",
+      "required_fields": [
+        "donor hidden states",
+        "frozen table size",
+        "reported benchmark deltas at 0.92B and 2.8B",
+        "longest-match suffix lookup"
+      ]
+    },
+    {
+      "name": "CSA2",
+      "type": "architecture-axis",
+      "required_fields": [
+        "Full / Reindex / Reuse layer modes",
+        "hierarchical sparse indexer",
+        "candidate-pool cap",
+        "KV bytes per token",
+        "training-side caveats"
+      ]
+    },
+    {
+      "name": "bf16_compress_hook",
+      "type": "mechanism",
+      "required_fields": [
+        "compression ratio",
+        "message-size dependence",
+        "effect on all-reduce bandwidth"
+      ]
+    },
+    {
+      "name": "1M-token global batches",
+      "type": "configuration",
+      "required_fields": [
+        "sequences per step at 32k",
+        "gradient accumulation steps",
+        "overhead fraction"
+      ]
+    },
+    {
+      "name": "32k training context",
+      "type": "configuration",
+      "required_fields": [
+        "activation memory with checkpointing",
+        "attention FLOP share",
+        "CSA2 candidate-cap relevance"
+      ]
+    },
+    {
+      "name": "Data pipeline",
+      "type": "infrastructure",
+      "required_fields": [
+        "FineWeb-Edu / Stack-Edu / FineMath4+ mix",
+        "Qwen3 tokenizer",
+        "packed 32k sequences",
+        "cu_seqlens boundaries",
+        "determinism manifest"
+      ]
+    }
+  ],
+  "required_formats": [
+    "claim-by-claim verdict table",
+    "communication-cost comparison table",
+    "memory-budget table"
+  ],
+  "required_sections": [],
+  "required_section_headings": [
+    "## 1. Hardware Reality: Link Width, Power Brake, and What the Numbers Assume",
+    "## 2. Training Topologies on a No-P2P PCIe Fabric",
+    "## 3. The DDP Overhead Model at 1M-Token Batches",
+    "## 4. MoE and Expert Parallelism: Ruled Out or Misjudged?",
+    "## 5. Engram and Frozen Memory: Making 7B Fit on 64 GB",
+    "## 6. CSA2 Sparse Attention at 32k Context",
+    "## 7. Verdict: Which Experiments Are Worth Running"
+  ],
+  "time_horizons": [
+    "2025-2026 hardware and model-architecture state of the art"
+  ],
+  "time_periods": [],
+  "scope_conditions": [
+    "single 5-GPU box, not a cluster",
+    "training, not inference (inference numbers may be cited only as precedent)",
+    "bf16, GA100 sm_80 — no FP8 tensor cores",
+    "DDP/FSDP only unless a source overturns the fabric argument"
+  ],
+  "pipeline_tier": "full",
+  "response_format": "argumentative",
+  "citation_style": "wikilink",
+  "levers": {
+    "register": "analyze",
+    "register_confidence": "high",
+    "domain_notes": "Sourcing: academic APIs first for architecture claims (arXiv for Engram, Memory Grafting, CSA2, expert-parallel-over-PCIe); GitHub repos and community benchmarks for hardware measurements (club-170hx, deepseek-v4-cmp170hx); NVIDIA and PCI-SIG documentation for PWRBRK# and link negotiation. Evidence norms: a number measured on this exact box outranks a community report, which outranks arithmetic from stated assumptions — label every claim with its tier. Recency: hardware and model-architecture claims within 12 months matter; PCIe and NCCL fundamentals are stable.",
+    "inference_depth": "standard",
+    "rationale": {
+      "register": "query asks which experiments are feasible and whether claims hold — evaluation-shaped",
+      "inference_depth": "architecture literature is rich; the box-specific training evidence is thin but bounded, revisit at loci analysis"
+    }
+  }
+}

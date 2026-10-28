@@ -1,0 +1,40 @@
+[
+  {
+    "claim": "Ten Llama-2-7B-architecture models trained on 210B tokens with identical settings except the initialisation seed give a measurable but modest benchmark-level seed variance, and that seed variance is often smaller than the variance across different training setups.",
+    "stance": "neutral",
+    "stance_target": "the relative size of seed noise versus setup choice at 7B/210B",
+    "evidence_type": "empirical",
+    "scope_conditions": "10 seeds at 7B, 210B tokens, ~280 models/checkpoints, benchmark-level scores",
+    "quoted_support": "using the 7B models we trained ourselves, we consider variance due to changes in seed, across otherwise identical setups ... In all our experiments, we ... compare them with bootstrapped 95% confidence intervals on individual models, as well as observed variance across different setups.",
+    "numbers": [
+      "10 seeds",
+      "7B parameters",
+      "210B tokens"
+    ],
+    "entities": [
+      "Llama-2-7B",
+      "seed variance"
+    ],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "quantifying-variance-in-evaluation-benchmarks"
+  },
+  {
+    "claim": "Single-seed evaluation is unreliable at benchmark level, and simple metric changes (framing choice tasks as completion tasks) can reduce variance more than adding seeds.",
+    "stance": "neutral",
+    "stance_target": "whether more seeds or a better metric is the cheaper way to beat the noise floor",
+    "evidence_type": "empirical",
+    "scope_conditions": "MMLU-style choice tasks vs completion framing",
+    "quoted_support": "We find that simple changes, such as framing choice tasks (like MMLU) as completion tasks, can often reduce variance",
+    "numbers": [],
+    "entities": [
+      "MMLU",
+      "completion framing"
+    ],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "quantifying-variance-in-evaluation-benchmarks"
+  }
+]

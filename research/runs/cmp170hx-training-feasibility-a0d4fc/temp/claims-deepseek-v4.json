@@ -1,0 +1,246 @@
+[
+  {
+    "claim": "DeepSeek-V4 (the CSA predecessor of CSA2) warms up with dense attention for the first 1T tokens and only introduces sparse attention at a sequence length of 64K \u2014 the opposite of V4.1-Flash's no-warmup recipe, and in both cases sparse attention is introduced at 64K, never at 32k.",
+    "stance": "refutes",
+    "stance_target": "The repo's implicit assumption that sparse attention can be switched on at 32k without a dense-attention warm-up",
+    "evidence_type": "empirical",
+    "scope_conditions": "DeepSeek-V4-Flash pretraining; 45T-scale run",
+    "quoted_support": "The training starts with a sequence length of 4K, and we gradually extend the training sequence length to 16K, 64K, and 1M. As for the setups of sparse attention, we first warmup the model with dense attention for the first 1T tokens, and introduce sparse attention at the sequence length of 64K and keep sparse attention during the rest of the training.",
+    "numbers": [
+      "1T-token dense warmup",
+      "sequence lengths 4K -> 16K -> 64K -> 1M",
+      "sparse attention introduced at 64K"
+    ],
+    "entities": [
+      "DeepSeek-V4",
+      "CSA",
+      "dense warmup",
+      "sequence length"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-v4"
+  },
+  {
+    "claim": "V4's CSA uses compression rate m=4, 64 indexer query heads, indexer head dimension 128, and attention top-k of 512 (V4-Flash) or 1024 (V4-Pro); HCA uses m'=128 \u2014 so the CSA2 indexer-head reduction from 64 to 32 and the compression ratio change to m=1/m=2 are V4.1-specific choices, not lineage constants.",
+    "stance": "neutral",
+    "stance_target": "The repo's use of V4-Flash indexer dimensions (HI=64, m=4) as the CSA2 baseline",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Section 4.2.1 Model Setups; V4-Flash 43 layers, d=4096",
+    "quoted_support": "For CSA, we set the compression rate m to 4, the number of indexer query heads n_I_h to 64, the indexer head dimension c_I to 128, and the number of KV entries selected for sparse attention (i.e., attention top-k) to 512. For HCA, we set the compression rate m' to 128.",
+    "numbers": [
+      "m=4 (CSA)",
+      "m'=128 (HCA)",
+      "64 indexer heads",
+      "indexer head dim 128",
+      "top-k 512 V4-Flash",
+      "top-k 1024 V4-Pro",
+      "43 layers",
+      "d=4096"
+    ],
+    "entities": [
+      "CSA",
+      "HCA",
+      "DeepSeek-V4-Flash",
+      "DeepSeek-V4-Pro"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-v4"
+  },
+  {
+    "claim": "V4's lightning indexer runs its attention computation in FP4 precision to accelerate the operation under extremely long contexts, and the KV cache uses a mixed format (BF16 for RoPE dimensions, FP8 for the rest) that nearly halves KV cache size versus pure BF16.",
+    "stance": "neutral",
+    "stance_target": "The precision machinery a CSA reproduction must implement",
+    "evidence_type": "empirical",
+    "scope_conditions": "Section 2.5 efficiency discussion",
+    "quoted_support": "BF16 precision is used for the rotary positional embedding (RoPE) dimensions, while FP8 precision is applied to the remaining dimensions. This hybrid representation reduces the KV cache size by nearly half compared with pure BF16 storage. Second, attention computation within the lightning indexer is performed in FP4 precision, which accelerates the attention operation under extremely long contexts.",
+    "numbers": [
+      "FP4 indexer attention",
+      "BF16 RoPE dims",
+      "FP8 other dims",
+      "~2x KV cache reduction vs BF16"
+    ],
+    "entities": [
+      "lightning indexer",
+      "FP4",
+      "FP8",
+      "KV cache"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-v4"
+  },
+  {
+    "claim": "Sparse-attention backward in V4 uses atomicAdd to accumulate KV gradients, which makes training non-deterministic; the fix is per-SM accumulation buffers plus a deterministic global summation across all buffers.",
+    "stance": "supports",
+    "stance_target": "The claim that sparse attention imposes a determinism tax on training that dense attention does not",
+    "evidence_type": "empirical",
+    "scope_conditions": "Section on determinism in training infrastructure",
+    "quoted_support": "In conventional implementations of backward propagation for sparse attention, we use atomicAdd to accumulate gradients for the KV tokens. This introduces non-determinism due to the non-associativity of floating-point addition. To address this problem, we allocate separate accumulation buffers for each SM, followed by a global deterministic summation across all buffers.",
+    "numbers": [
+      "per-SM accumulation buffers"
+    ],
+    "entities": [
+      "atomicAdd",
+      "determinism",
+      "sparse attention backward",
+      "KV gradients"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-v4"
+  },
+  {
+    "claim": "When introducing attention sparsity, V4 first runs a short stage to warm up the lightning indexer in CSA and then trains with sparse attention for most of the training \u2014 a dedicated indexer warm-up stage separate from the dense-attention warm-up.",
+    "stance": "supports",
+    "stance_target": "The claim that the indexer needs its own training stage, not just a loss term",
+    "evidence_type": "empirical",
+    "scope_conditions": "Section 4.2.2 Training Setups",
+    "quoted_support": "When introducing attention sparsity, we first set a short stage to warm up the lightning indexer in CSA, and then train the model with sparse attention for most of the training.",
+    "numbers": [],
+    "entities": [
+      "lightning indexer",
+      "warm-up stage",
+      "CSA"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-v4"
+  },
+  {
+    "claim": "V4-Flash keeps the batch size at 75.5M tokens for most of training with LR 2.7e-4 warmed up over 2000 steps and cosine-decayed to 2.7e-5, and uses sample-level attention masking during pretraining.",
+    "stance": "neutral",
+    "stance_target": "Reference large-batch recipe for CSA pretraining",
+    "evidence_type": "empirical",
+    "scope_conditions": "Section 4.2.2; DeepSeek-V4-Flash",
+    "quoted_support": "increases the batch size (in tokens) from a small size to 75.5M and then keeps it at 75.5M during most of the training. The learning rate is linearly warmed up in the first 2000 steps, maintained at 2.7 x 10^-4 for most of the training.",
+    "numbers": [
+      "75.5M-token batch",
+      "LR 2.7e-4",
+      "2000 warmup steps",
+      "decay to 2.7e-5"
+    ],
+    "entities": [
+      "DeepSeek-V4-Flash",
+      "batch size",
+      "learning rate"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-v4"
+  },
+  {
+    "claim": "V4-Flash is 43 layers with hidden dim 4096, 1 shared + 256 routed experts (6 activated, expert intermediate 2048), pure SWA in the first two layers, then CSA and HCA interleaved \u2014 a materially different layer mix from V4.1-Flash's 40-layer pure-CSA2 design.",
+    "stance": "neutral",
+    "stance_target": "Whether V4-Flash's architecture can stand in for V4.1-Flash's CSA2 when reasoning about training cost",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Section 4.2.1 Model Setups",
+    "quoted_support": "We set the number of Transformer layers to 43 and the hidden dimension d to 4096. For the first two layers, we use pure sliding window attention. For the subsequent layers, CSA and HCA are used in an interleaved manner.",
+    "numbers": [
+      "43 layers",
+      "d=4096",
+      "256 routed experts",
+      "6 activated",
+      "expert intermediate 2048",
+      "SWA window 128"
+    ],
+    "entities": [
+      "DeepSeek-V4-Flash",
+      "CSA",
+      "HCA",
+      "MoE"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-v4"
+  },
+  {
+    "claim": "V4 explicitly notes that relative to DeepSeek-V3.2 a smaller attention top-k is chosen in the V4 series to improve efficiency on short- and medium-length texts \u2014 i.e. the top-k budget was tuned down for shorter contexts, which is the opposite of assuming a 1M-tuned budget is right for 32k.",
+    "stance": "refutes",
+    "stance_target": "The repo's claim that the candidate-pool cap is 'tuned for 1M context' and therefore mismatched to 32k",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "Section 2.5 efficiency discussion",
+    "quoted_support": "Third, relative to DeepSeek-V3.2, a smaller attention top-k is chosen in DeepSeek-V4 series, thereby improving model efficiency on short- and medium-length texts.",
+    "numbers": [
+      "top-k 512 in V4-Flash vs 2048 in V3.2"
+    ],
+    "entities": [
+      "top-k",
+      "DeepSeek-V3.2",
+      "DeepSeek-V4"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-v4"
+  },
+  {
+    "claim": "V4's sparse-attention kernels are co-designed with the KV cache layout, padding blocks to align with hardware, and the visible range of compressed KV entries is precomputed by rules rather than discovered at runtime.",
+    "stance": "neutral",
+    "stance_target": "How much kernel/layout engineering a CSA reproduction needs",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Section on sparse attention kernel co-design",
+    "quoted_support": "Sparse Attention Kernel Co-Design. ... the KV cache layout and the sparse attention kernel. For instance, padding blocks to align with",
+    "numbers": [],
+    "entities": [
+      "sparse attention kernel",
+      "KV cache layout",
+      "block alignment"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "deepseek-v4"
+  },
+  {
+    "claim": "The V4 series uses Muon for the majority of parameters but AdamW for the embedding module, and FP4 quantization-aware training is applied during post-training to MoE expert weights and the indexer QK path.",
+    "stance": "neutral",
+    "stance_target": "The optimizer and quantization recipe for a CSA reproduction",
+    "evidence_type": "empirical",
+    "scope_conditions": "Section 4.2.2 and FP4 QAT section",
+    "quoted_support": "We employ the Muon optimizer for the majority of parameters, but use the AdamW optimizer for the embedding module ... during the post-training stage, we incorporate FP4 quantization-aware training for MoE expert weights and the indexer QK path to reduce memory and computation.",
+    "numbers": [
+      "FP4 QAT for MoE experts and indexer QK"
+    ],
+    "entities": [
+      "Muon",
+      "AdamW",
+      "FP4 QAT",
+      "indexer QK"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-v4"
+  },
+  {
+    "claim": "V4's compression techniques reduce the sequence length by factors of m (CSA) and m' (HCA) before sparse selection, so the indexer's quadratic cost is paid over compressed keys (S/m) rather than raw tokens \u2014 which is why V4-Flash's indexer score tensor is 4x smaller than CSA2's m=1 decoder indexer at the same context.",
+    "stance": "neutral",
+    "stance_target": "How compression ratio interacts with indexer memory cost",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Sections 2.3.1 and 2.3.2; CSA m=4, HCA m'=128",
+    "quoted_support": "The compression techniques employed in CSA and HCA reduce the sequence length by factors",
+    "numbers": [
+      "m=4",
+      "m'=128"
+    ],
+    "entities": [
+      "CSA",
+      "HCA",
+      "compression ratio",
+      "indexer"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "deepseek-v4"
+  }
+]

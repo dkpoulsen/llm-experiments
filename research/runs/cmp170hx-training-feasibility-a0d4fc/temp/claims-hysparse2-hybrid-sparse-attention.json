@@ -1,0 +1,201 @@
+[
+  {
+    "claim": "HySparse2 pretrains 80B-A3B MoE models on approximately 500B tokens at a 32k context length, then extends to 256k with a light post-training stage of ~100B tokens \u2014 a direct precedent that sparse attention trained at 32k is a working recipe, not an exotic one.",
+    "stance": "refutes",
+    "stance_target": "The repo's implication that CSA2 at 32k is untested territory where sparse attention is likely to disappoint",
+    "evidence_type": "empirical",
+    "scope_conditions": "80B-A3B MoE; three architectures compared under identical data mixture and schedule",
+    "quoted_support": "We pretrain the 80B-A3B models on approximately 500B tokens at a context length of 32k. A light post-training stage adds approximately 100B tokens, introduces agentic data into the training mixture, and extends the context length to 256k.",
+    "numbers": [
+      "500B tokens at 32k",
+      "100B tokens post-training",
+      "256k extension",
+      "80B-A3B"
+    ],
+    "entities": [
+      "HySparse2",
+      "32k training",
+      "80B-A3B",
+      "MoE"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "hysparse2-hybrid-sparse-attention"
+  },
+  {
+    "claim": "The sparse selection budget is 128 forced local tokens plus 1,024 global tokens, so at 32k the global budget is 3.1% of context and at 1M it is 0.1% \u2014 the sparsity ratio, and therefore the potential core-attention FLOP win, is far smaller at 32k than at 1M.",
+    "stance": "supports",
+    "stance_target": "The repo's claim that the sparse-attention win is smaller at 32k than at 1M",
+    "evidence_type": "empirical",
+    "scope_conditions": "HySparse2 token-level selection; 128 forced local + 1,024 global tokens",
+    "quoted_support": "HySparse2 uses token-level selection with 128 forced local tokens and 1,024 global tokens.",
+    "numbers": [
+      "128 local tokens",
+      "1,024 global tokens",
+      "3.1% of 32k",
+      "0.1% of 1M"
+    ],
+    "entities": [
+      "HySparse2",
+      "top-k budget",
+      "sparsity ratio"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "hysparse2-hybrid-sparse-attention"
+  },
+  {
+    "claim": "At 1M tokens HySparse2 reduces prefill FLOPs by 2.92x relative to HySparse and 5.02x relative to Hybrid SWA, with KV cache of 2.69 GB versus 6.72 GB and 12.09 GB under FP8 KV storage.",
+    "stance": "supports",
+    "stance_target": "The magnitude of cross-layer KV sharing's benefit at long context",
+    "evidence_type": "empirical",
+    "scope_conditions": "80B-A3B models, 1k-1M context sweep, FP8 KV cache",
+    "quoted_support": "At 1M tokens, HySparse2 reduces prefill FLOPs by 2.92x relative to HySparse and 5.02x relative to Hybrid SWA. The KV cache of HySparse2 occupies only 2.69 GB, compared with 6.72 GB for HySparse and 12.09 GB for Hybrid SWA.",
+    "numbers": [
+      "2.92x prefill FLOP reduction",
+      "5.02x vs Hybrid SWA",
+      "2.69 GB KV cache",
+      "6.72 GB HySparse",
+      "12.09 GB Hybrid SWA"
+    ],
+    "entities": [
+      "HySparse2",
+      "HySparse",
+      "Hybrid SWA",
+      "prefill FLOPs",
+      "KV cache"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "hysparse2-hybrid-sparse-attention"
+  },
+  {
+    "claim": "KV Bridging lets prefill exit after the self-decoder and skip all cross-decoder layers entirely, because cross-decoder KV caches are projected from self-decoder hidden states \u2014 a structural saving that a plain sparse-attention swap does not get.",
+    "stance": "supports",
+    "stance_target": "The claim that cross-layer KV sharing reduces prefill compute, not just storage",
+    "evidence_type": "theoretical",
+    "scope_conditions": "YOCO-style self-decoder/cross-decoder; KV Bridging on full-attention layers only",
+    "quoted_support": "This two-level KV sharing allows all cross-decoder KV caches to be constructed from self-decoder hidden states. Prefill can therefore exit after the self-decoder, skipping all cross-decoder layers.",
+    "numbers": [],
+    "entities": [
+      "KV Bridging",
+      "YOCO",
+      "self-decoder",
+      "cross-decoder",
+      "prefill"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "hysparse2-hybrid-sparse-attention"
+  },
+  {
+    "claim": "Replacing block-level sparsity with token-level sparsity improves long-context retrieval at the same attention budget, and removing the separate SWA branch in favour of forcing recent tokens into the sparse selection eliminates substantial parameter overhead from separate projections.",
+    "stance": "supports",
+    "stance_target": "Whether token-level selection is worth its hardware cost versus block-level selection",
+    "evidence_type": "empirical",
+    "scope_conditions": "Ablation 1: token-level versus block-level sparsity; HySparse selects 1,024 global tokens in 64-token blocks",
+    "quoted_support": "Ablations show that token-level selection improves retrieval at the same attention budget and that KV Bridging preserves broadly comparable quality.",
+    "numbers": [
+      "1,024 global tokens",
+      "64-token blocks (HySparse)",
+      "128-token SWA window"
+    ],
+    "entities": [
+      "token-level sparsity",
+      "block-level sparsity",
+      "KV Reuse",
+      "HySparse"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "hysparse2-hybrid-sparse-attention"
+  },
+  {
+    "claim": "After pretraining at 32k, HySparse2 retains broadly comparable general capabilities to full-attention baselines and improves long-context retrieval; after light post-training it beats HySparse by 11.30 points on mean MRCR-v2 and 19.81 points on RULER-v2.",
+    "stance": "supports",
+    "stance_target": "Whether sparse attention trained at 32k preserves quality",
+    "evidence_type": "empirical",
+    "scope_conditions": "80B-A3B; MRCR-v2 and RULER-v2 long-context benchmarks; AgentPPL and LongPPL up to 256k",
+    "quoted_support": "After pretraining, HySparse2 retains broadly comparable general capabilities and improves long-context retrieval. After light post-training, it improves mean MRCR-v2 and RULER-v2 scores over HySparse by 11.30 and 19.81 percentage points, respectively",
+    "numbers": [
+      "+11.30 MRCR-v2",
+      "+19.81 RULER-v2",
+      "up to 256k evaluation"
+    ],
+    "entities": [
+      "HySparse2",
+      "MRCR-v2",
+      "RULER-v2",
+      "AgentPPL"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "hysparse2-hybrid-sparse-attention"
+  },
+  {
+    "claim": "The training recipe uses Muon with a WSD schedule and peak learning rates of 1e-3 for pretraining and 5e-5 for post-training, with all compared architectures sharing the same data mixture and schedule.",
+    "stance": "neutral",
+    "stance_target": "Reference hyperparameters for a 32k sparse-attention pretraining run",
+    "evidence_type": "empirical",
+    "scope_conditions": "80B-A3B pretraining and post-training",
+    "quoted_support": "We use the Muon optimizer (Jordan et al., 2024) with a WSD schedule and peak learning rates of 10^-3 for pretraining and 5 x 10^-5 for post-training.",
+    "numbers": [
+      "Muon",
+      "WSD schedule",
+      "LR 1e-3 pretrain",
+      "LR 5e-5 post-train"
+    ],
+    "entities": [
+      "Muon",
+      "WSD",
+      "HySparse2"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "hysparse2-hybrid-sparse-attention"
+  },
+  {
+    "claim": "The separate SWA branch in a cross-decoder creates a cascading dependency: it requires building a KV suffix from its own hidden states that grows linearly with depth, forcing the cross-decoder to process a token suffix far longer than the window size, which is why removing the branch enables the early exit.",
+    "stance": "supports",
+    "stance_target": "The hidden cost of keeping a separate SWA branch alongside sparse attention",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Section 3 architecture rationale",
+    "quoted_support": "A separate SWA branch in the cross-decoder requires building a suffix of KV cache from projections of its own hidden states, which further depends on an expanding set of hidden states in earlier layers and grows linearly with depth. This cascading SWA dependency therefore requires the cross-decoder to process a token suffix far longer than the window size.",
+    "numbers": [],
+    "entities": [
+      "SWA branch",
+      "cross-decoder",
+      "KV suffix",
+      "bounded replay"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "hysparse2-hybrid-sparse-attention"
+  },
+  {
+    "claim": "HySparse2's KV cache is built from self-decoder hidden states through layer-specific projections, so each cross-decoder layer still applies its own K/V projections and retains an independent Q projection \u2014 the sharing is of inputs, not of weights.",
+    "stance": "neutral",
+    "stance_target": "How much parameter sharing cross-layer KV reuse actually implies",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Section 3 architecture; KV Bridging",
+    "quoted_support": "Each cross-decoder full-attention layer applies its own K/V projections to the input hidden states of a corresponding self-decoder full-attention layer. ... Each layer also retains an independent Q projection",
+    "numbers": [],
+    "entities": [
+      "KV Bridging",
+      "K/V projections",
+      "Q projection"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "hysparse2-hybrid-sparse-attention"
+  }
+]

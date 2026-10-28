@@ -1,0 +1,68 @@
+[
+  {
+    "claim": "Llama-3-8B trained at 64K context with FSDP on 8 H100s measures 2,770 tok/s/GPU for full attention, which implies 418 TFLOPS/GPU = 42% MFU - consistent with the FLOPs model at long context.",
+    "stance": "supports",
+    "stance_target": "the claim that long-context MFU on H100 is in the 40% range, not collapsing",
+    "evidence_type": "empirical",
+    "scope_conditions": "Llama-3-8B base, 64K sequence length, 5B tokens, 8xH100 with FSDP, no sequence parallelism",
+    "quoted_support": "Table 15: Throughput per device of our ablation runs from Table 20, when training with 8 Nvidia H100 GPUs with FSDP ... 64K full attention 2770",
+    "numbers": [
+      "2,770 tok/s/GPU",
+      "64K context",
+      "8xH100",
+      "~418 TFLOPS/GPU",
+      "42% MFU"
+    ],
+    "entities": [
+      "Llama-3-8B",
+      "H100",
+      "FSDP"
+    ],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "how-to-train-long-context-language-models-effectively"
+  },
+  {
+    "claim": "Variable-length attention alone gives only +0.4% throughput under FSDP; reordering minibatches by the sum of squared document lengths raises it to +11.7%, because GPUs with short sequences otherwise wait on GPUs with long ones.",
+    "stance": "neutral",
+    "stance_target": "how much of long-context throughput is batching/load-balance rather than FLOPs",
+    "evidence_type": "empirical",
+    "scope_conditions": "8xH100 FSDP, 64K, Llama-3-8B, document masking",
+    "quoted_support": "64K full attention 2770 ; Variable-length attention 2780(+0.4%) ; + Minibatch reordering 3095(+11.7%)",
+    "numbers": [
+      "+0.4% variable-length attention",
+      "+11.7% minibatch reordering"
+    ],
+    "entities": [
+      "FlashAttention 2",
+      "FSDP",
+      "document masking"
+    ],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "how-to-train-long-context-language-models-effectively"
+  },
+  {
+    "claim": "The full ProLong run costs 2.2K H100 hours for 20B tokens at stage 1 and 12.2K H100 hours for 20B tokens at stage 2, i.e. long-context training at 8B scale is measured in thousands of GPU-hours per 20B tokens.",
+    "stance": "neutral",
+    "stance_target": "the wall-clock scale of long-context training at 8B",
+    "evidence_type": "empirical",
+    "scope_conditions": "Llama-3-8B, 64K then 512K context, 40B tokens total",
+    "quoted_support": "Stage 1: 20B tokens (2.2K H100 hours), Stage 2: 20B tokens (12.2K H100 hours)",
+    "numbers": [
+      "2.2K H100 hours",
+      "12.2K H100 hours",
+      "20B tokens each stage"
+    ],
+    "entities": [
+      "ProLong",
+      "H100"
+    ],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "how-to-train-long-context-language-models-effectively"
+  }
+]

@@ -1,0 +1,16 @@
+{
+  "ok": true,
+  "data": {
+    "note_id": "native-sparse-attention-hardware-aligned-and-natively",
+    "title": "Native Sparse Attention: Hardware-Aligned and Natively",
+    "url": "https://arxiv.org/abs/2502.11089",
+    "domain": "arxiv.org",
+    "provider": "crawl4ai",
+    "path": "research/notes/native-sparse-attention-hardware-aligned-and-natively.md",
+    "word_count": 9311,
+    "assets": [],
+    "raw_file": "raw/native-sparse-attention-hardware-aligned-and-natively.pdf"
+  },
+  "vault": "/home/dkp/.thinkrail/worktrees/llm-experiments/workspace-1",
+  "timestamp": "2026-10-27T10:41:52.702195+00:00"
+}

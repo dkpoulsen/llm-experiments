@@ -1,0 +1,272 @@
+[
+  {
+    "claim": "NCCL falls back to host memory (SHM) when peer-to-peer cannot happen, which is the documented mechanism behind host-staged collectives on a no-P2P box.",
+    "stance": "supports",
+    "stance_target": "a no-P2P box stages every collective through host RAM",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "NCCL SHM transport",
+    "quoted_support": "The NCCL_SHM_DISABLE variable disables the Shared Memory (SHM) transports. SHM is used between devices when peer-to-peer cannot happen, therefore, host memory is used.",
+    "numbers": [],
+    "entities": [
+      "NCCL",
+      "SHM",
+      "P2P",
+      "host memory"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "NCCL_P2P_DISABLE disables the peer-to-peer transport, which uses CUDA direct access between GPUs over NVLink or PCI.",
+    "stance": "neutral",
+    "stance_target": "how to force NCCL off the P2P path",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "NCCL P2P transport",
+    "quoted_support": "The NCCL_P2P_DISABLE variable disables the peer to peer (P2P) transport, which uses CUDA direct access between GPUs, using NVLink or PCI.",
+    "numbers": [],
+    "entities": [
+      "NCCL",
+      "NCCL_P2P_DISABLE",
+      "P2P"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "NCCL_P2P_LEVEL sets the maximum topological distance for P2P, with levels LOC (never), NVL (NVLink), PIX (same PCI switch), PXB (through PCI switches), PHB (same NUMA node, through the CPU) and SYS (across NUMA nodes).",
+    "stance": "neutral",
+    "stance_target": "how to bound P2P to a specific topology class",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "NCCL topology-aware P2P",
+    "quoted_support": "LOC : Never use P2P (always disabled) / NVL : Use P2P when GPUs are connected through NVLink / PIX : Use P2P when GPUs are on the same PCI switch. / PXB : Use P2P when GPUs are connected through PCI switches (potentially multiple hops). / PHB : Use P2P when GPUs are on the same NUMA node. Traffic will go through the CPU. / SYS : Use P2P between NUMA nodes, potentially crossing the SMP interconnect (e.g. QPI/UPI).",
+    "numbers": [
+      "LOC",
+      "NVL",
+      "PIX",
+      "PXB",
+      "PHB",
+      "SYS"
+    ],
+    "entities": [
+      "NCCL",
+      "NCCL_P2P_LEVEL",
+      "PCI",
+      "NVLink",
+      "NUMA"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "NCCL_ALGO accepts Ring, Tree, Collnet, CollnetChain, CollnetDirect, NVLS, NVLSTree and PAT (2.23+), and its default is unset - NCCL chooses automatically from node topology and architecture.",
+    "stance": "supports",
+    "stance_target": "algorithm selection is topology-driven by default, not a fixed recipe",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "NCCL 2.32.3",
+    "quoted_support": "The default is unset, which causes NCCL to automatically choose the available algorithms based on the node topology and architecture.",
+    "numbers": [
+      "Ring",
+      "Tree",
+      "Collnet",
+      "CollnetChain",
+      "CollnetDirect",
+      "NVLS",
+      "NVLSTree",
+      "PAT"
+    ],
+    "entities": [
+      "NCCL",
+      "NCCL_ALGO"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "NCCL_PROTO accepts LL, LL128 and Simple, and NVIDIA explicitly discourages setting it: enabling LL128 on unsupported platforms can cause data corruption.",
+    "stance": "refutes",
+    "stance_target": "blindly copying NCCL_PROTO tuning recipes is safe",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "NCCL protocols",
+    "quoted_support": "Users are discouraged from setting this variable, with the exception of disabling a specific protocol in case a bug in NCCL is suspected. In particular, enabling LL128 on platforms that don't support it can lead to data corruption.",
+    "numbers": [
+      "LL",
+      "LL128",
+      "Simple"
+    ],
+    "entities": [
+      "NCCL",
+      "NCCL_PROTO",
+      "LL128"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "NCCL_ALGO supports per-function selection and caret-prefixed exclusion lists since 2.24, e.g. NCCL_ALGO=allreduce:^tree disables tree for allreduce only.",
+    "stance": "neutral",
+    "stance_target": "granularity of NCCL algorithm control",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "NCCL 2.24+",
+    "quoted_support": "NCCL_ALGO=allreduce:^tree will allow the default (all algorithms available) for all the functions except allreduce, which will have all algorithms available except tree.",
+    "numbers": [
+      "2.24",
+      "allreduce:^tree"
+    ],
+    "entities": [
+      "NCCL",
+      "NCCL_ALGO"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "If ring is excluded from NCCL_ALGO, NCCL will fail rather than implicitly falling back to ring.",
+    "stance": "neutral",
+    "stance_target": "failure mode of over-aggressive algorithm pinning",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "NCCL 2.24+",
+    "quoted_support": "if ring is not specified as a valid algorithm then it will not implicitly fall back to ring if there is no other valid algorithm for the function. Instead, it will fail.",
+    "numbers": [
+      "ring"
+    ],
+    "entities": [
+      "NCCL",
+      "NCCL_ALGO"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "NCCL_MIN_NCHANNELS / NCCL_MAX_NCHANNELS trade CUDA blocks for communication bandwidth - more channels means more CUDA blocks and more compute resources consumed.",
+    "stance": "supports",
+    "stance_target": "collective tuning competes with compute for GPU resources",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "NCCL channel configuration",
+    "quoted_support": "Increasing the number of channels also increases the number of CUDA blocks NCCL uses, which may be useful to improve performance; however, it uses more CUDA compute resources.",
+    "numbers": [],
+    "entities": [
+      "NCCL",
+      "NCCL_MIN_NCHANNELS",
+      "NCCL_MAX_NCHANNELS"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "NCCL_BUFFSIZE controls the buffer size used when communicating data between pairs of GPUs.",
+    "stance": "neutral",
+    "stance_target": "NCCL buffer tuning knob",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "NCCL",
+    "quoted_support": "The NCCL_BUFFSIZE variable controls the size of the buffer used by NCCL when communicating data between pairs of GPUs.",
+    "numbers": [],
+    "entities": [
+      "NCCL",
+      "NCCL_BUFFSIZE"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "NCCL_NVB_DISABLE disables intra-node communication through NVLink via an intermediate GPU.",
+    "stance": "neutral",
+    "stance_target": "NCCL's indirect-NVLink path and how to turn it off",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "NCCL 2.11+",
+    "quoted_support": "Disable intra-node communication through NVLink via an intermediate GPU.",
+    "numbers": [],
+    "entities": [
+      "NCCL",
+      "NCCL_NVB_DISABLE",
+      "NVLink"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "NCCL_NET_GDR_LEVEL controls GPU Direct RDMA behaviour, and the docs list it among the knobs to lower if NCCL errors or hangs.",
+    "stance": "neutral",
+    "stance_target": "NCCL RDMA tuning knob",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "NCCL, RDMA fabrics",
+    "quoted_support": "If erroring or hanging, NCCL may benefit from lower limits on NCCL_MAX_CTAS and NCCL_NET_GDR_LEVEL=LOC.",
+    "numbers": [],
+    "entities": [
+      "NCCL",
+      "NCCL_NET_GDR_LEVEL",
+      "GPUDirect RDMA"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "NVLS (NVLink SHARP) is incompatible with multiple ranks per GPU in the same communicator, and is silently disabled by default (NCCL_NVLS_ENABLE=2).",
+    "stance": "neutral",
+    "stance_target": "NVLS availability constraints",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "NCCL NVLS",
+    "quoted_support": "If NCCL_NVLS_ENABLE is set to 1, communicator initialization will fail when multiple ranks per GPU are detected. If NCCL_NVLS_ENABLE is set to 2 (the default), NVLS will be silently disabled.",
+    "numbers": [
+      "NCCL_NVLS_ENABLE"
+    ],
+    "entities": [
+      "NCCL",
+      "NVLS",
+      "NVLink SHARP"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "The NCCL docs do NOT contain the ClusterBid blog's recommendation to set NCCL_ALGO=Ring with NCCL_PROTO=LL for clusters over 256 GPUs - that is vendor-blog folklore, not documented guidance.",
+    "stance": "refutes",
+    "stance_target": "the ClusterBid NCCL tuning recipe is authoritative",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "NCCL 2.32.3 environment-variable reference",
+    "quoted_support": "Users are discouraged from setting this variable, with the exception of disabling a specific protocol in case a bug in NCCL is suspected.",
+    "numbers": [],
+    "entities": [
+      "NCCL",
+      "NCCL_ALGO",
+      "NCCL_PROTO",
+      "ClusterBid"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "NCCL_IB_TIMEOUT and NCCL_IB_RETRY_CNT multiply: the defaults (20 and 7) give roughly 30 seconds of waiting before a network error is raised.",
+    "stance": "neutral",
+    "stance_target": "NCCL RDMA failure-detection latency",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "NCCL, InfiniBand",
+    "quoted_support": "For example, the default values of NCCL_IB_TIMEOUT=20 and NCCL_IB_RETRY_CNT=7 result in approximately 30 seconds of waiting (7 retries, each lasting 4.3 seconds) before a network error is raised by NCCL.",
+    "numbers": [
+      "NCCL_IB_TIMEOUT=20",
+      "NCCL_IB_RETRY_CNT=7",
+      "30 seconds",
+      "4.3 seconds"
+    ],
+    "entities": [
+      "NCCL",
+      "NCCL_IB_TIMEOUT",
+      "NCCL_IB_RETRY_CNT"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  }
+]

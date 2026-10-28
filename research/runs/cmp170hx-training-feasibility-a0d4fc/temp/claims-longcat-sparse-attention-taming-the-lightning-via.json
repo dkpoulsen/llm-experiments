@@ -1,0 +1,352 @@
+[
+  {
+    "claim": "At a 32K training sequence length, sparse attention of the DSA/LSA lineage is a net loss versus dense MLA: 1.08x forward, 0.79x backward, 0.83x total per attention layer, with the crossover to a win only at 64K.",
+    "stance": "supports",
+    "stance_target": "The repo's verdict that CSA2 at 32k is 'the axis most likely to disappoint'",
+    "evidence_type": "empirical",
+    "scope_conditions": "Per-layer training latency microbenchmark, fixed sequence lengths, on the authors' AI accelerators; context-parallel degrees 4/8/16/32/128 at 32K/64K/128K/256K/1024K",
+    "quoted_support": "At short sequence lengths (< 64K), dense MLA runs faster because LSA incurs indexing overheads (yielding a net latency of 0.83x at 32K). However, beyond 64K, the quadratic scaling of dense MLA takes over - especially in the backward pass - allowing LSA to reverse the gap sharply, reaching up to a 7.73x speedup at 1024K.",
+    "numbers": [
+      "0.83x total at 32K",
+      "1.08x forward at 32K",
+      "0.79x backward at 32K",
+      "1.39x at 64K",
+      "2.21x at 128K",
+      "3.39x at 256K",
+      "7.73x at 1024K"
+    ],
+    "entities": [
+      "LSA",
+      "dense MLA",
+      "DSA",
+      "sparse attention",
+      "32K context"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "longcat-sparse-attention-taming-the-lightning-via"
+  },
+  {
+    "claim": "With variable-length sequence packing in a real data mixture, the practical training-efficiency crossover between sparse and dense attention moves from 64K to 128K \u2014 so at 32k the sparse path is further behind than the fixed-length microbenchmark suggests.",
+    "stance": "supports",
+    "stance_target": "The repo's claim that CSA2's 1M-context published wins do not transfer to 32k training",
+    "evidence_type": "empirical",
+    "scope_conditions": "Authors' actual data mixture with variable-length packing",
+    "quoted_support": "Note that these microbenchmarks are measured with fixed sequence lengths; when accounting for variable-length sequence packing in our actual data mixture, the practical efficiency crossover occurs at 128K.",
+    "numbers": [
+      "crossover at 128K with packing",
+      "crossover at 64K without packing"
+    ],
+    "entities": [
+      "sequence packing",
+      "crossover",
+      "LSA",
+      "dense MLA"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "longcat-sparse-attention-taming-the-lightning-via"
+  },
+  {
+    "claim": "The sparse-attention operator is severely memory-bound, achieving only about 4.5% of peak HBM bandwidth (~1/22) because each selected token is fetched by an independent gather of a 1,152 B BF16 latent KV vector spanning only 3 cachelines, giving ~6% memory-level parallelism and ~75% cacheline packing efficiency.",
+    "stance": "supports",
+    "stance_target": "The claim that sparse attention's theoretical FLOP savings do not translate into proportional wall-clock savings",
+    "evidence_type": "empirical",
+    "scope_conditions": "Operator-level profiling of the SFA sparse-attention kernel; BF16 latent KV of 1,152 B per token",
+    "quoted_support": "each selected token is fetched via an independent gather of a single latent KV vector (1,152 B in BF16), which spans only 3 cachelines. Consequently, two inefficiencies compound: first, this gather occupies merely 3 of the ~50 outstanding memory slots (yielding ~6% memory-level parallelism); second, even within these 3 cachelines, data packing efficiency is only ~75%. The resulting net effective bandwidth thus plummets to a mere ~4.5% (~1/22) of peak performance.",
+    "numbers": [
+      "4.5% of peak HBM bandwidth",
+      "~1/22",
+      "1,152 B per BF16 latent KV vector",
+      "3 cachelines",
+      "~6% memory-level parallelism",
+      "~75% packing efficiency"
+    ],
+    "entities": [
+      "sparse attention operator",
+      "HBM bandwidth",
+      "gather",
+      "latent KV"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "longcat-sparse-attention-taming-the-lightning-via"
+  },
+  {
+    "claim": "The sparse-attention backward pass is worse than the forward pass: gradient accumulation allocates a full-sequence-length HBM buffer and executes scatter_add over the selected sparse index set, and cores selecting overlapping indices serialize writes to shared cachelines; the indexer backward suffers the same cross-core serialization across all L scored positions.",
+    "stance": "supports",
+    "stance_target": "The claim that sparse attention's training cost is dominated by the backward pass, not the forward pass",
+    "evidence_type": "empirical",
+    "scope_conditions": "SFA backward pass profiling; applies to training, not inference",
+    "quoted_support": "this output discontiguity inflicts a more severe performance penalty during training. In the backward pass, gradient updates rely on scatter_add operations over the identical non-contiguous token indices. Due to the scattered nature and input-dependent selection of these indices, independent computing cores frequently attempt to write to overlapping KV gradient regions in HBM.",
+    "numbers": [],
+    "entities": [
+      "scatter_add",
+      "backward pass",
+      "gradient accumulation",
+      "write conflicts"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "longcat-sparse-attention-taming-the-lightning-via"
+  },
+  {
+    "claim": "Measured core-attention training latency at qlen=8192, K=2048, BF16 shows the backward pass costs roughly 10x the forward pass: SFA 23.64 ms forward and 238.60 ms backward at 32K KV length, versus HFA 19.70 ms and 137.77 ms.",
+    "stance": "supports",
+    "stance_target": "Any training-step cost model that treats attention forward and backward as comparable",
+    "evidence_type": "empirical",
+    "scope_conditions": "Table 2, batch_size=1, qlen=8192, BF16, K=2048, Ksparse=1024/Kswa=1024 for HFA",
+    "quoted_support": "Table 2: Core attention latency (ms) under a representative training setting. Measurements use batch_size = 1, qlen = 8192, BF16, and K = 2048. ... bwd SFA 165.99 215.42 238.60 ... HFA 113.86 135.16 137.77",
+    "numbers": [
+      "SFA fwd 23.64 ms at 32K",
+      "SFA bwd 238.60 ms at 32K",
+      "HFA fwd 19.70 ms at 32K",
+      "HFA bwd 137.77 ms at 32K",
+      "bwd/fwd ratio ~10x",
+      "1.91x fwd speedup",
+      "1.73x bwd speedup"
+    ],
+    "entities": [
+      "SFA",
+      "HFA",
+      "core attention latency",
+      "training"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "longcat-sparse-attention-taming-the-lightning-via"
+  },
+  {
+    "claim": "The indexer accounts for up to 90% of per-layer latency at a 1024K context length, and its latency grows 27x (0.034 ms to 0.930 ms) while sparse-attention latency stays nearly constant at ~0.10 ms.",
+    "stance": "supports",
+    "stance_target": "The claim that at long context the indexer, not the sparse attention operator, is the bottleneck",
+    "evidence_type": "empirical",
+    "scope_conditions": "Per-layer latency breakdown vs context length; Lightning Indexer (LI) vs SFA",
+    "quoted_support": "as the context grows, accounting for up to 90% of the per-layer latency at a 1024K context length. ... SFA latency remains nearly constant at ~0.10 ms, whereas LI latency increases by 27x, from 0.034 ms to 0.930 ms.",
+    "numbers": [
+      "up to 90% of per-layer latency at 1024K",
+      "27x indexer latency growth",
+      "0.034 ms -> 0.930 ms",
+      "SFA ~0.10 ms constant"
+    ],
+    "entities": [
+      "Lightning Indexer",
+      "SFA",
+      "per-layer latency"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "longcat-sparse-attention-taming-the-lightning-via"
+  },
+  {
+    "claim": "Adjacent transformer layers share 57.4% of their Top-K budget on average, and reusing an adjacent layer's index set still captures 93.2% of the target layer's attention mass \u2014 the empirical basis for cross-layer index reuse.",
+    "stance": "supports",
+    "stance_target": "CSA2's Reuse mode and IndexCache-style cross-layer index sharing",
+    "evidence_type": "empirical",
+    "scope_conditions": "Full-attention LongCat-Flash-Lite (69B-A3B); per-layer Top-K overlap analysis",
+    "quoted_support": "Adjacent layers share 57.4% of their Top-K budget on average. Despite this partial overlap, reusing an adjacent layer's index set still captures 93.2% of the target layer's attention mass.",
+    "numbers": [
+      "57.4% Top-K budget overlap",
+      "93.2% attention mass retained"
+    ],
+    "entities": [
+      "cross-layer index reuse",
+      "Top-K",
+      "LongCat-Flash-Lite",
+      "69B-A3B"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "longcat-sparse-attention-taming-the-lightning-via"
+  },
+  {
+    "claim": "Cross-layer index reuse without training adaptation degrades quality; the fix is a cross-layer distillation loss applied in both the dense warm-up and sparse training stages, supervising the shared indexer against the attention distribution of each layer it serves.",
+    "stance": "refutes",
+    "stance_target": "Any plan to bolt cross-layer index reuse onto a model without retraining",
+    "evidence_type": "empirical",
+    "scope_conditions": "Section 3.2; ablation in Section 5.3",
+    "quoted_support": "Enabling cross-layer indexer reuse with cross-layer distillation. ... reusing indices without training adaptation degrades performance (Section 5.3), because each indexer is originally trained to",
+    "numbers": [],
+    "entities": [
+      "cross-layer distillation",
+      "CLI",
+      "indexer",
+      "dense warm-up"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "longcat-sparse-attention-taming-the-lightning-via"
+  },
+  {
+    "claim": "The standard DSA-lineage training recipe is two-stage: a dense warm-up where the indexer is supervised against the full-sequence attention distribution, then sparse training where the distillation target is the attention distribution renormalized over the selected subset, with sink and SWA tokens deliberately included in the target because they carry substantial attention mass.",
+    "stance": "supports",
+    "stance_target": "The repo's claim that top-k selection is non-differentiable and the indexer needs a separate distillation loss",
+    "evidence_type": "empirical",
+    "scope_conditions": "Section 2.2 two-stage training; Eq. (4) distillation loss",
+    "quoted_support": "the dense warm-up stage requires no modification: the indexer is supervised against the full-sequence attention distribution (Eq. (4)). In the sparse training stage, the distillation target becomes the attention distribution renormalized over the selected subset St. ... during training we deliberately distill the indexer over the entire selected set, including the sink and SWA portions.",
+    "numbers": [
+      "two stages",
+      "Ksink=16",
+      "Kswa=1024"
+    ],
+    "entities": [
+      "DSA",
+      "indexer distillation",
+      "dense warm-up",
+      "sparse training"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "longcat-sparse-attention-taming-the-lightning-via"
+  },
+  {
+    "claim": "The fixed-to-sparse attention budget is split roughly 1:1 (Ksink=16, Kswa=1024, Ksparse=1024), so about 50% of selected tokens sit in contiguous memory regions \u2014 a deliberate hardware-alignment choice, not a quality-driven one.",
+    "stance": "neutral",
+    "stance_target": "How a sparse-attention budget should be split for hardware efficiency",
+    "evidence_type": "empirical",
+    "scope_conditions": "Section 3.1; ablation in Section 5.3",
+    "quoted_support": "We set sink size Ksink = 16 and sliding window size Kswa = 1024, yielding a fixed-to-sparse budget ratio of approximately 1:1 (determined by ablation, see Section 5.3), which makes roughly 50% of the selected tokens reside in contiguous memory regions.",
+    "numbers": [
+      "Ksink=16",
+      "Kswa=1024",
+      "Ksparse=1024",
+      "1:1 ratio",
+      "~50% contiguous"
+    ],
+    "entities": [
+      "sink tokens",
+      "sliding window",
+      "sparse budget",
+      "HFA"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "longcat-sparse-attention-taming-the-lightning-via"
+  },
+  {
+    "claim": "K=2048 at a 128K-token context achieves approximately 98.4% sparsity while maintaining near-lossless quality, and sink+SWA regions capture an average of 83.1% of attention mass across layers.",
+    "stance": "supports",
+    "stance_target": "The claim that a fixed 1-2k token attention budget is sufficient at long context",
+    "evidence_type": "empirical",
+    "scope_conditions": "Section 2.2; per-layer attention-mass analysis on the last 2048 queries",
+    "quoted_support": "With K = 2048 in a 128K-token context, this achieves approximately 98.4% sparsity while maintaining near-lossless",
+    "numbers": [
+      "K=2048",
+      "128K context",
+      "98.4% sparsity",
+      "83.1% sink+SWA attention mass"
+    ],
+    "entities": [
+      "top-k budget",
+      "sparsity",
+      "attention mass"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "longcat-sparse-attention-taming-the-lightning-via"
+  },
+  {
+    "claim": "Hierarchical Indexing is training-free and plug-and-play but is only enabled beyond a crossover point, because below it the extra scoring outweighs the benefit and produces a net slowdown of 0.79-0.82x.",
+    "stance": "neutral",
+    "stance_target": "Whether hierarchical candidate narrowing is free to enable at 32k",
+    "evidence_type": "empirical",
+    "scope_conditions": "Section 4.2.2 crossover analysis; HI enabled only beyond the crossover",
+    "quoted_support": "outweighs its benefits, resulting in a net slowdown of 0.79-0.82x. We therefore enable HI only beyond the crossover",
+    "numbers": [
+      "0.79-0.82x net slowdown below crossover",
+      "1.47x at crossover",
+      "2.56x",
+      "4.11x"
+    ],
+    "entities": [
+      "Hierarchical Indexing",
+      "HI",
+      "crossover"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "longcat-sparse-attention-taming-the-lightning-via"
+  },
+  {
+    "claim": "LSA supports native training with context lengths up to one million tokens and underpins LongCat-2.0 (1.6T-A48B), with scaling experiments spanning 69B-A3B to 560B-A27B models and an open-sourced LongCat-Flash-Lite-Sparse (69B-A3B).",
+    "stance": "supports",
+    "stance_target": "That sparse attention is trainable at production scale, not only at inference",
+    "evidence_type": "empirical",
+    "scope_conditions": "Production training runs at Meituan LongCat; 69B-A3B to 560B-A27B",
+    "quoted_support": "Extensive scaling experiments, ranging from 69B-A3B to 560B-A27B models, demonstrate that LSA consistently achieves performance on par with full attention across both general-purpose and long-context benchmarks. Moreover, LSA supports native training with context lengths of up to one million tokens and underpins the development of LongCat-2.0 (1.6T-A48B).",
+    "numbers": [
+      "69B-A3B",
+      "560B-A27B",
+      "1.6T-A48B",
+      "1M training context"
+    ],
+    "entities": [
+      "LongCat-2.0",
+      "LongCat-Flash-Lite-Sparse",
+      "LSA",
+      "Meituan"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "longcat-sparse-attention-taming-the-lightning-via"
+  },
+  {
+    "claim": "Full-layer speedups are much smaller than core-attention speedups once indexer overhead is included: core attention gains 1.56-1.69x in prefill and 1.11-1.26x in decode, but the full layer peaks at 1.49x prefill (4K) and 1.14x decode (8K) and decays to 1.02-1.04x at longer contexts.",
+    "stance": "supports",
+    "stance_target": "The claim that indexer overhead eats most of the sparse-attention kernel win",
+    "evidence_type": "empirical",
+    "scope_conditions": "Table 3 inference settings, BF16, K=2048, prefill qlen=2048, decode batch=4/qlen=1",
+    "quoted_support": "At the core-attention level, HFA achieves consistent speedups of 1.56-1.69x during prefill and 1.11-1.26x during decode. After including indexer overhead, however, the full-layer speedup becomes increasingly constrained by indexing cost, reaching a peak of 1.49x for prefill at 4K context and 1.14x for decode at 8K context, before gradually diminishing to 1.02-1.04x at longer contexts.",
+    "numbers": [
+      "1.56-1.69x prefill core attention",
+      "1.11-1.26x decode core attention",
+      "1.49x full-layer prefill at 4K",
+      "1.14x full-layer decode at 8K",
+      "1.02-1.04x at long context"
+    ],
+    "entities": [
+      "HFA",
+      "indexer overhead",
+      "prefill",
+      "decode"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "longcat-sparse-attention-taming-the-lightning-via"
+  },
+  {
+    "claim": "The sparse-attention budget is partitioned into a fixed sink (16 tokens), a sliding window (1024 tokens) and a dynamic sparse set (~1024 tokens), and the indexer's effective scoring range shrinks from L to L - Ksink - Kswa, modestly reducing indexer computation.",
+    "stance": "neutral",
+    "stance_target": "How much of the quadratic indexer cost a streaming partition removes",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Section 3.1 design choices",
+    "quoted_support": "the indexer's effective scoring range shrinks from L to L - Ksink - Kswa, modestly reducing computation",
+    "numbers": [
+      "L -> L - 1040 scoring range"
+    ],
+    "entities": [
+      "indexer",
+      "sink",
+      "sliding window",
+      "scoring range"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "longcat-sparse-attention-taming-the-lightning-via"
+  }
+]

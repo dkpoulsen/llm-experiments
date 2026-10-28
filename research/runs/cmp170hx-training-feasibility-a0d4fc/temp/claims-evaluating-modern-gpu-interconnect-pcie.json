@@ -1,0 +1,324 @@
+[
+  {
+    "claim": "Forming a NCCL ring among exactly 5 GPUs produces significant NUMA/congestion effects, and the authors explicitly recommend avoiding 5-GPU configurations.",
+    "stance": "refutes",
+    "stance_target": "a 5-GPU DDP ring is a neutral choice on a PCIe fabric",
+    "evidence_type": "empirical",
+    "scope_conditions": "NCCL ring over PCIe/NVLink on DGX-1/DGX-2 class nodes",
+    "quoted_support": "the NUMA effects appear quite signiﬁcant with 5 GPUs, implying that there may be a congestion when forming a NCCL ring among 5 GPUs. One should avoid adopting 5 GPUs in their application setup.",
+    "numbers": [
+      "5 GPUs"
+    ],
+    "entities": [
+      "NCCL",
+      "ring all-reduce",
+      "NUMA"
+    ],
+    "time_period": "2019",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "PCIe shows a novel 'anti-locality' NUMA effect: nearby GPU pairs can deliver LOWER bandwidth than remote pairs, and it appears only for bandwidth, not latency.",
+    "stance": "supports",
+    "stance_target": "PCIe GPU-to-GPU bandwidth is not uniform across slot pairs",
+    "evidence_type": "empirical",
+    "scope_conditions": "PCIe, DGX-1/DGX-2, bidirectional bandwidth",
+    "quoted_support": "The PCIe NUMA effect here is an interesting novel observation: it de-scribes a scenario that nearby access presenting lower performance than remote access. We label such a NUMA effect as \"anti-locality\".",
+    "numbers": [],
+    "entities": [
+      "PCIe",
+      "NUMA",
+      "anti-locality"
+    ],
+    "time_period": "2019",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "The PCIe anti-locality effect appears for messages larger than 64 KB in bidirectional bandwidth measurements.",
+    "stance": "supports",
+    "stance_target": "PCIe path asymmetry only bites at LLM-scale message sizes",
+    "evidence_type": "empirical",
+    "scope_conditions": "DGX-2, PCIe bidirectional bandwidth",
+    "quoted_support": "when message size is larger than 64KB, the PCIe anti-locality effect appears: PCIe-remote access delivers higher bidirection bandwidth than PCIe-neighbors (L1 & L2).",
+    "numbers": [
+      "64 KB"
+    ],
+    "entities": [
+      "PCIe",
+      "NUMA"
+    ],
+    "time_period": "2019",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "PCIe latency is essentially uniform across GPU pairs - same through one PCIe switch, across a local CPU socket, or across the QPI bridge - so PCIe has no NUMA effect in latency.",
+    "stance": "supports",
+    "stance_target": "PCIe latency is topology-insensitive while bandwidth is not",
+    "evidence_type": "empirical",
+    "scope_conditions": "P100/V100 DGX-1, PCIe P2P latency",
+    "quoted_support": "the communication latency for accessing different pairs of GPUs via PCIe are similar, implying that no NUMA effects appear in latency through PCIe.",
+    "numbers": [],
+    "entities": [
+      "PCIe",
+      "QPI",
+      "DGX-1"
+    ],
+    "time_period": "2019",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "NVLink latency is ~9 us for directly connected GPUs and rises ~2x (P100) or ~3x (V100) when a routing hop is required.",
+    "stance": "supports",
+    "stance_target": "NVLink latency depends on topology in a way PCIe latency does not",
+    "evidence_type": "empirical",
+    "scope_conditions": "P100-DGX-1 and V100-DGX-1, NVLink-V1/V2",
+    "quoted_support": "For nodes that are directly connected, the latency is around 9µs; for nodes that require manual routing, the latency is increased by about 2x for P100-DGX-1 and 3x for V100-DGX-1.",
+    "numbers": [
+      "9 us",
+      "2x",
+      "3x"
+    ],
+    "entities": [
+      "NVLink-V1",
+      "NVLink-V2",
+      "DGX-1"
+    ],
+    "time_period": "2019",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "On a 2-GPU NV-SLI system, latency is ~5 us local, ~8 us over NV-SLI, and ~13 us over PCIe.",
+    "stance": "supports",
+    "stance_target": "PCIe adds ~8 us of latency over a direct NV-SLI link for a 2-GPU pair",
+    "evidence_type": "empirical",
+    "scope_conditions": "2x RTX-2080 with NV-SLI",
+    "quoted_support": "there are three latency levels: local access which is about 5µs; NV-SLI access to the opposite GPU which is about 8µs; and PCIe access to the opposite GPU, which is about 13µs.",
+    "numbers": [
+      "5 us",
+      "8 us",
+      "13 us"
+    ],
+    "entities": [
+      "NV-SLI",
+      "PCIe",
+      "RTX-2080"
+    ],
+    "time_period": "2019",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "NCCL collective bandwidth saturates at ~16 MB on PCIe but ~256 MB on NVLink for 8 GPUs - an order-of-magnitude difference in the message size needed to reach peak.",
+    "stance": "supports",
+    "stance_target": "PCIe collectives reach peak bandwidth at far smaller messages than NVLink",
+    "evidence_type": "empirical",
+    "scope_conditions": "8 GPUs, NCCL-V1 (PCIe/QPI) vs NCCL-V2 (NVLink-V1/V2)",
+    "quoted_support": "for PCIe, CL-bandwidth saturates at about 224 = 16MB; whereas for NVLink, band-width saturates around 228 = 256MB.",
+    "numbers": [
+      "16 MB",
+      "256 MB",
+      "8 GPUs"
+    ],
+    "entities": [
+      "NCCL",
+      "PCIe",
+      "NVLink"
+    ],
+    "time_period": "2019",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "On a 2-GPU SLI system both PCIe and NV-SLI collective bandwidth saturate at ~1 MB.",
+    "stance": "neutral",
+    "stance_target": "message-size threshold for collective saturation on small GPU counts",
+    "evidence_type": "empirical",
+    "scope_conditions": "2x RTX-2080, NCCL",
+    "quoted_support": "Both PCIe and NV-SLI bandwidth start to saturate at about 220 = 1MB.",
+    "numbers": [
+      "1 MB",
+      "2 GPUs"
+    ],
+    "entities": [
+      "NCCL",
+      "PCIe",
+      "NV-SLI"
+    ],
+    "time_period": "2019",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "NVSwitch delivers 50 GB/s bidirectional per link, 300 GB/s via a single NVSwitch hop, and 2.4 TB/s baseboard-to-baseboard bisection on DGX-2.",
+    "stance": "neutral",
+    "stance_target": "reference NVSwitch bandwidth figures",
+    "evidence_type": "empirical",
+    "scope_conditions": "DGX-2, NVSwitch",
+    "quoted_support": "GPUs on the same baseboard at a full bandwidth of 50 GB/s × 6 switches =300 GB/s via a single NVSwitch hop",
+    "numbers": [
+      "50 GB/s",
+      "300 GB/s",
+      "2.4 TB/s",
+      "6 switches"
+    ],
+    "entities": [
+      "NVSwitch",
+      "DGX-2"
+    ],
+    "time_period": "2019",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "NVLink's advantage over PCIe is bandwidth, not latency.",
+    "stance": "supports",
+    "stance_target": "PCIe is competitive on latency but not on bandwidth",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "intra-node GPU interconnects",
+    "quoted_support": "choosing one interconnect over the others (e.g., NVLink shows strong advantage on bandwidth rather than latency over PCIe)",
+    "numbers": [],
+    "entities": [
+      "NVLink",
+      "PCIe"
+    ],
+    "time_period": "2019",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "A faster interconnect alone barely lifts application speedup unless the CPU-centric master-slave programming model is replaced or communication control moves to the GPU (e.g. NVSHMEM).",
+    "stance": "refutes",
+    "stance_target": "upgrading the fabric alone fixes multi-GPU scaling",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "general GPGPU applications on DGX-1",
+    "quoted_support": "without (i) replacing the underlying CPU-centric master-slave programming model by a more distributed parallelization model, or (ii) migrating the communication master role to a GPU (e.g., offloading GPU communication control from CPU to GPU via techniques such as NVSHMEM), optimized inter-GPU communication via faster intra-node GPU interconnect such as NVLinks can hardly become significant enough to lift the entire application's speedup.",
+    "numbers": [],
+    "entities": [
+      "NVLink",
+      "NVSHMEM",
+      "MPI",
+      "OpenMP"
+    ],
+    "time_period": "2019",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "Employing NVLink introduces its own overheads - enabling/disabling peer access, routing, and NCCL initialization.",
+    "stance": "neutral",
+    "stance_target": "hidden costs of P2P/NVLink paths",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "DGX-1 experiments",
+    "quoted_support": "employing NVLink (either P2P or CL) introduces additional overhead (e.g., enable/disable peer access, routing, NCCL initialization, etc).",
+    "numbers": [],
+    "entities": [
+      "NVLink",
+      "NCCL"
+    ],
+    "time_period": "2019",
+    "region": "",
+    "confidence": "medium"
+  },
+  {
+    "claim": "PCIe, NVLink-V1 and NVLink-V2 all show strong NUMA effects, while NVSwitch and NV-SLI show uniform memory access (UMA).",
+    "stance": "supports",
+    "stance_target": "PCIe-attached GPU pairs are not interchangeable performance-wise",
+    "evidence_type": "empirical",
+    "scope_conditions": "five intra-node interconnect types",
+    "quoted_support": "Among the ﬁve types of intra-node GPU interconnect techniques, PCIe, NVLink-V1 and V2 show strong NUMA effect in the tested platforms, due to various reasons including topology, position, connectivity, routing, sharing, chipset, etc. NVSwitch and NV-SLI show UMA.",
+    "numbers": [],
+    "entities": [
+      "PCIe",
+      "NVLink-V1",
+      "NVLink-V2",
+      "NVSwitch",
+      "NV-SLI"
+    ],
+    "time_period": "2019",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "All tested platforms mix more than one interconnect type, and those networks can work exclusively, concurrently or cooperatively - so interconnect heterogeneity must be handled explicitly.",
+    "stance": "neutral",
+    "stance_target": "complexity of tuning collectives on heterogeneous intra-node fabrics",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "DGX-1, DGX-2, Summit, SummitDev, SLI system",
+    "quoted_support": "All the tested platforms incorporate more than one type of interconnect network. These networks have their own characteristics and can work exclusively, concurrently, or cooperatively, depending on the system design.",
+    "numbers": [],
+    "entities": [
+      "PCIe",
+      "NVLink",
+      "NVSwitch",
+      "InfiniBand"
+    ],
+    "time_period": "2019",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "NCCL delivers better communication efficiency than MPI on all tested platforms, per the authors' evaluation.",
+    "stance": "supports",
+    "stance_target": "NCCL is the right collective library baseline for GPU training",
+    "evidence_type": "empirical",
+    "scope_conditions": "DGX-1, DGX-2, SummitDev",
+    "quoted_support": "integrating NCCL into MPI, as it is shown that NCCL delivers better communication efﬁciency than MPI on all-",
+    "numbers": [],
+    "entities": [
+      "NCCL",
+      "MPI"
+    ],
+    "time_period": "2019",
+    "region": "",
+    "confidence": "medium"
+  },
+  {
+    "claim": "The methodology is microbenchmark-based (p2pBandwidthLatencyTest, nccl-tests, MPI-GPU-BW) across six platforms, so the NUMA findings are measured rather than modelled.",
+    "stance": "neutral",
+    "stance_target": "evidentiary basis of the interconnect claims",
+    "evidence_type": "empirical",
+    "scope_conditions": "six platforms: P100-DGX-1, V100-DGX-1, DGX-2, SummitDev, Summit, 2x RTX-2080 SLI",
+    "quoted_support": "we ﬁll the gap by conducting a thorough evaluation on ﬁve latest types of modern GPU interconnects: PCIe, NVLink-V1, NVLink-V2, NVLink-SLI and NVSwitch, from six high-end servers and HPC platforms",
+    "numbers": [
+      "6 platforms"
+    ],
+    "entities": [
+      "PCIe",
+      "NVLink",
+      "NVSwitch",
+      "NV-SLI",
+      "GPUDirect"
+    ],
+    "time_period": "2019",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "Transferability caveat: the platforms are P100/V100/Turing-generation with PCIe Gen3 and NVLink-V1/V2, not GA100 with PCIe Gen2 x4, so the specific bandwidths differ - but the topology-dependent NUMA and 5-GPU-ring findings are structural.",
+    "stance": "neutral",
+    "stance_target": "applicability of the NUMA findings to a 5x CMP 170HX Gen2 x4 box",
+    "evidence_type": "theoretical",
+    "scope_conditions": "P100/V100/Turing vs GA100",
+    "quoted_support": "Table 1 lists the platforms we used",
+    "numbers": [
+      "P100",
+      "V100",
+      "Turing",
+      "GA100",
+      "Gen2 x4"
+    ],
+    "entities": [
+      "CMP 170HX",
+      "DGX-1",
+      "DGX-2"
+    ],
+    "time_period": "2019",
+    "region": "",
+    "confidence": "medium"
+  }
+]

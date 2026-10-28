@@ -1,0 +1,81 @@
+[
+  {
+    "claim": "PolyPythias releases 9 seeds across 5 Pythia sizes from 14M to 410M (~7k checkpoints), varying both parameter-initialisation seed and batch composition - the largest multi-seed small-LM suite available for a noise-floor estimate.",
+    "stance": "neutral",
+    "stance_target": "the availability of a measured multi-seed receipt at 410M",
+    "evidence_type": "empirical",
+    "scope_conditions": "Pythia suite, 14M/31M/70M/160M/410M, 9 new seeds per size",
+    "quoted_support": "we release 9 new training runs for 5 model sizes, from 14M up to 410M parameters. These new 45 ... We consider models with 14M, 31M, 70M, 160M, and 410M parameters. For each size, we release 9 additional training runs resulting in about 7k new checkpoints.",
+    "numbers": [
+      "9 seeds",
+      "5 sizes",
+      "14M-410M",
+      "~7k checkpoints"
+    ],
+    "entities": [
+      "Pythia",
+      "PolyPythias"
+    ],
+    "time_period": "2025",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "published-as-a-conference-paper-at-iclr-2025-2"
+  },
+  {
+    "claim": "Across 9 seeds x 5 sizes, only two model-seed combinations are outliers (410M seed 3 and seed 4), and those are exactly the runs with training loss spikes - so the tail risk at small scale is spike events, not a wide Gaussian seed-noise floor.",
+    "stance": "supports",
+    "stance_target": "the interpretation that ordinary seed variance at 410M is small and that outliers are a distinct spike phenomenon",
+    "evidence_type": "empirical",
+    "scope_conditions": "z-score of last-checkpoint accuracy and validation loss across seeds, 2-SD outlier region",
+    "quoted_support": "We (remarkably) find only two such combinations: 410M seed 3 and 4; only ... for these very seeds we observe 'loss spikes' (see Fig. 5 in App. A).",
+    "numbers": [
+      "2 outlier combinations out of 45",
+      "410M seeds 3 and 4"
+    ],
+    "entities": [
+      "Pythia-410M",
+      "loss spikes"
+    ],
+    "time_period": "2025",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "published-as-a-conference-paper-at-iclr-2025-2"
+  },
+  {
+    "claim": "Per-size accuracy is generally consistent across seeds, and inter-seed agreement (Cohen's kappa) peaks around kappa~0.7 at step 1e3 - i.e. seeds converge to similar behaviour rather than diverging into distinct basins.",
+    "stance": "supports",
+    "stance_target": "the claim that seed-to-seed variation at small scale is modest",
+    "evidence_type": "empirical",
+    "scope_conditions": "ARC-Easy and SciQ, median and interquartile range across seeds",
+    "quoted_support": "Inter-seed agreement peaks at kappa~0.7 around step 1e3 ... per-size accuracy is generally consistent across seeds, with two exceptions.",
+    "numbers": [
+      "kappa ~0.7",
+      "step 1e3"
+    ],
+    "entities": [
+      "Cohen's kappa",
+      "ARC",
+      "SciQ"
+    ],
+    "time_period": "2025",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "published-as-a-conference-paper-at-iclr-2025-2"
+  },
+  {
+    "claim": "The paper does not report a final-validation-loss standard deviation across seeds in the extracted text; its stability metrics are accuracy, inter-seed agreement and validation-loss z-scores, so it cannot by itself supply the numeric noise floor the pipeline needs.",
+    "stance": "neutral",
+    "stance_target": "whether PolyPythias alone can settle the 3.5%-floor question",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "extracted text of arXiv 2503.09543",
+    "quoted_support": "we define stability as the change in a metric of interest (e.g., validation loss) caused by ... changes in randomness factors and quantify it using the standard deviation of that metric",
+    "numbers": [],
+    "entities": [
+      "PolyPythias"
+    ],
+    "time_period": "2025",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "published-as-a-conference-paper-at-iclr-2025-2"
+  }
+]

@@ -1,0 +1,44 @@
+[
+  {
+    "claim": "Aggregate benchmark scores hide method-specific failures of KV-cache compression: under multi-instruction prompting, certain instructions degrade much faster with compression and end up completely ignored by the model, even when headline benchmarks look fine.",
+    "stance": "supports",
+    "stance_target": "the periodic-weak-spots claim that average accuracy conceals systematic failures of compressed attention, and the repo's assumption that CSA2's payoff cannot be judged on average loss",
+    "evidence_type": "empirical",
+    "scope_conditions": "Five inference-time KV compression methods (StreamingLLM, SnapKV, TOVA, H2O, K-Norm) on Llama3.1 8B and Qwen2.5 14B, multi-instruction prompting with IFEval",
+    "quoted_support": "Importantly, we show that certain instructions degrade much more rapidly with compression, effectively causing them to be completely ignored by the LLM.",
+    "numbers": ["5 compression methods", "Llama3.1 8B", "Qwen2.5 14B"],
+    "entities": ["StreamingLLM", "SnapKV", "TOVA", "H2O", "K-Norm", "IFEval"],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "the-pitfalls-of-kv-cache-compression-acl-anthology"
+  },
+  {
+    "claim": "System-prompt leakage under KV compression is attributable to three factors — compression method, instruction order and KV eviction bias — and simple changes to eviction policies reduce the effect.",
+    "stance": "neutral",
+    "stance_target": "what an evaluation protocol for compressed attention should control for",
+    "evidence_type": "empirical",
+    "scope_conditions": "Multi-instruction prompting with IFEval; system-prompt leakage case study",
+    "quoted_support": "We identify several factors that contribute to system prompt leakage: compression method, instruction order, and KV eviction bias. We then propose simple changes to KV cache eviction policies that can reduce the impact of these factors.",
+    "numbers": [],
+    "entities": ["system prompt leakage", "KV eviction bias", "instruction order"],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "the-pitfalls-of-kv-cache-compression-acl-anthology"
+  },
+  {
+    "claim": "The paper's scope is inference-time KV eviction (StreamingLLM, SnapKV, TOVA, H2O, K-Norm), not DeepSeek's chunked training-time CSA/CSA2, so it corroborates the evaluation principle rather than the specific phase-sensitivity mechanism.",
+    "stance": "neutral",
+    "stance_target": "the boundary of what this source can be cited for in the CSA2 part of the query",
+    "evidence_type": "anecdotal",
+    "scope_conditions": "ACL 2026 long paper; abstract-level scope statement; landing page only (~1.4k words)",
+    "quoted_support": "We evaluate five KV cache compression methods (StreamingLLM, SnapKV, TOVA, H2O, and K-Norm) on Llama3.1 8B and Qwen2.5 14B under multi-instruction prompting with IFEval.",
+    "numbers": [],
+    "entities": ["KV cache compression", "CSA2", "eviction policy"],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "the-pitfalls-of-kv-cache-compression-acl-anthology"
+  }
+]

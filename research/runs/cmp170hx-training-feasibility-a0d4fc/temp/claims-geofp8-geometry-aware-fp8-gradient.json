@@ -1,0 +1,277 @@
+[
+  {
+    "claim": "Euclidean (axis-aligned) FP8 gradient scaling degrades model quality because gradients are highly anisotropic, producing direction-dependent distortion.",
+    "stance": "supports",
+    "stance_target": "naive FP8 gradient communication is lossy in a quality-relevant way",
+    "evidence_type": "theoretical",
+    "scope_conditions": "LLM pretraining gradients, FP8 communication",
+    "quoted_support": "Existing methods quantize gradients via linear or nonlinear mappings in Euclidean space, often degrading model performance because highly anisotropic gradients incur direction-dependent distortion.",
+    "numbers": [],
+    "entities": [
+      "FP8",
+      "K-FAC",
+      "gradient anisotropy"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "Transforming gradients into a near-isotropic space before FP8 quantisation (block-diagonal K-FAC metric, rank-32 input-side low-rank approximation, selective application) reduces FP8-vs-FP32 gradient error by up to 67.4% over the Euclidean baseline.",
+    "stance": "supports",
+    "stance_target": "geometry-aware scaling improves low-precision gradient fidelity",
+    "evidence_type": "empirical",
+    "scope_conditions": "Llama-300M and Llama-600M pretraining on OpenWebText",
+    "quoted_support": "Our error analysis shows that GeoFP8 reduces the error, i.e., the difference between averaged gradients in FP8 and FP32, by up to 67.4% over the Euclidean baseline.",
+    "numbers": [
+      "67.4%",
+      "rank-32",
+      "K-FAC"
+    ],
+    "entities": [
+      "GeoFP8",
+      "K-FAC",
+      "Llama-300M",
+      "Llama-600M",
+      "OpenWebText"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "GeoFP8 cuts gradient communication volume by 75.0% relative to FP32, yielding a 7.6% end-to-end pretraining-time reduction for Llama-600M on 64 GH200 Superchips.",
+    "stance": "supports",
+    "stance_target": "FP8 gradient payload reduction converts into end-to-end training speedup",
+    "evidence_type": "empirical",
+    "scope_conditions": "64x NVIDIA GH200, Llama-600M, NVLink fabric",
+    "quoted_support": "Compared to gradients in FP32, GeoFP8 reduces the gradient communication volume by 75.0%, resulting in a 7.6% reduction in overall pretraining time across 64 GH200 superchips.",
+    "numbers": [
+      "75.0%",
+      "7.6%",
+      "64 GH200",
+      "Llama-600M"
+    ],
+    "entities": [
+      "GeoFP8",
+      "GH200",
+      "Llama-600M"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "Direct Euclidean FP8 at the same scale gives a 10.79% end-to-end reduction, so GeoFP8 deliberately trades about 3 points of speed for downstream-task preservation.",
+    "stance": "neutral",
+    "stance_target": "speed-vs-quality tradeoff in FP8 gradient communication",
+    "evidence_type": "empirical",
+    "scope_conditions": "64x GH200, Llama-600M",
+    "quoted_support": "At the same scale, direct Euclidean FP8 achieves a 10.79% reduction, showing that GeoFP8 trades part of the raw FP8 speedup for improved downstream preservation.",
+    "numbers": [
+      "10.79%",
+      "7.6%"
+    ],
+    "entities": [
+      "GeoFP8",
+      "FP8"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "BF16 gradient communication matches FP32 on only 7 of 14 downstream tasks, with slightly lower absolute values, which is why the authors kept FP32 as the high-precision reference.",
+    "stance": "refutes",
+    "stance_target": "BF16 gradient compression is quality-neutral",
+    "evidence_type": "empirical",
+    "scope_conditions": "Llama-600M, 14 downstream tasks",
+    "quoted_support": "BF16 gradient communication matches FP32 on 7 out of 14 downstream tasks, but its absolute task values are slightly lower overall, so we use FP32 as the high-precision reference.",
+    "numbers": [
+      "7 of 14"
+    ],
+    "entities": [
+      "BF16",
+      "FP32",
+      "GeoFP8"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "Per-block FP8 scaling (block size 512) matches FP32 on only 4 of 14 downstream tasks - worse than layer-wise scaling - so the baseline choice materially changes the measured benefit.",
+    "stance": "neutral",
+    "stance_target": "baseline selection in FP8 gradient compression studies",
+    "evidence_type": "empirical",
+    "scope_conditions": "Llama-600M, 14 downstream tasks",
+    "quoted_support": "For Euclidean FP8, standard per-block scaling with block size 512 matches FP32 on only 4 out of 14 downstream tasks, which is worse than the layer-wise Euclidean baseline; therefore, we use the stronger layer-wise Euclidean FP8 baseline in the main comparison.",
+    "numbers": [
+      "4 of 14",
+      "block size 512"
+    ],
+    "entities": [
+      "FP8",
+      "GeoFP8"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "The end-to-end speedup is much smaller than the payload reduction because step time also includes forward/backward compute, optimizer updates, quantise/dequantise, geometry transforms, synchronisation and non-gradient communication.",
+    "stance": "neutral",
+    "stance_target": "why 75% payload reduction yields only 7.6% end-to-end gain",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "GH200 NVLink cluster",
+    "quoted_support": "The 75.0% reduction refers to gradient payload size, while the end-to-end speedup is smaller because total pretraining time also includes forward and backward computation, optimizer updates, quantization and dequantization, geometry transforms, synchronization overheads, and non-gradient communication.",
+    "numbers": [
+      "75.0%",
+      "7.6%"
+    ],
+    "entities": [
+      "GeoFP8"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "The 7.6% end-to-end figure is measured on an NVLink-coupled GH200 fabric where communication is a minority of step time; on a ~1 GB/s PCIe fabric the same payload cut would occupy a far larger fraction of step time.",
+    "stance": "neutral",
+    "stance_target": "transferability of GeoFP8's end-to-end gain to a slow PCIe fabric",
+    "evidence_type": "theoretical",
+    "scope_conditions": "GH200 NVLink vs CMP 170HX Gen2 x4",
+    "quoted_support": "All experiments are conducted on the Vista supercomputer at the Texas Advanced Computing Center (TACC). Vista includes 600 Grace Hopper compute nodes based on the NVIDIA GH200 Grace Hopper Superchip architecture",
+    "numbers": [
+      "96 GB HBM3",
+      "600 nodes",
+      "0.75 GiB/s"
+    ],
+    "entities": [
+      "GeoFP8",
+      "GH200",
+      "Vista",
+      "TACC",
+      "CMP 170HX"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "medium"
+  },
+  {
+    "claim": "GeoFP8 does not change the optimizer, training recipe, collective, or low-precision format - only the coordinate system used for low-precision gradient communication.",
+    "stance": "neutral",
+    "stance_target": "invasiveness of the GeoFP8 change",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Megatron-LM pretraining",
+    "quoted_support": "GeoFP8 only changes the coordinate system used for low-precision gradient communication and does not change the optimizer, training recipe, communication collective, or low-precision format.",
+    "numbers": [],
+    "entities": [
+      "GeoFP8",
+      "Megatron-LM"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "The geometry transform is claimed to be mostly independent of the low-precision format, so the same principle should extend to FP4 communication.",
+    "stance": "supports",
+    "stance_target": "format-agnostic communication compression",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "FP8 today, FP4 in future",
+    "quoted_support": "Although our experiments are on FP8, the geometry-transform overhead is mostly independent of the low-precision communication format, so the same principle can be applied to future FP4 communication when software and hardware support mature.",
+    "numbers": [
+      "FP8",
+      "FP4"
+    ],
+    "entities": [
+      "GeoFP8"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "medium"
+  },
+  {
+    "claim": "FP8 is not natively supported on GA100/sm_80, so an FP8 gradient path on a CMP 170HX would require emulation whose cost is not measured in this paper.",
+    "stance": "refutes",
+    "stance_target": "GeoFP8's measured speedups transfer directly to Ampere-generation mining cards",
+    "evidence_type": "theoretical",
+    "scope_conditions": "GH200 (sm_90) vs GA100 (sm_80)",
+    "quoted_support": "we examine the empirical convergence of GeoFP8 using Llama-300M and Llama-600M models",
+    "numbers": [
+      "sm_80",
+      "sm_90",
+      "GA100"
+    ],
+    "entities": [
+      "GeoFP8",
+      "CMP 170HX",
+      "GA100",
+      "GH200"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "medium"
+  },
+  {
+    "claim": "The authors argue even a 7.6% time reduction is material at frontier scale because pretraining runs for months on tens of thousands of GPUs.",
+    "stance": "supports",
+    "stance_target": "small percentage communication savings matter at scale",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "frontier-scale pretraining",
+    "quoted_support": "The 7.6% overall time reduction may be considered marginal. However, modern LLMs are pretrained with tens of thousands of GPUs over several months. Even a 7.6% reduction in time can translate to millions of dollars.",
+    "numbers": [
+      "7.6%"
+    ],
+    "entities": [
+      "GeoFP8"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "medium"
+  },
+  {
+    "claim": "The paper's motivating statistic is that communication accounts for 40% of overall pretraining time for GPT-8.3B across 128 A100 GPUs.",
+    "stance": "supports",
+    "stance_target": "gradient communication is a first-order cost in large-scale pretraining",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "GPT-8.3B, 128x A100",
+    "quoted_support": "Previous work reports that communication accounts for 40% of the overall pretraining time for GPT-8.3B pretraining across 128 NVIDIA A100 GPUs [3].",
+    "numbers": [
+      "40%",
+      "GPT-8.3B",
+      "128 A100"
+    ],
+    "entities": [
+      "GPT-8.3B",
+      "A100"
+    ],
+    "time_period": "",
+    "region": "",
+    "confidence": "medium"
+  },
+  {
+    "claim": "The experimental recipe is 32 GPUs, global batch 512, micro-batch 4, Muon optimizer, lr 5e-4 cosine to 5e-5.",
+    "stance": "neutral",
+    "stance_target": "experimental configuration behind GeoFP8's claims",
+    "evidence_type": "empirical",
+    "scope_conditions": "Llama-300M/600M pretraining",
+    "quoted_support": "Unless otherwise specified, all end-to-end pretraining experiments use 32 GPUs, global batch size 512, micro batch size 4, Muon optimizer, learning rate 5 × 10−4, cosine decay, and minimum learning rate 5 × 10−5.",
+    "numbers": [
+      "32 GPUs",
+      "global batch 512",
+      "micro batch 4",
+      "lr 5e-4",
+      "lr 5e-5"
+    ],
+    "entities": [
+      "GeoFP8",
+      "Muon optimizer"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  }
+]

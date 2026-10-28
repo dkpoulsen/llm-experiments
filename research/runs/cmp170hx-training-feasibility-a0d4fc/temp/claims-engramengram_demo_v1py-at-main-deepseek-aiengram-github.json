@@ -1,0 +1,72 @@
+[
+  {
+    "claim": "The official Engram implementation ships no distributed training support: the only code file is a forward-pass demo whose disclaimer states it requires further optimization for production use including 'distributed training support'.",
+    "stance": "refutes",
+    "stance_target": "The premise that the paper's All-to-All table sharding can be inspected or reproduced from public Engram code",
+    "evidence_type": "empirical",
+    "scope_conditions": "deepseek-ai/Engram repository, 4 commits, latest Jan 14 2026",
+    "quoted_support": "Production Readiness: This implementation requires further optimization for actual production use (e.g., custom CUDA kernels, distributed training support).",
+    "numbers": ["4 commits", "single demo file"],
+    "entities": ["Engram", "deepseek-ai/Engram"],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "engramengram_demo_v1py-at-main-deepseek-aiengram-github"
+  },
+  {
+    "claim": "In the reference Engram implementation the n-gram memory table is a plain nn.Embedding with no requires_grad=False and no freezing logic, so the tables are ordinary trainable parameters.",
+    "stance": "refutes",
+    "stance_target": "The premise that Engram memory tables are frozen by construction",
+    "evidence_type": "empirical",
+    "scope_conditions": "engram_demo_v1.py, MultiHeadEmbedding class",
+    "quoted_support": "self.embedding = nn.Embedding(num_embeddings=total_N, embedding_dim=D)",
+    "numbers": [],
+    "entities": ["Engram", "nn.Embedding", "MultiHeadEmbedding"],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "engramengram_demo_v1py-at-main-deepseek-aiengram-github"
+  },
+  {
+    "claim": "The demo Engram config allocates 646,400 table rows per n-gram order for orders 2 and 3, with 8 heads per order, giving 10,342,400 rows total at dimension 64 per head.",
+    "stance": "neutral",
+    "stance_target": "The concrete table geometry a practitioner would instantiate",
+    "evidence_type": "empirical",
+    "scope_conditions": "engram_demo_v1.py default EngramConfig",
+    "quoted_support": "engram_vocab_size: List[int] = field(default_factory=lambda: [129280*5, 129280*5]) ... max_ngram_size: int = 3 ... n_embed_per_ngram: int = 512 ... n_head_per_ngram: int = 8 ... layer_ids: List[int] = field(default_factory=lambda: [1, 15])",
+    "numbers": ["646,400 rows per order", "2 orders", "8 heads", "10,342,400 rows total", "dim 64 per head", "n_embed_per_ngram 512", "layer_ids [1,15]", "kernel_size 4"],
+    "entities": ["Engram", "EngramConfig"],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "engramengram_demo_v1py-at-main-deepseek-aiengram-github"
+  },
+  {
+    "claim": "The Engram repository's own README scopes the host-offload efficiency claim to inference, describing deterministic addressing as enabling 'the offloading of massive embedding tables to host memory with minimal inference overhead'.",
+    "stance": "refutes",
+    "stance_target": "Applying the offload claim to training",
+    "evidence_type": "empirical",
+    "scope_conditions": "deepseek-ai/Engram README key contributions",
+    "quoted_support": "System Efficiency: The module employs deterministic addressing, enabling the offloading of massive embedding tables to host memory with minimal inference overhead.",
+    "numbers": [],
+    "entities": ["Engram"],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "github-deepseek-aiengram-conditional-memory-via-scalable-lookup-a-new-axis-of-sp"
+  },
+  {
+    "claim": "The Engram demo implements tokenizer compression with an NFKC/NFD/StripAccents/Lowercase/whitespace-collapse normalizer chain and hashes n-grams with multiplicative-XOR mixing over per-layer odd multipliers into prime-sized per-head buckets.",
+    "stance": "neutral",
+    "stance_target": "How deterministic Engram addressing is actually computed",
+    "evidence_type": "empirical",
+    "scope_conditions": "engram_demo_v1.py, CompressedTokenizer and NgramHashMapping",
+    "quoted_support": "self.normalizer = normalizers.Sequence([normalizers.NFKC(), normalizers.NFD(), normalizers.StripAccents(), normalizers.Lowercase(), normalizers.Replace(Regex(r'[ \\t\\r\\n]+'), ' '), ...]) ... mix = (tokens[0] * multipliers[0]) ... mix = np.bitwise_xor(mix, tokens[k] * multipliers[k]) ... head_hash = mix % mod",
+    "numbers": ["PRIME_1 = 10007", "odd multipliers", "prime-sized buckets"],
+    "entities": ["Engram", "NFKC", "multiplicative-XOR hash"],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "engramengram_demo_v1py-at-main-deepseek-aiengram-github"
+  }
+]

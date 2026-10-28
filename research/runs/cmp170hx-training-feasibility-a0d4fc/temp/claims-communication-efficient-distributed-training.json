@@ -1,0 +1,331 @@
+[
+  {
+    "claim": "Ring all-reduce's normalized per-worker communication load is 2(N-1)/N, i.e. independent of worker count for large N.",
+    "stance": "neutral",
+    "stance_target": "baseline cost model for DDP gradient all-reduce",
+    "evidence_type": "theoretical",
+    "scope_conditions": "N-worker ring, exact reconstruction",
+    "quoted_support": "For a system with N workers, its normalized per-worker communication is 2(N −1)/N.",
+    "numbers": [
+      "2(N-1)/N"
+    ],
+    "entities": [
+      "Ring All-Reduce",
+      "NCCL"
+    ],
+    "time_period": "",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "CERAR's coded approximate ring all-reduce achieves normalized per-worker communication 1+(N-2)/c over L=c+N-2 rounds, strictly below ring's 2(N-1)/N whenever c>N.",
+    "stance": "supports",
+    "stance_target": "coded/approximate all-reduce can cut DDP payload below the ring lower bound",
+    "evidence_type": "theoretical",
+    "scope_conditions": "N workers, c gradient chunks, bounded approximation error",
+    "quoted_support": "CERAR partitions each local gradient into c components and crucially relies on linear encoding and decoding operations. It performs L = c + N −2 communication rounds over an N-worker ring, yielding normalized communication rate 1+(N −2)/c and normalized storage rate 1+N/c.",
+    "numbers": [
+      "L = c+N-2",
+      "1+(N-2)/c",
+      "1+N/c"
+    ],
+    "entities": [
+      "CERAR",
+      "Ring All-Reduce"
+    ],
+    "time_period": "",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "On an 8-GPU A100 PCIe node (31.5 GB/s interconnect), CERAR cuts raw all-reduce time by 46.0-47.1% versus production NCCL.",
+    "stance": "supports",
+    "stance_target": "approximate all-reduce is a large lever on a PCIe-limited fabric",
+    "evidence_type": "empirical",
+    "scope_conditions": "single node, 8x A100 PCIe, FP32 tensors, 31.5 GB/s interconnect",
+    "quoted_support": "As shown in Table I, CERAR outperforms the NCCL implementation on the A100 PCIe system, reducing the reduction time by 46.0–47.1%. However, on the H200 NVLink system, CERAR is 33.2%–33.9% slower than NCCL.",
+    "numbers": [
+      "46.0-47.1%",
+      "33.2-33.9%",
+      "31.5 GB/s",
+      "300 GB/s"
+    ],
+    "entities": [
+      "CERAR",
+      "NCCL",
+      "A100 PCIe",
+      "H200 SXM",
+      "NVLink"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "The absolute all-reduce win on PCIe is large in wall-clock terms: a 1B-entry FP32 tensor drops from 17,954.4 ms under NCCL to 9,558.6 ms under CERAR (46.8%).",
+    "stance": "supports",
+    "stance_target": "coded all-reduce reduces absolute collective latency at LLM-scale gradient sizes",
+    "evidence_type": "empirical",
+    "scope_conditions": "8x A100 PCIe, 1B FP32 entries per GPU, c=20, L=26",
+    "quoted_support": "A100 PCIe, 8 GPUs / PCIe 1B 17,954.4 9,558.6 46.8%",
+    "numbers": [
+      "17,954.4 ms",
+      "9,558.6 ms",
+      "46.8%",
+      "1B FP32 entries",
+      "c=20",
+      "L=26"
+    ],
+    "entities": [
+      "CERAR",
+      "NCCL",
+      "A100 PCIe"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "End-to-end, Pythia-1.4B training on 4x A100 PCIe 40GB drops from 3.79 h (NCCL) to 3.14 h (CERAR), a 17.3% reduction, with essentially identical validation loss (1.4218 vs 1.4213).",
+    "stance": "supports",
+    "stance_target": "approximate gradient aggregation does not degrade training quality at 1.4B scale",
+    "evidence_type": "empirical",
+    "scope_conditions": "Pythia-1.4B, TinyStories, 4x A100 PCIe 40GB, 1800 steps (~117.96M tokens), c=12, L=14",
+    "quoted_support": "As shown in Table II, on the PCIe configuration, NCCL requires 3.79 hours, whereas CERAR requires 3.14 hours; the corresponding validation losses at the end of the 1800 iterations are 1.4218 and 1.4213 respectively.",
+    "numbers": [
+      "3.79 h",
+      "3.14 h",
+      "17.3%",
+      "39 min",
+      "1.4218",
+      "1.4213",
+      "1800 steps",
+      "117.96e6 tokens",
+      "c=12",
+      "L=14"
+    ],
+    "entities": [
+      "Pythia-1.4B",
+      "CERAR",
+      "NCCL",
+      "A100 PCIe"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "Throughput on that PCIe run rises from 8,644 to 10,451 tokens/s at a cost of +2.4 GB peak memory (36.2 -> 38.6 GB).",
+    "stance": "supports",
+    "stance_target": "coded all-reduce buys throughput at modest memory cost",
+    "evidence_type": "empirical",
+    "scope_conditions": "4x A100 PCIe 40GB, Pythia-1.4B, 1800 steps",
+    "quoted_support": "4× A100 PCIe 40GB (PCIe interconnect): 1,800 steps ... NCCL All-Reduce 3.79 8,644 1.4218 36.2 ... Our algorithm 3.14 10,451 1.4213 38.6",
+    "numbers": [
+      "8,644 tok/s",
+      "10,451 tok/s",
+      "36.2 GB",
+      "38.6 GB"
+    ],
+    "entities": [
+      "Pythia-1.4B",
+      "CERAR",
+      "NCCL"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "On a high-bandwidth NVLink fabric the same scheme is a net loss: 3.65% slower end-to-end (4.745 h vs 4.578 h) on 4x A100 SXM 80GB.",
+    "stance": "refutes",
+    "stance_target": "coded approximate all-reduce is universally beneficial",
+    "evidence_type": "empirical",
+    "scope_conditions": "4x A100 SXM 80GB, NVLink, Pythia-1.4B, 7630 steps (~1e9 tokens)",
+    "quoted_support": "On the SXM configuration, NCCL and our algorithm require 4.578 and 4.745 hours, respectively. The validation losses of both schemes are approximately 1.16449. However, our algorithm takes 3.65% longer.",
+    "numbers": [
+      "4.578 h",
+      "4.745 h",
+      "3.65%",
+      "7630 steps",
+      "1e9 tokens"
+    ],
+    "entities": [
+      "CERAR",
+      "NCCL",
+      "A100 SXM",
+      "NVLink"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "The approximation error is real but argued benign: relative l2 gradient error of ~1.61%, 2.87% and 2.72% at steps 1, 3815 and 7630, versus <7e-9 for NCCL.",
+    "stance": "neutral",
+    "stance_target": "approximate gradient aggregation error magnitude",
+    "evidence_type": "empirical",
+    "scope_conditions": "4x A100 SXM 80GB, Pythia-1.4B training",
+    "quoted_support": "For our algorithm, these errors are approximately 1.61%, 2.87%, and 2.72%, respectively, while those for NCCL are below 7 × 10−9 (consistent with floating-point roundoff). Nevertheless, these errors do not impact the training in an appreciable manner.",
+    "numbers": [
+      "1.61%",
+      "2.87%",
+      "2.72%",
+      "7e-9"
+    ],
+    "entities": [
+      "CERAR",
+      "NCCL",
+      "Pythia-1.4B"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "The premise that makes the scheme usable is that approximate gradient recovery suffices for SGD-style training.",
+    "stance": "supports",
+    "stance_target": "lossy/approximate gradient aggregation is safe for LLM pretraining",
+    "evidence_type": "theoretical",
+    "scope_conditions": "distributed mini-batch SGD",
+    "quoted_support": "We note that approximate recovery often suffices in scenarios such as distributed parameter training, i.e., instead of true gradients, we often settle for approximate gradients which do not affect the quality of training much.",
+    "numbers": [],
+    "entities": [
+      "SGD",
+      "gradient aggregation"
+    ],
+    "time_period": "",
+    "region": "",
+    "confidence": "medium"
+  },
+  {
+    "claim": "CERAR's advantage is bandwidth-regime dependent by construction: it wins on low-bandwidth PCIe and loses on high-bandwidth NVLink.",
+    "stance": "supports",
+    "stance_target": "the value of communication compression scales inversely with fabric bandwidth",
+    "evidence_type": "empirical",
+    "scope_conditions": "PCIe 31.5 GB/s vs NVLink >=300 GB/s",
+    "quoted_support": "On the other hand, for GPU clusters with high-bandwidth NVLink interconnects, CERAR performs worse on the All-Reduce phase time and slightly worse in terms of training.",
+    "numbers": [
+      "31.5 GB/s",
+      ">=300 GB/s"
+    ],
+    "entities": [
+      "CERAR",
+      "PCIe",
+      "NVLink"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "The reported gains are a lower bound: the authors describe their implementation as an unoptimised proof of concept relative to NCCL.",
+    "stance": "neutral",
+    "stance_target": "magnitude of CERAR's achievable gain",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "author's own implementation",
+    "quoted_support": "Our implementation of CERAR is meant more as a proof of concept and the implementation has not been optimized anywhere close to the level of NCCL.",
+    "numbers": [],
+    "entities": [
+      "CERAR",
+      "NCCL"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "medium"
+  },
+  {
+    "claim": "The measured all-reduce times include encoding, all communication rounds with local updates, and decoding, so the arithmetic overhead is already inside the reported numbers.",
+    "stance": "neutral",
+    "stance_target": "whether encoding/decoding cost is excluded from CERAR's reported gains",
+    "evidence_type": "empirical",
+    "scope_conditions": "A100 PCIe and H200 SXM experiments",
+    "quoted_support": "For our algorithm, this includes (i) encoding (preparing δi,j’s), (ii) all communication rounds and their local updates, and (iii) decoding using the stored values and the Ri matrices to reconstruct the approximate sum.",
+    "numbers": [],
+    "entities": [
+      "CERAR"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "The asymptotically exact Vandermonde construction is numerically ill-conditioned; the authors give an alternate construction with error O(eps) and condition number O(eps^-r*), r*=ceil(c/N)-1.",
+    "stance": "neutral",
+    "stance_target": "numerical stability of coded all-reduce",
+    "evidence_type": "theoretical",
+    "scope_conditions": "linear encoding/decoding matrices over an N-worker ring",
+    "quoted_support": "Accordingly, we give an alternate construction whose error is O(ϵ), while the relevant condition numbers are O(ϵ−r⋆), where r⋆= ⌈c/N⌉−1.",
+    "numbers": [
+      "O(eps)",
+      "O(eps^-r*)",
+      "r*=ceil(c/N)-1"
+    ],
+    "entities": [
+      "CERAR",
+      "Vandermonde matrix",
+      "condition number"
+    ],
+    "time_period": "",
+    "region": "",
+    "confidence": "high"
+  },
+  {
+    "claim": "CERAR is orthogonal to gradient quantisation and sparsification and can be stacked with them.",
+    "stance": "supports",
+    "stance_target": "combining multiple communication-reduction levers",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "any distributed training setup",
+    "quoted_support": "These approaches address communication reduction along a direction orthogonal to ours. Specifically, it may be possible to apply our techniques in conjunction with them.",
+    "numbers": [],
+    "entities": [
+      "CERAR",
+      "gradient quantization",
+      "sparsification"
+    ],
+    "time_period": "",
+    "region": "",
+    "confidence": "medium"
+  },
+  {
+    "claim": "Transferability caveat: the tested 'low-bandwidth' PCIe fabric is 31.5 GB/s, roughly 30x the ~0.75 GiB/s NCCL all-reduce measured on the CMP 170HX box, so the direction of the effect should hold but the magnitude is not transferable.",
+    "stance": "neutral",
+    "stance_target": "applicability of CERAR's measured gains to a PCIe Gen2 x4 CMP 170HX box",
+    "evidence_type": "theoretical",
+    "scope_conditions": "single-node A100 PCIe vs 5x CMP 170HX Gen2 x4",
+    "quoted_support": "We considered GPU clusters under two different settings - a low-bandwidth (PCIe, 31.5 GB/s) and a high-bandwidth (NVLink, ≥300 GB/s) interconnect.",
+    "numbers": [
+      "31.5 GB/s",
+      "0.75 GiB/s",
+      "Gen2 x4"
+    ],
+    "entities": [
+      "CERAR",
+      "CMP 170HX",
+      "A100 PCIe"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "medium"
+  },
+  {
+    "claim": "The scheme's parameters are tuned per fabric: c=20/L=26 on A100 PCIe, c=12/L=14 on H200 NVLink.",
+    "stance": "neutral",
+    "stance_target": "parameterisation of coded all-reduce",
+    "evidence_type": "empirical",
+    "scope_conditions": "A100 PCIe and H200 SXM experiments",
+    "quoted_support": "CERAR used c = 20, L = 26 for the A100 experiments and c = 12, L = 14 for the H200 experiments.",
+    "numbers": [
+      "c=20",
+      "L=26",
+      "c=12",
+      "L=14"
+    ],
+    "entities": [
+      "CERAR"
+    ],
+    "time_period": "2026",
+    "region": "",
+    "confidence": "high"
+  }
+]

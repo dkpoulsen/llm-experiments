@@ -1,0 +1,93 @@
+[
+ {
+  "claim": "Static-BAR1 P2P works on all 12 ordered pairs of four CMP 170HX (5.79 GB/s each, every byte verified) once every card has a 64 GiB BAR1 and the PCIe layout is hand-programmed before driver load.",
+  "stance": "refutes",
+  "stance_target": "the repo's premise that P2P is unavailable on this card in every configuration",
+  "evidence_type": "empirical",
+  "scope_conditions": "4x CMP 170HX, 65,536 MiB each, Gen2 x16, GPU0+GPU1 behind PLX switch A and GPU2+GPU3 behind switch B on CPU2, dual Xeon E5-2686 v4, bare metal and one LXC run, 180 W",
+  "quoted_support": "Direct GPU-to-GPU access works on all 12 ordered pairs of four cards (every byte verified, 5.79 GB/s each, 16 us at 4 KiB). It needs the memory unlock's 64 GiB BAR1 on **every** card, and on this board two cards behind one PLX switch only get that with a hand-programmed PCIe layout applied before the driver loads.",
+  "numbers": [
+   "12/12 ordered pairs",
+   "5.79 GB/s per pair",
+   "16 us at 4 KiB",
+   "64 GiB BAR1 per card"
+  ],
+  "entities": [
+   "CMP 170HX",
+   "PLX PEX 8747",
+   "static BAR1",
+   "cmpunlocker"
+  ],
+  "time_period": "measured 2026-10-01",
+  "region": "global",
+  "confidence": "high",
+  "source_note_id": "readmemd-3"
+ },
+ {
+  "claim": "P2P lifts Qwen3.8-27B TP2 single-user decode by 11-14% but slows GLM-5.3-Flash TP4 decode by 25-44%, because the host-staged all-reduce vLLM selects without P2P is faster on this PLX + Broadwell path.",
+  "stance": "supports",
+  "stance_target": "cc-6's committed reading that P2P is a latency lever, not a bandwidth lever, and that it does not help the many-small-collectives regime",
+  "evidence_type": "empirical",
+  "scope_conditions": "same 4x CMP 170HX rig at Gen2 x16, 180 W, Qwen3.8-27B W4A16 TP2 and GLM-5.3-Flash TP4 (Morrowmake 1.6.0 protocol)",
+  "quoted_support": "P2P cuts small-copy latency by up to 1.77x and lifts Qwen3.8-27B TP2 single-user decode by 11-14 %, but it **slows** GLM-5.3-Flash TP4 decode by 25-44 %: the host-staged all-reduce vLLM picks without P2P is faster on this PLX + Broadwell path.",
+  "numbers": [
+   "+11-14% Qwen3.8-27B TP2 decode",
+   "-25 to -44% GLM-5.3-Flash TP4 decode",
+   "1.77x small-copy latency win"
+  ],
+  "entities": [
+   "Qwen3.8-27B",
+   "GLM-5.3-Flash",
+   "TP2",
+   "TP4",
+   "vLLM",
+   "PLX"
+  ],
+  "time_period": "measured 2026-10-01",
+  "region": "global",
+  "confidence": "high",
+  "source_note_id": "readmemd-3"
+ },
+ {
+  "claim": "The BIOS placed switch A's 64-bit window at the top of CPU2's 1 TiB aperture at 224 MiB, so a second card on that switch got no BAR1 and static BAR1 refused to start it with -EIO; the fix is to program every BAR and bridge window by hand with each BAR3 directly below its 64 GiB-aligned BAR1 and then kexec.",
+  "stance": "neutral",
+  "stance_target": "the practical cost of enabling BAR1 P2P on a 5-card box (a board-specific, hard-coded layout step)",
+  "evidence_type": "empirical",
+  "scope_conditions": "dual Xeon E5-2686 v4 Broadwell host, BIOS Above 4G on, MMIO high 1024G, kernel 7.0.2, pci=realloc",
+  "quoted_support": "The BIOS places each switch's 64-bit window at the top of CPU2's 1 TiB aperture (224 MiB for switch A), so it cannot grow; the second card on a switch gets no BAR1 and static BAR1 refuses to start it (`-EIO`).",
+  "numbers": [
+   "224 MiB window",
+   "1 TiB aperture",
+   "64 GiB BAR1",
+   "32 MiB BAR3"
+  ],
+  "entities": [
+   "BAR1",
+   "BAR3",
+   "PCIe bridge window",
+   "kexec",
+   "ReBAR"
+  ],
+  "time_period": "measured 2026-10-01",
+  "region": "global",
+  "confidence": "high",
+  "source_note_id": "readmemd-3"
+ },
+ {
+  "claim": "The NCCL all-reduce receipts referenced by this README (receipts/nccl/, nccl-* = SHM and nccl-p2p-* = P2P/CUMEM) are not present in the repository tree, so the notebook's rendered tables are the only committed NCCL numbers.",
+  "stance": "neutral",
+  "stance_target": "the verifiability of the 4.83 GB/s BAR1-P2P all-reduce figure",
+  "evidence_type": "empirical",
+  "scope_conditions": "PixelML/club-170hx at main, tree listing of results/2026-10-01-cmp170hx-4card-bar1-p2p-plx/receipts",
+  "quoted_support": "| `receipts/nccl/` | NCCL all-reduce logs, `nccl-*` = SHM (no P2P), `nccl-p2p-*` = P2P/CUMEM |",
+  "numbers": [],
+  "entities": [
+   "PixelML/club-170hx",
+   "receipts/nccl"
+  ],
+  "time_period": "checked 2026-10-27",
+  "region": "global",
+  "confidence": "high",
+  "source_note_id": "readmemd-3"
+ }
+]

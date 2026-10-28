@@ -1,0 +1,42 @@
+{
+  "batch_id": 3,
+  "vault_tag": "cmp170hx-training-feasibility-a0d4fc",
+  "assigned": [
+    {"url": "https://arxiv.org/abs/2609.40093", "utility": 18, "note_id": "efficient-expert-parallel-communication", "words": 11600, "verdict": "good"},
+    {"url": "https://arxiv.org/abs/2604.27085", "utility": 15, "note_id": "efficient-training-on-multiple-consumer-gpus-with", "words": 11061, "verdict": "good"},
+    {"url": "https://arxiv.org/abs/2610.09424", "utility": 12, "note_id": "democratizing-moe-inference-on-commodity-gpus", "words": 9985, "verdict": "good"},
+    {"url": "https://arxiv.org/abs/2609.34340", "utility": 14, "note_id": "variopath-workload-aware-all-to-all-communication-for-pcie-gpu-clusters", "words": 10504, "verdict": "good"},
+    {"url": "https://arxiv.org/abs/2610.01380", "utility": 12, "note_id": "gpu-initiated-communication-dissecting-down-to-the-bone", "words": 13116, "verdict": "good but peripheral (InfiniBand/NVLink scope, not PCIe-only)"},
+    {"url": "https://arxiv.org/abs/2610.07333", "utility": 12, "note_id": "memory-efficient-expert-routing-for-distributed-moe", "words": 11018, "verdict": "good but peripheral (NVLink testbed)"},
+    {"url": "https://arxiv.org/abs/2602.04870", "utility": 13, "note_id": "multi-head-latentmoe-and-head-parallel", "words": 7394, "verdict": "good"},
+    {"url": "https://arxiv.org/abs/2211.15841", "utility": 15, "note_id": "megablocks-efficient-sparse-training-with-mixture-of-experts", "words": 9669, "verdict": "good"}
+  ],
+  "phase2_discovered": [
+    {"url": "https://arxiv.org/abs/2512.15306", "note_id": "llmq-efficient-lower-precision-pretraining", "words": 8208, "suggested_by": "efficient-expert-parallel-communication", "verdict": "good — highest-value primary for the memory/topology question"},
+    {"url": "https://arxiv.org/abs/2507.04786", "note_id": "demystifying-nccl-an-in-depth-analysis-of-gpu", "words": 10605, "suggested_by": "efficient-expert-parallel-communication", "verdict": "good — primary for NCCL protocol/algorithm behaviour on PCIe"},
+    {"url": "https://minhui-xie.github.io/papers/asplos23-Mobius.pdf", "note_id": "mobius-fine-tuning-large-scale-models-on", "words": 10333, "suggested_by": "efficient-training-on-multiple-consumer-gpus-with", "verdict": "good — DOI route blocked by Cloudflare, author-hosted PDF used"},
+    {"url": "https://github.com/mcrl/tccl", "note_id": "github-mcrltccl-thunder-research-groups-collective-communication-library-github", "words": 1125, "suggested_by": "efficient-expert-parallel-communication", "verdict": "thin but ground-truth code artifact; ACM DOI route blocked"},
+    {"url": "https://arxiv.org/abs/2603.07685", "note_id": "scalable-training-of-mixture-of-experts-models-with", "words": 39263, "suggested_by": "efficient-expert-parallel-communication", "verdict": "good but very long — source-analyst candidate"},
+    {"url": "https://arxiv.org/abs/2408.14158", "note_id": "fire-flyer-ai-hpc-a-cost-effective", "words": 14439, "suggested_by": "efficient-expert-parallel-communication", "verdict": "good — primary for CPU-based all-reduce on PCIe-only clusters"}
+  ],
+  "failures": [
+    {"url": "https://doi.org/10.1145/3575693.3575703", "error": "JUNK_ESCALATED — Cloudflare JS challenge on ACM DL", "resolution": "fetched author-hosted PDF instead"},
+    {"url": "https://doi.org/10.1145/3620666.3651362", "error": "FETCH_ERROR — net::ERR_ABORTED on ACM DL", "resolution": "fetched official GitHub repo instead"}
+  ],
+  "claims_total": 107,
+  "long_sources_over_5000_words": [
+    "efficient-expert-parallel-communication (11.6k)",
+    "efficient-training-on-multiple-consumer-gpus-with (11.1k)",
+    "democratizing-moe-inference-on-commodity-gpus (10.0k)",
+    "variopath-workload-aware-all-to-all-communication-for-pcie-gpu-clusters (10.5k)",
+    "gpu-initiated-communication-dissecting-down-to-the-bone (13.1k)",
+    "memory-efficient-expert-routing-for-distributed-moe (11.0k)",
+    "multi-head-latentmoe-and-head-parallel (7.4k)",
+    "megablocks-efficient-sparse-training-with-mixture-of-experts (9.7k)",
+    "llmq-efficient-lower-precision-pretraining (8.2k)",
+    "demystifying-nccl-an-in-depth-analysis-of-gpu (10.6k)",
+    "mobius-fine-tuning-large-scale-models-on (10.3k)",
+    "fire-flyer-ai-hpc-a-cost-effective (14.4k)",
+    "scalable-training-of-mixture-of-experts-models-with (39.3k)"
+  ]
+}

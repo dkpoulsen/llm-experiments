@@ -1,0 +1,57 @@
+[
+  {
+    "claim": "On a 12M-79M parameter next-pixel-prediction transformer ladder trained with 5 seeds per size, the cross-seed relative fluctuation of the reducible loss curve is about 1% - an order of magnitude below a 3.5% floor but well above the 0.14% measured for a 184M LM.",
+    "stance": "refutes",
+    "stance_target": "the universality of a 3.5%-relative noise floor at small scale",
+    "evidence_type": "empirical",
+    "scope_conditions": "3-block transformers, D=768-2048, CIFAR-5M next-pixel prediction, compute-optimal horizons with LR decay, 5 seeds per size",
+    "quoted_support": "While we can only predict the reducible loss curve of any one model to a relative error of 1%, we can rescale these curves so they match each other to within a relative error significantly below 1% after an initial transient period.",
+    "numbers": [
+      "~1% relative cross-seed fluctuation",
+      "12M-79M parameters",
+      "5 seeds per size"
+    ],
+    "entities": [
+      "CIFAR-5M",
+      "muP",
+      "scaling ladder"
+    ],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "opt2024-16th-annual-workshop-on-optimization-for-machine-learning"
+  },
+  {
+    "claim": "The cross-model collapse deviation is consistently smaller than the cross-seed fluctuation for most of training, which is the paper's central claim that loss-curve shape is more predictable than seed noise.",
+    "stance": "neutral",
+    "stance_target": "whether loss-curve shape can be used as a higher-resolution signal than final loss",
+    "evidence_type": "empirical",
+    "scope_conditions": "same ladder, single seed per size for the collapse measurement",
+    "quoted_support": "the cross-model collapse deviation (Delta, blue) is consistently less than the cross-seed fluctuation sigma_D(t) (dashed red, yellow, and green, computed over 5 seeds), for the majority of the training process and a variety of D.",
+    "numbers": [],
+    "entities": [
+      "supercollapse",
+      "sigma_D"
+    ],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "opt2024-16th-annual-workshop-on-optimization-for-machine-learning"
+  },
+  {
+    "claim": "The 1% figure is a trajectory-level relative error on a pixel-regression task, not a final-loss standard deviation on a language task, so it transfers to this run only as an order-of-magnitude bracket.",
+    "stance": "neutral",
+    "stance_target": "the transferability of the 1% figure to LM pretraining",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "CIFAR-5M greyscale next-pixel prediction, 12M-79M params",
+    "quoted_support": "We train decoder-only transformer models on a next-pixel prediction task using the CIFAR-5M dataset of 6 million CIFAR-like images.",
+    "numbers": [],
+    "entities": [
+      "CIFAR-5M"
+    ],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "opt2024-16th-annual-workshop-on-optimization-for-machine-learning"
+  }
+]

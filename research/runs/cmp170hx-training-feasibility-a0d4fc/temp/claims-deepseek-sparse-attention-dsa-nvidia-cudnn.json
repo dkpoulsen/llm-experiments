@@ -1,0 +1,193 @@
+[
+  {
+    "claim": "NVIDIA's cuDNN DSA kernels are Hopper/Blackwell-only: most kernels target SM90 and SM100+, and Sparse Attention Backward, Score Recompute, Indexer Forward, Indexer Top-K and Indexer Backward all require SM90 or SM100, with the combined compressed-logits+Top-K forward SM100-only.",
+    "stance": "refutes",
+    "stance_target": "The feasibility of using NVIDIA's DSA training kernels on a CMP 170HX (GA100 / SM80) box",
+    "evidence_type": "theoretical",
+    "scope_conditions": "cuDNN Frontend v1.28.0, experimental API; DSA module limitations section",
+    "quoted_support": "Most kernels target Hopper (SM90) and Blackwell (SM100+) GPUs. ... Architecture support - Sparse Attention Backward, Score Recompute, Indexer Forward, Indexer Top-K, and Indexer Backward support SM90 and SM100. The combined compressed-logits + Top-K forward is SM100-only; the standalone Indexer Top-K remains SM90+.",
+    "numbers": [
+      "SM90",
+      "SM100",
+      "no SM80 support"
+    ],
+    "entities": [
+      "cuDNN",
+      "DSA",
+      "SM90",
+      "SM100",
+      "CMP 170HX",
+      "GA100"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-sparse-attention-dsa-nvidia-cudnn"
+  },
+  {
+    "claim": "The only DSA path usable on pre-Hopper hardware is the pure-PyTorch reference implementation (test/python/fe_api/dsa/dsa_reference.py::ref_sparse_attention_forward), because the production sparse-attention forward kernel is FlashMLA in C++ and is not integrated into this module.",
+    "stance": "supports",
+    "stance_target": "What a CSA2 reproduction on Ampere-class cards must implement itself",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Module scope statement",
+    "quoted_support": "The production sparse-attention forward kernel (FlashMLA) is C++ and is not integrated here; when evaluating the backward, use the pure-PyTorch reference in test/python/fe_api/dsa/dsa_reference.py::ref_sparse_attention_forward.",
+    "numbers": [],
+    "entities": [
+      "FlashMLA",
+      "PyTorch reference",
+      "cuDNN DSA"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-sparse-attention-dsa-nvidia-cudnn"
+  },
+  {
+    "claim": "The module documents an explicit training-score loss path in which attn_score and index_score feed IndexerBackward to produce d_index_q, d_weights and d_index_k \u2014 confirming that the indexer is trained by a distillation-style loss against main attention rather than end-to-end through the non-differentiable top-k.",
+    "stance": "supports",
+    "stance_target": "The repo's claim that top-k selection is non-differentiable and the indexer needs a separate distillation loss",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Architecture diagram; training-score loss path",
+    "quoted_support": "Training-score loss path: attn_score, index_score --> IndexerBackward --> d_index_q, d_weights, d_index_k (SparseIndexer/AttnScoreRecompute and DenseIndexer/AttnScoreRecompute produce these score tensors; DenseIndexerBackward consumes dense raw scores.)",
+    "numbers": [],
+    "entities": [
+      "IndexerBackward",
+      "attn_score",
+      "index_score",
+      "distillation"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-sparse-attention-dsa-nvidia-cudnn"
+  },
+  {
+    "claim": "Indexer Backward is a three-stage pipeline: an in-place score-grad precompute from attn_score (target) and index_score (predict), three warp-specialised GEMMs producing d_index_q, d_weights and a dIndexK_f32 accumulator, then a pure-torch dtype cast.",
+    "stance": "neutral",
+    "stance_target": "The implementation complexity of the indexer training loss",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Section 8 Indexer Backward",
+    "quoted_support": "Three-stage sparse top-K pipeline that produces the training gradients for the indexer tower: 1. ScoreGradSm90 / ScoreGradSm100 (kernel 1) - in-place score-grad precompute from attn_score (target) and index_score (predict). 2. IndexerBackwardSm90 / IndexerBackwardSm100 (kernel 2) - three warp-specialised GEMMs produce d_index_q, d_weights, and a dIndexK_f32 accumulator. 3. Pure-torch dtype cast (kernel 3) converts dIndexK_f32 to the output dtype.",
+    "numbers": [
+      "3 kernels/stages"
+    ],
+    "entities": [
+      "IndexerBackward",
+      "ScoreGrad",
+      "GEMM",
+      "dIndexK_f32"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-sparse-attention-dsa-nvidia-cudnn"
+  },
+  {
+    "claim": "The DSA indexer requires head_dim == 128 and H_kv == 1 (multi-query attention), with qhead_per_kv_head in {16,32,64} on SM90 and {32,64} on SM100 \u2014 so a scaled-down CSA2 reproduction must keep the indexer's head geometry fixed at 128.",
+    "stance": "neutral",
+    "stance_target": "How freely a small CSA2 variant can be reshaped",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Section 2 Indexer Forward constraints",
+    "quoted_support": "Constraints - head_dim == 128. The SM90 direct path supports qhead_per_kv_head in {16, 32, 64} and currently requires H_kv == 1; SM100 BF16 dense and combined Top-K paths support qhead_per_kv_head in {32, 64}, as do their MXFP8 paths. All currently require H_kv == 1 (MQA).",
+    "numbers": [
+      "head_dim 128",
+      "H_kv=1",
+      "qhead_per_kv_head {16,32,64} SM90",
+      "{32,64} SM100"
+    ],
+    "entities": [
+      "indexer",
+      "head_dim",
+      "MQA",
+      "qhead_per_kv_head"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-sparse-attention-dsa-nvidia-cudnn"
+  },
+  {
+    "claim": "The standalone radix Indexer Top-K kernel supports top_k <= 2048 and SM90+, which is consistent with the 512-1024 top-k values used by V4-class models and with the 16,384-candidate hierarchical pool being a separate selection stage.",
+    "stance": "supports",
+    "stance_target": "The repo's stated 512 top-k and 16,384 candidate pool",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Section 4 Indexer Top-K constraints",
+    "quoted_support": "Radix top-K kernel for selecting candidate KV indices from indexer scores, with variable per-row effective length. ... Constraints - SM90+, top_k <= 2048",
+    "numbers": [
+      "top_k <= 2048",
+      "top_k=512 default example"
+    ],
+    "entities": [
+      "Indexer Top-K",
+      "radix top-k",
+      "top_k"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-sparse-attention-dsa-nvidia-cudnn"
+  },
+  {
+    "claim": "FP8 and MXFP8 indexer backward are not supported: the backward wrapper requires BF16 Q/K/W inputs, so low-precision indexer training is forward-only in this module.",
+    "stance": "neutral",
+    "stance_target": "Whether a low-precision (FP8/FP4) indexer can be trained with these kernels",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Section 8 note on FP8/MXFP8 backward",
+    "quoted_support": "FP8 and MXFP8 indexer backward are not currently supported because the backward wrapper requires BF16 Q/K/W inputs.",
+    "numbers": [
+      "BF16 required for backward"
+    ],
+    "entities": [
+      "FP8",
+      "MXFP8",
+      "IndexerBackward",
+      "BF16"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-sparse-attention-dsa-nvidia-cudnn"
+  },
+  {
+    "claim": "The module is request-or-fail rather than silently falling back: the TileLang fallback present in the upstream repo is dropped, and if the CuTe-DSL path fails the wrapper raises RuntimeError.",
+    "stance": "neutral",
+    "stance_target": "How a failed DSA kernel launch behaves in a training loop",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Section 8 implementation note",
+    "quoted_support": "The TileLang fallback present in the upstream repo is dropped here (CuTe-DSL only). If the CuTe-DSL path fails the wrapper raises RuntimeError rather than silently falling back.",
+    "numbers": [],
+    "entities": [
+      "CuTe-DSL",
+      "TileLang",
+      "RuntimeError"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-sparse-attention-dsa-nvidia-cudnn"
+  },
+  {
+    "claim": "The API is explicitly experimental and subject to change, and the SM100 sparse backward v2 backend is opt-in with a narrow envelope (SM100 only, H=64, D=128, block_I=128, topk a multiple of 128 in [128,2048]).",
+    "stance": "neutral",
+    "stance_target": "The stability risk of building a training pipeline on these kernels",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Module header and Section 8 SM100 sparse backward v2 envelope",
+    "quoted_support": "This is an experimental API and subject to change. ... Envelope (validated by check_support when a plan is created, and re-validated against the real tensors on every execute - cache hits included - before any buffer is mutated) - SM100 (10, 0) only; H == 64, D == 128, block_I == 128; topk % 128 == 0 with 128 <= topk <= 2048",
+    "numbers": [
+      "SM100 only",
+      "H=64",
+      "D=128",
+      "block_I=128",
+      "topk % 128 == 0"
+    ],
+    "entities": [
+      "cuDNN DSA",
+      "sm100_v2",
+      "experimental API"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "deepseek-sparse-attention-dsa-nvidia-cudnn"
+  }
+]

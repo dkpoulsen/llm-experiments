@@ -1,0 +1,446 @@
+---
+title: "Tags Index"
+id: "_tags"
+type: index
+created: 2026-10-27T19:00:34.884363+00:00
+updated: 2026-10-27T19:00:34.884363+00:00
+---
+
+# Tags Index
+
+**431** unique tags.
+
+- **cmp170hx-training-feasibility-a0d4fc** (225 notes) → [[_tag-cmp170hx-training-feasibility-a0d4fc]]
+- **measured** (29 notes) → [[_tag-measured]]
+- **primary-source** (16 notes) → [[_tag-primary-source]]
+- **nccl** (15 notes) → [[_tag-nccl]]
+- **pcie-fabric** (15 notes) → [[_tag-pcie-fabric]]
+- **communication-volume** (14 notes) → [[_tag-communication-volume]]
+- **hardware** (14 notes) → [[_tag-hardware]]
+- **long-source** (14 notes) → [[_tag-long-source]]
+- **all-reduce** (13 notes) → [[_tag-all-reduce]]
+- **cmp-170hx** (13 notes) → [[_tag-cmp-170hx]]
+- **sub-q3** (13 notes) → [[_tag-sub-q3]]
+- **engram** (12 notes) → [[_tag-engram]]
+- **fsdp** (12 notes) → [[_tag-fsdp]]
+- **all-to-all** (11 notes) → [[_tag-all-to-all]]
+- **no-p2p** (11 notes) → [[_tag-no-p2p]]
+- **pipeline-parallel** (11 notes) → [[_tag-pipeline-parallel]]
+- **expert-parallelism** (10 notes) → [[_tag-expert-parallelism]]
+- **gap-cc-1** (10 notes) → [[_tag-gap-cc-1]]
+- **locus-allreduce-ceiling-and-definition** (10 notes) → [[_tag-locus-allreduce-ceiling-and-definition]]
+- **locus-topology-cost-at-1m-tokens** (10 notes) → [[_tag-locus-topology-cost-at-1m-tokens]]
+- **sparse-attention** (10 notes) → [[_tag-sparse-attention]]
+- **sub-q4** (10 notes) → [[_tag-sub-q4]]
+- **community-reported** (9 notes) → [[_tag-community-reported]]
+- **data-curation** (9 notes) → [[_tag-data-curation]]
+- **ddp** (9 notes) → [[_tag-ddp]]
+- **gap-cc-4** (9 notes) → [[_tag-gap-cc-4]]
+- **pcie-link** (9 notes) → [[_tag-pcie-link]]
+- **zero** (9 notes) → [[_tag-zero]]
+- **gradient-compression** (8 notes) → [[_tag-gradient-compression]]
+- **long-context** (8 notes) → [[_tag-long-context]]
+- **moe-training** (8 notes) → [[_tag-moe-training]]
+- **training-cost** (8 notes) → [[_tag-training-cost]]
+- **cmp170hx** (7 notes) → [[_tag-cmp170hx]]
+- **data-pipeline** (7 notes) → [[_tag-data-pipeline]]
+- **gap-cc-3** (7 notes) → [[_tag-gap-cc-3]]
+- **dataset** (6 notes) → [[_tag-dataset]]
+- **locus-memory-budget-and-frozen-tables** (6 notes) → [[_tag-locus-memory-budget-and-frozen-tables]]
+- **measured-throughput** (6 notes) → [[_tag-measured-throughput]]
+- **tensor-parallel** (6 notes) → [[_tag-tensor-parallel]]
+- **training-recipe** (6 notes) → [[_tag-training-recipe]]
+- **dsa** (5 notes) → [[_tag-dsa]]
+- **gap-cc-5** (5 notes) → [[_tag-gap-cc-5]]
+- **locus-csa2-at-32k-sm80** (5 notes) → [[_tag-locus-csa2-at-32k-sm80]]
+- **locus-sustained-throughput-at-32k** (5 notes) → [[_tag-locus-sustained-throughput-at-32k]]
+- **memory-optimization** (5 notes) → [[_tag-memory-optimization]]
+- **seed-variance** (5 notes) → [[_tag-seed-variance]]
+- **32k-training** (4 notes) → [[_tag-32k-training]]
+- **code** (4 notes) → [[_tag-code]]
+- **collective-communication** (4 notes) → [[_tag-collective-communication]]
+- **csa** (4 notes) → [[_tag-csa]]
+- **gap-cc-2** (4 notes) → [[_tag-gap-cc-2]]
+- **gap-cc-6** (4 notes) → [[_tag-gap-cc-6]]
+- **locus-token-budget-and-effect-size** (4 notes) → [[_tag-locus-token-budget-and-effect-size]]
+- **memory-budget** (4 notes) → [[_tag-memory-budget]]
+- **moe-inference** (4 notes) → [[_tag-moe-inference]]
+- **nvlink** (4 notes) → [[_tag-nvlink]]
+- **pcie-gen2-x4** (4 notes) → [[_tag-pcie-gen2-x4]]
+- **peer-to-peer** (4 notes) → [[_tag-peer-to-peer]]
+- **sequence-parallelism** (4 notes) → [[_tag-sequence-parallelism]]
+- **small-scale** (4 notes) → [[_tag-small-scale]]
+- **sub-q6** (4 notes) → [[_tag-sub-q6]]
+- **activation-memory** (3 notes) → [[_tag-activation-memory]]
+- **all-to-all-cost-model** (3 notes) → [[_tag-all-to-all-cost-model]]
+- **bar1-p2p** (3 notes) → [[_tag-bar1-p2p]]
+- **compute-budget** (3 notes) → [[_tag-compute-budget]]
+- **consumer-gpu-training** (3 notes) → [[_tag-consumer-gpu-training]]
+- **data-parallel** (3 notes) → [[_tag-data-parallel]]
+- **determinism** (3 notes) → [[_tag-determinism]]
+- **distillation** (3 notes) → [[_tag-distillation]]
+- **fp8** (3 notes) → [[_tag-fp8]]
+- **kv-cache** (3 notes) → [[_tag-kv-cache]]
+- **large-batch-training** (3 notes) → [[_tag-large-batch-training]]
+- **learning-rate-scaling** (3 notes) → [[_tag-learning-rate-scaling]]
+- **low-precision** (3 notes) → [[_tag-low-precision]]
+- **mfu** (3 notes) → [[_tag-mfu]]
+- **noise-floor** (3 notes) → [[_tag-noise-floor]]
+- **optimizer-memory** (3 notes) → [[_tag-optimizer-memory]]
+- **quantization** (3 notes) → [[_tag-quantization]]
+- **scaling-laws** (3 notes) → [[_tag-scaling-laws]]
+- **sequence-length-scaling** (3 notes) → [[_tag-sequence-length-scaling]]
+- **tensor-parallelism** (3 notes) → [[_tag-tensor-parallelism]]
+- **tflops** (3 notes) → [[_tag-tflops]]
+- **topology** (3 notes) → [[_tag-topology]]
+- **unlock** (3 notes) → [[_tag-unlock]]
+- **128k-training** (2 notes)
+- **benchmarks** (2 notes)
+- **communication** (2 notes)
+- **communication-overlap** (2 notes)
+- **counter-evidence** (2 notes)
+- **cpu-offload** (2 notes)
+- **cpu-offloading** (2 notes)
+- **critical-batch-size** (2 notes)
+- **cross-layer-reuse** (2 notes)
+- **cross-root-complex** (2 notes)
+- **csa2** (2 notes)
+- **deepseek-v4** (2 notes)
+- **docs** (2 notes)
+- **expert-collapse** (2 notes)
+- **fp32-master-copy** (2 notes)
+- **github** (2 notes)
+- **h100** (2 notes)
+- **hardware-requirement** (2 notes)
+- **hierarchical-indexer** (2 notes)
+- **implementation** (2 notes)
+- **indexer-overhead** (2 notes)
+- **interconnect** (2 notes)
+- **longcat** (2 notes)
+- **lossless-compression** (2 notes)
+- **memory-accounting** (2 notes)
+- **mixed-precision** (2 notes)
+- **moe** (2 notes)
+- **moe-architecture** (2 notes)
+- **p2p-enablement** (2 notes)
+- **path-correction** (2 notes)
+- **pcie** (2 notes)
+- **pcie-gen2-x16** (2 notes)
+- **peripheral** (2 notes)
+- **pipeline-parallelism** (2 notes)
+- **power-cap-thermal** (2 notes)
+- **prefill-cost** (2 notes)
+- **sequence-packing** (2 notes)
+- **sharding-strategy** (2 notes)
+- **specifications** (2 notes)
+- **thin-landing-page** (2 notes)
+- **tp-free** (2 notes)
+- **trainable-memory** (2 notes)
+- **yoco** (2 notes)
+- **zero-offload** (2 notes)
+- **32k-boundary-regime** (1 notes)
+- **32k-trailing-loss** (1 notes)
+- **32k-vs-1m** (1 notes)
+- **5-gpu-penalty** (1 notes)
+- **6-rank** (1 notes)
+- **8-bit** (1 notes)
+- **8-bit-adam** (1 notes)
+- **a100** (1 notes)
+- **ac-coupling-capacitor-mod** (1 notes)
+- **activation-quantization** (1 notes)
+- **adafactor** (1 notes)
+- **alignment** (1 notes)
+- **amd-mi250** (1 notes)
+- **ans** (1 notes)
+- **approximate-allreduce** (1 notes)
+- **architecture-design** (1 notes)
+- **archived** (1 notes)
+- **attention-memory** (1 notes)
+- **bandwidth-table** (1 notes)
+- **bar1-64mb-constraint** (1 notes)
+- **baseline** (1 notes)
+- **batch-size** (1 notes)
+- **batch-size-warmup** (1 notes)
+- **benchmark-study** (1 notes)
+- **bf16** (1 notes)
+- **bf16-reference** (1 notes)
+- **bf16-tflops** (1 notes)
+- **block-sparse** (1 notes)
+- **block-sparse-attention** (1 notes)
+- **block-wise-quantization** (1 notes)
+- **blockwise-selection** (1 notes)
+- **bounce-buffer-placement** (1 notes)
+- **breadth-first** (1 notes)
+- **bytedance** (1 notes)
+- **can-device-access-peer-0-of-56** (1 notes)
+- **capacitor-mod-procedure** (1 notes)
+- **chunked-kv-compression** (1 notes)
+- **cluster-design** (1 notes)
+- **code-artifact** (1 notes)
+- **code-dataset** (1 notes)
+- **coded-computing** (1 notes)
+- **commodity-bandwidth** (1 notes)
+- **commodity-cloud** (1 notes)
+- **commodity-gpu-training** (1 notes)
+- **communication-efficiency** (1 notes)
+- **communication-overhead** (1 notes)
+- **communication-scale** (1 notes)
+- **communication-wall** (1 notes)
+- **community-guidance** (1 notes)
+- **compression** (1 notes)
+- **compute-transfer-overlap** (1 notes)
+- **conditional-memory** (1 notes)
+- **consumer-gpu** (1 notes)
+- **context-scaling** (1 notes)
+- **copy-engine-collectives** (1 notes)
+- **cpu-based-collectives** (1 notes)
+- **critical-analysis** (1 notes)
+- **cross-layer-kv-sharing** (1 notes)
+- **csa2-feasibility** (1 notes)
+- **csa2-prior-work** (1 notes)
+- **cudnn** (1 notes)
+- **cudnn-frontend** (1 notes)
+- **cxl** (1 notes)
+- **data-quality-classifier** (1 notes)
+- **dataset-provenance** (1 notes)
+- **ddp-comparison** (1 notes)
+- **deepseek-v32** (1 notes)
+- **deepseek-v4-flash** (1 notes)
+- **deepwiki-index** (1 notes)
+- **delta-ngram** (1 notes)
+- **dense-warmup** (1 notes)
+- **drift-does-not-grow** (1 notes)
+- **drift-hot-rows** (1 notes)
+- **dropless-routing** (1 notes)
+- **dsa-lineage** (1 notes)
+- **dualpipe** (1 notes)
+- **embedding-parallelism** (1 notes)
+- **embedding-scaling** (1 notes)
+- **evaluation-pitfalls** (1 notes)
+- **expert-opinion** (1 notes)
+- **expert-parallel** (1 notes)
+- **expert-parallelism-dependency** (1 notes)
+- **factored-second-moment** (1 notes)
+- **factorized-memory** (1 notes)
+- **feasibility-blocker** (1 notes)
+- **fineweb-edu** (1 notes)
+- **flashattention** (1 notes)
+- **forward-only-writes** (1 notes)
+- **four-card-x16** (1 notes)
+- **fp16-throughput** (1 notes)
+- **fp32-fma-throttle** (1 notes)
+- **fp8-unsupported-sm80** (1 notes)
+- **frozen-memory** (1 notes)
+- **frozen-parameters** (1 notes)
+- **frozen-router** (1 notes)
+- **frozen-table** (1 notes)
+- **frozen-table-prior-work** (1 notes)
+- **frozen-tables** (1 notes)
+- **gemm** (1 notes)
+- **gen2-unlock** (1 notes)
+- **gen2-x16-bandwidth** (1 notes)
+- **gen2-x16-field-report** (1 notes)
+- **gpu-initiated-communication** (1 notes)
+- **gradient-accumulation** (1 notes)
+- **gradient-accumulation-incompatible** (1 notes)
+- **gradient-noise-scale** (1 notes)
+- **hardware-baseline** (1 notes)
+- **hardware-constraint** (1 notes)
+- **hardware-teardown** (1 notes)
+- **hash-mapping** (1 notes)
+- **hbm-bandwidth-range** (1 notes)
+- **hbm2e-bandwidth** (1 notes)
+- **head-parallel** (1 notes)
+- **hfreduce** (1 notes)
+- **hierarchical-collectives** (1 notes)
+- **hierarchical-sharding** (1 notes)
+- **hisa** (1 notes)
+- **host-centric-routing** (1 notes)
+- **host-offload** (1 notes)
+- **host-ram-table-offload** (1 notes)
+- **host-staged** (1 notes)
+- **host-staged-communication** (1 notes)
+- **hybrid-training-recipe** (1 notes)
+- **indexer-backward** (1 notes)
+- **indexer-bottleneck** (1 notes)
+- **indexer-distillation** (1 notes)
+- **indexer-distillation-loss** (1 notes)
+- **indexer-memory** (1 notes)
+- **inference-only** (1 notes)
+- **inference-side** (1 notes)
+- **instruction-following** (1 notes)
+- **int8-activations** (1 notes)
+- **interconnect-benchmark** (1 notes)
+- **interconnect-energy** (1 notes)
+- **io-awareness** (1 notes)
+- **iommu-passthrough-risk** (1 notes)
+- **k-fac** (1 notes)
+- **kernel-benchmark** (1 notes)
+- **knowledge-editing** (1 notes)
+- **kv-cache-compression** (1 notes)
+- **kv-sharing** (1 notes)
+- **latency-characterization** (1 notes)
+- **linear-attention** (1 notes)
+- **linear-scaling-rule** (1 notes)
+- **link-rate** (1 notes)
+- **link-width** (1 notes)
+- **link-width-verification** (1 notes)
+- **lookup-latency** (1 notes)
+- **loss-scaling** (1 notes)
+- **low-authority** (1 notes)
+- **low-precision-training** (1 notes)
+- **measured-benchmark** (1 notes)
+- **measured-benchmarks** (1 notes)
+- **measured-compute** (1 notes)
+- **megatron** (1 notes)
+- **megatron-core** (1 notes)
+- **memory-blowup-32k** (1 notes)
+- **memory-efficiency** (1 notes)
+- **memory-grafting** (1 notes)
+- **memory-grafting-counterpoint** (1 notes)
+- **memory-hierarchy** (1 notes)
+- **memory-layer** (1 notes)
+- **memory-offloading** (1 notes)
+- **memory-pooling** (1 notes)
+- **memory-sharding** (1 notes)
+- **memory-speed-tradeoff** (1 notes)
+- **mesa** (1 notes)
+- **mics** (1 notes)
+- **moba** (1 notes)
+- **model-card** (1 notes)
+- **model-parallelism** (1 notes)
+- **moe-routing** (1 notes)
+- **moe-sparsity-allocation** (1 notes)
+- **multi-gpu** (1 notes)
+- **multipl-e** (1 notes)
+- **n-gram-embeddings** (1 notes)
+- **ngram-memory** (1 notes)
+- **no-distributed-training** (1 notes)
+- **no-nvlink** (1 notes)
+- **no-optimizer-state** (1 notes)
+- **no-p2p-fused** (1 notes)
+- **no-p2p-measured** (1 notes)
+- **no-sync** (1 notes)
+- **no-training-data** (1 notes)
+- **nsa** (1 notes)
+- **numa** (1 notes)
+- **numa-effects** (1 notes)
+- **nvidia-a100** (1 notes)
+- **nvlink-scope** (1 notes)
+- **nvlink-topology** (1 notes)
+- **olmo** (1 notes)
+- **optimizer-state-on-touched-rows** (1 notes)
+- **optimizer-states** (1 notes)
+- **overencoding** (1 notes)
+- **p2p-bandwidth-lever** (1 notes)
+- **p2p-patch-hangs-nccl** (1 notes)
+- **p2p-pessimization** (1 notes)
+- **parallelism-selection** (1 notes)
+- **parallelism-strategy** (1 notes)
+- **pcb-rework-risk** (1 notes)
+- **pcie-1-1-x4** (1 notes)
+- **pcie-cost-table** (1 notes)
+- **pcie-gen1-x4-lockdown** (1 notes)
+- **pcie-width-vs-speed** (1 notes)
+- **pcie-width-vs-throughput** (1 notes)
+- **phase-sensitivity** (1 notes)
+- **pj-per-bit** (1 notes)
+- **polypythias** (1 notes)
+- **pooled-block-gating** (1 notes)
+- **pooled-block-indexer** (1 notes)
+- **post-hoc-compression** (1 notes)
+- **power** (1 notes)
+- **power-draw-by-workload** (1 notes)
+- **powersgd** (1 notes)
+- **prefetching** (1 notes)
+- **preflight-lnksta** (1 notes)
+- **primary-docs** (1 notes)
+- **production-cluster** (1 notes)
+- **production-reference** (1 notes)
+- **protocols** (1 notes)
+- **pure-pytorch-reference** (1 notes)
+- **pwrbrk-power-brake** (1 notes)
+- **pytorch-forum** (1 notes)
+- **pytorch-fp16-limitation** (1 notes)
+- **pytorch-source** (1 notes)
+- **rdma** (1 notes)
+- **representation-drift** (1 notes)
+- **reproducibility** (1 notes)
+- **resharding** (1 notes)
+- **retrofit** (1 notes)
+- **ring-allreduce** (1 notes)
+- **ring-tree-algorithms** (1 notes)
+- **ring-vs-host-reduction** (1 notes)
+- **rlvr** (1 notes)
+- **root-complex-contention** (1 notes)
+- **rope-gotcha** (1 notes)
+- **routing** (1 notes)
+- **runtime** (1 notes)
+- **scaling** (1 notes)
+- **serving** (1 notes)
+- **sharding** (1 notes)
+- **shm-transport** (1 notes)
+- **single-gpu** (1 notes)
+- **single-gpu-7b** (1 notes)
+- **single-gpu-moe** (1 notes)
+- **sku-lottery** (1 notes)
+- **sm-count-scaling** (1 notes)
+- **sm80** (1 notes)
+- **sm80-a100-benchmark** (1 notes)
+- **sm80-runnable** (1 notes)
+- **sm90-only** (1 notes)
+- **sm90-sm100-only** (1 notes)
+- **small-batch-generalization** (1 notes)
+- **small-scale-moe** (1 notes)
+- **small-scale-pretraining** (1 notes)
+- **source-hub** (1 notes)
+- **sourcing-correction** (1 notes)
+- **sparse-dictionary** (1 notes)
+- **sparse-memory** (1 notes)
+- **ssd-offload** (1 notes)
+- **stack-edu** (1 notes)
+- **streamindex** (1 notes)
+- **streaming-topk** (1 notes)
+- **survey** (1 notes)
+- **swhid-s3-hydration** (1 notes)
+- **table-51b-params** (1 notes)
+- **tartan** (1 notes)
+- **tensor-core-tflops** (1 notes)
+- **tensor-core-unusable-stock** (1 notes)
+- **tensor-parallel-penalty** (1 notes)
+- **tensor-parallel-trap** (1 notes)
+- **thin-metadata-only** (1 notes)
+- **tokenizer-dependence** (1 notes)
+- **topology-aware-scheduling** (1 notes)
+- **tp-dead-end-measured** (1 notes)
+- **tp-ep-unworkable** (1 notes)
+- **tp-pp-ep-dependency** (1 notes)
+- **train-free** (1 notes)
+- **trainable-embeddings** (1 notes)
+- **trainable-parameter-budget** (1 notes)
+- **trainable-sparse-attention** (1 notes)
+- **trained-vs-training-free** (1 notes)
+- **training-free** (1 notes)
+- **training-free-router** (1 notes)
+- **training-loss-path** (1 notes)
+- **training-stability** (1 notes)
+- **training-vs-inference** (1 notes)
+- **tree-algorithm** (1 notes)
+- **tuning** (1 notes)
+- **ultramem** (1 notes)
+- **unlock-caveats** (1 notes)
+- **unverified-peer-dma-claim** (1 notes)
+- **vbios-crossflash** (1 notes)
+- **vendor-blog** (1 notes)
+- **venue-record** (1 notes)
+- **vllm** (1 notes)
+- **vllm-tuning** (1 notes)
+- **vram-unlock** (1 notes)
+- **vram-unlock-64gb** (1 notes)
+- **warmup** (1 notes)
+- **zero-overhead** (1 notes)
+- **zero-plus-plus** (1 notes)
+- **zero-stages** (1 notes)
+
+---
+*Auto-generated by hyperresearch. Do not edit manually.*

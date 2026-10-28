@@ -1,0 +1,53 @@
+# Draft A — must_read_note_ids (n=50)
+Angle: Strongest-thesis: the repo's program is directionally right and its quantitative spine is wrong; after correction the fabric is not binding and wall-clock is.
+
+- interim-report-allreduce-ceiling-and-definition: Interim report — allreduce-ceiling-and-definition
+- interim-report-topology-cost-at-1m-tokens: Interim report — topology-cost-at-1m-tokens
+- interim-report-memory-budget-and-frozen-tables: Interim report — memory-budget-and-frozen-tables
+- interim-report-sustained-throughput-at-32k: Interim report — sustained-throughput-at-32k
+- interim-report-csa2-at-32k-sm80: Interim report — csa2-at-32k-sm80
+- interim-report-token-budget-and-effect-size: Interim report — token-budget-and-effect-size
+- readmemd-faircslmtrainbench-at-main: README.md · FAIRC/SLMTrainBench at main
+- skyladder-better-and-faster-pretraining-via: SkyLadder: Better and Faster Pretraining via
+- deepspeed-ulysses-system-optimizations-for-enabling: DEEPSPEED ULYSSES: SYSTEM OPTIMIZATIONS FOR ENABLING
+- seq1f1b-efficient-sequence-level-pipeline-parallelism-for: Seq1F1B: Efficient Sequence-Level Pipeline Parallelism for
+- how-to-train-long-context-language-models-effectively: How to Train Long-Context Language Models (Effectively)
+- quantifying-pretraining-variance-data-initialization-and-floating-point-arithmet: Quantifying Pretraining Variance: Data, Initialization, and Floating Point Arith
+- effective-learning-rate-governs-loss-dynamics-in-language-model-pretraining: Effective Learning Rate Governs Loss Dynamics in Language Model Pretraining
+- i-tested-the-cmp170hx: I tested the CMP170HX
+- readmemd: README.md
+- 2026-10-01-cmp170hx-4card-bar1-p2p-plx-cudaipynb: 2026-10-01-cmp170hx-4card-bar1-p2p-plx-cuda.ipynb
+- physical-modsmd: Physical modifications — AC-coupling capacitor mod — Consensus-Protocol/cmp170hx
+- pcie-subsystemmd: PCIe subsystem — Consensus-Protocol/cmp170hx technical wiki
+- p2pmd: Peer-to-peer and multi-GPU — Consensus-Protocol/cmp170hx technical wiki
+- club-170hxdocsbenchmarksmd-at-main-pixelmlclub-170hx-github: club-170hx/docs/BENCHMARKS.md at main · PixelML/club-170hx · GitHub
+- club-170hxdocscmp170hx-understandingmd-at-main-pixelmlclub-170hx-github: club-170hx/docs/CMP170HX-UNDERSTANDING.md at main · PixelML/club-170hx · GitHub
+- club-170hxdocstopology-and-parallelismmd-at-main-pixelmlclub-170hx-github-2: club-170hx/docs/TOPOLOGY-AND-PARALLELISM.md at main · PixelML/club-170hx · GitHu
+- club-170hxdocshardwaremd-at-main-pixelmlclub-170hx-github: club-170hx/docs/HARDWARE.md at main · PixelML/club-170hx · GitHub
+- lessonsmd: LESSONS.md
+- performancemd: Measured performance — Consensus-Protocol/cmp170hx technical wiki
+- readmemd-2: README.md
+- 2026-09-02-cmp170hx-health-gateipynb: 2026-09-02-cmp170hx-health-gate.ipynb
+- memory-grafting-scaling-language-model: Memory Grafting: Scaling Language Model
+- conditional-memory-via-scalable-lookup: Conditional Memory via Scalable Lookup:
+- ultramemv2-memory-networks-scaling-to-120b: UltraMemV2: Memory Networks Scaling to 120B
+- over-tokenized-transformer-vocabulary-is-generally-worth-scaling: Over-Tokenized Transformer: Vocabulary is Generally Worth Scaling
+- published-as-a-conference-paper-at-iclr-2022: 8-Bit Optimizers via Block-Wise Quantization (ICLR 2022)
+- adafactor-adaptive-learning-rates-with-sublinear-memory-cost: Adafactor: Adaptive Learning Rates with Sublinear Memory Cost
+- zero-memory-optimizations-toward-training-trillion-parameter-models-sc20: ZeRO: Memory Optimizations Toward Training Trillion Parameter Models (SC20)
+- fullyshardeddataparallel-pytorch-213-documentation: FullyShardedDataParallel — PyTorch 2.13 documentation
+- published-as-a-conference-paper-at-iclr-2026: Published as a conference paper at ICLR 2026
+- github-fla-orgnative-sparse-attention-efficient-triton-implementations-for-nativ: GitHub - fla-org/native-sparse-attention: 🐳 Efficient Triton implementations for
+- github-relaxed-system-labflash-sparse-attention-efficient-implementations-of-nat: GitHub - Relaxed-System-Lab/Flash-Sparse-Attention: 🚀🚀 Efficient implementations
+- native-sparse-attention-hardware-aligned-and-natively: Native Sparse Attention: Hardware-Aligned and Natively
+- longcat-sparse-attention-taming-the-lightning-via: LongCat Sparse Attention: Taming the Lightning via
+- moba-mixture-of-block-attention-for: MoBA: Mixture of Block Attention for Long-Context LLMs
+- streamindex-memory-bounded-compressed-sparse: StreamIndex: Memory-Bounded Compressed Sparse
+- dsa_referencepy: cuDNN Frontend DSA reference implementation (dsa_reference.py) — NVIDIA/cudnn-fr
+- palm-scaling-language-modeling-with-pathways: PaLM: Scaling Language Modeling with Pathways
+- flashattention-2: FlashAttention-2:
+- pcie-110-gpu-스케일링: PCIe 1~10 GPU 스케일링
+- perf-29-throughput-by-switching-from-deepspeed-to-ddp-issue-177-tensorautoopen-2: perf: ~2.9× throughput by switching from DeepSpeed to DDP · Issue #177 · TensorA
+- a-13-hour-training-experiment-on-a-pc-workstation-why-optimization-begins-with-m: A 13-Hour Training Experiment on a PC Workstation: Why Optimization Begins with 
+- training-compute-optimal-large-language-models: Training Compute-Optimal Large Language Models
+- critical-batch-size-revisited-a-simple-empirical: Critical Batch Size Revisited: A Simple Empirical Approach to Large-Batch Langua

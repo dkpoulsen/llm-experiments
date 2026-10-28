@@ -1,0 +1,72 @@
+[
+  {
+    "claim": "NVIDIA specifies the A100 at 312 TFLOPS BFLOAT16 Tensor Core dense (624 with sparsity) and 312 TFLOPS FP16 Tensor Core dense, identically across SXM4 and PCIe form factors.",
+    "stance": "neutral",
+    "stance_target": "The reference ceiling used to judge whether the repo's measured 162 TFLOPS bf16/GPU is plausible",
+    "evidence_type": "statistical",
+    "scope_conditions": "NVIDIA A100 datasheet, Jun21 revision, 40 GB and 80 GB, PCIe and SXM4",
+    "quoted_support": "BFLOAT16 Tensor Core 312 TFLOPS | 624 TFLOPS* ... FP16 Tensor Core 312 TFLOPS | 624 TFLOPS* ... * With sparsity",
+    "numbers": ["312 TFLOPS bf16 dense", "624 TFLOPS bf16 sparse", "312 TFLOPS FP16 dense", "156 TFLOPS TF32", "19.5 TFLOPS FP32", "9.7 TFLOPS FP64"],
+    "entities": ["NVIDIA A100", "BFLOAT16", "Tensor Core", "TF32"],
+    "time_period": "2021-06",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "nvidia-a100-tensor-core-gpu-data-sheet-jun21-1"
+  },
+  {
+    "claim": "The A100 40 GB PCIe card runs at a 250 W TDP with 1,555 GB/s HBM2, the same TDP as the CMP 170HX.",
+    "stance": "supports",
+    "stance_target": "The repo's 250 W-per-card figure and the assumption that CMP 170HX clocks are comparable to an A100 PCIe part",
+    "evidence_type": "statistical",
+    "scope_conditions": "NVIDIA A100 datasheet, Jun21 revision",
+    "quoted_support": "A100 40GB PCIe ... GPU Memory Bandwidth 1,555GB/s ... Max Thermal Design Power (TDP) 250W",
+    "numbers": ["250 W TDP", "1,555 GB/s", "40 GB HBM2"],
+    "entities": ["NVIDIA A100 40GB PCIe", "HBM2", "TDP"],
+    "time_period": "2021-06",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "nvidia-a100-tensor-core-gpu-data-sheet-jun21-1"
+  },
+  {
+    "claim": "Linear SM-count scaling from the A100's 108 SMs to the CMP 170HX's 70 SMs puts the CMP bf16 ceiling at roughly 202 TFLOPS, and at roughly 214 TFLOPS with the 74 SMs available after the cmpunlocker SM re-enable.",
+    "stance": "supports",
+    "stance_target": "The repo's measured 162 TFLOPS bf16/GPU, which is about 80% of this ceiling and therefore physically plausible for an unlocked card at a 250 W cap",
+    "evidence_type": "theoretical",
+    "scope_conditions": "Arithmetic from the A100 datasheet's 312 TFLOPS bf16 dense and 108 SM count, assuming comparable clocks",
+    "quoted_support": "BFLOAT16 Tensor Core 312 TFLOPS | 624 TFLOPS*",
+    "numbers": ["108 SM A100", "70 SM CMP", "74 SM unlocked", "~202 TFLOPS at 70 SM", "~214 TFLOPS at 74 SM", "162 TFLOPS measured = ~80% of ceiling"],
+    "entities": ["NVIDIA A100", "NVIDIA CMP 170HX", "SM count", "bf16"],
+    "time_period": "2021-06",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "nvidia-a100-tensor-core-gpu-data-sheet-jun21-1"
+  },
+  {
+    "claim": "The A100's interconnect is PCIe Gen4 at 64 GB/s or NVLink at 600 GB/s, so the CMP 170HX's Gen2 x4 link is roughly an order of magnitude below even the A100's PCIe path.",
+    "stance": "supports",
+    "stance_target": "The repo's claim that the fabric, not the silicon, is what makes this box different from a normal multi-GPU node",
+    "evidence_type": "statistical",
+    "scope_conditions": "NVIDIA A100 datasheet, Jun21 revision",
+    "quoted_support": "Interconnect NVIDIA NVLink Bridge for 2 GPUs: 600GB/s ** PCIe Gen4: 64GB/s ... NVLink: 600GB/s PCIe Gen4: 64GB/s",
+    "numbers": ["PCIe Gen4 64 GB/s", "NVLink 600 GB/s"],
+    "entities": ["NVIDIA A100", "PCIe Gen4", "NVLink"],
+    "time_period": "2021-06",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "nvidia-a100-tensor-core-gpu-data-sheet-jun21-1"
+  },
+  {
+    "claim": "The A100's 80 GB PCIe variant reaches 1,935 GB/s at 300 W and the SXM4 80 GB reaches 2,039 GB/s at 400 W, so the CMP 170HX's 1,500 GB/s class bandwidth is a 40 GB-class figure.",
+    "stance": "neutral",
+    "stance_target": "Whether the repo's ~1500 GB/s bandwidth assumption matches a 40 GB A100-class part rather than an 80 GB one",
+    "evidence_type": "statistical",
+    "scope_conditions": "NVIDIA A100 datasheet, Jun21 revision",
+    "quoted_support": "GPU Memory Bandwidth 1,555GB/s 1,935GB/s 1,555GB/s 2,039GB/s ... Max Thermal Design Power (TDP) 250W 300W 400W 400W",
+    "numbers": ["1,935 GB/s 80GB PCIe", "2,039 GB/s 80GB SXM4", "300 W", "400 W"],
+    "entities": ["NVIDIA A100 80GB", "HBM2e", "SXM4"],
+    "time_period": "2021-06",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "nvidia-a100-tensor-core-gpu-data-sheet-jun21-1"
+  }
+]

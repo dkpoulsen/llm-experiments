@@ -1,0 +1,58 @@
+[
+  {
+    "claim": "The FineWeb-Edu classifier is a Snowflake-arctic-embed-m encoder with a single regression head trained on 450k Llama3-70B-instruct educational-quality annotations scored 0-5, with the embedding and encoder layers frozen during training.",
+    "stance": "supports",
+    "stance_target": "The repo's data-pipeline claim that its 9B-token corpus is FineWeb-Edu filtered",
+    "evidence_type": "empirical",
+    "scope_conditions": "HuggingFaceTB/fineweb-edu-classifier; 450,000 samples from FineWeb; 20 epochs at LR 3e-4",
+    "quoted_support": "We added a classification head with a single regression output to Snowflake-arctic-embed and trained the model for 20 epochs with a learning rate of 3e-4. During training, the embedding and encoder layers were frozen to focus on the classification head.",
+    "numbers": ["450,000 annotations", "20 epochs", "3e-4 learning rate", "scores 0-5"],
+    "entities": ["FineWeb-Edu", "Snowflake-arctic-embed", "Llama3-70B-instruct", "FineWeb"],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "f43939791a7ceb0b01a4937308317be5"
+  },
+  {
+    "claim": "As a binary classifier at score threshold 3 the filter reaches F1 82% and accuracy 0.71 on a 46,867-sample hold-out, which is the quality ceiling of the filter the repo's corpus depends on.",
+    "stance": "supports",
+    "stance_target": "How much of the repo's data-quality claim rests on a classifier with a measurable error rate",
+    "evidence_type": "empirical",
+    "scope_conditions": "Hold-out set of 46,867 Llama3-annotated samples; binary threshold at score 3",
+    "quoted_support": "The model achieved an F1 score of 82% when converted to a binary classifier using a score threshold of 3.",
+    "numbers": ["F1 82%", "accuracy 0.71", "macro-F1 0.50", "46,867 hold-out samples"],
+    "entities": ["FineWeb-Edu classifier", "F1", "hold-out set"],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "f43939791a7ceb0b01a4937308317be5"
+  },
+  {
+    "claim": "The classifier's recall collapses at the top of the educational-quality scale (class 5 recall 0.01, class 4 recall 0.35), so the highest-quality tier is systematically under-selected by the filter.",
+    "stance": "refutes",
+    "stance_target": "The assumption that a FineWeb-Edu-filtered corpus is enriched in the highest-quality educational content rather than merely excluding the worst",
+    "evidence_type": "empirical",
+    "scope_conditions": "Per-class classification report on the 46,867-sample hold-out",
+    "quoted_support": "5 0.33 0.01 0.02 125",
+    "numbers": ["class 5 recall 0.01", "class 4 recall 0.35", "class 3 recall 0.50", "class 0 recall 0.49"],
+    "entities": ["FineWeb-Edu classifier", "recall", "classification report"],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "f43939791a7ceb0b01a4937308317be5"
+  },
+  {
+    "claim": "The model card recommends int_score >= 3 as the curation threshold and warns the classifier is tuned to primary and grade-school educational content, so it may underperform on higher-education or specialised domains.",
+    "stance": "neutral",
+    "stance_target": "Whether FineWeb-Edu filtering is appropriate for a technical/code-heavy pretraining mix",
+    "evidence_type": "expert-opinion",
+    "scope_conditions": "Model card limitations section; out-of-distribution samples",
+    "quoted_support": "It might overfit to academic looking content for the higher scores and we recommend int_score >= 3 as a threshold for data curation.",
+    "numbers": ["int_score >= 3 threshold"],
+    "entities": ["FineWeb-Edu classifier", "int_score", "data curation"],
+    "time_period": "2024",
+    "region": "global",
+    "confidence": "medium",
+    "source_note_id": "f43939791a7ceb0b01a4937308317be5"
+  }
+]

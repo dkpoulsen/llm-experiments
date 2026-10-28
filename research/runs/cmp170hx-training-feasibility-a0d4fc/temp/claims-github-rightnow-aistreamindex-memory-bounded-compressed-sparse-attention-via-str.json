@@ -1,0 +1,97 @@
+[
+  {
+    "claim": "The StreamIndex repository states the implementation is tested on H100/H200 (Hopper, sm_90a) only, so running it on a CMP 170HX (GA100, sm_80) is unvalidated even though Triton itself supports SM80.",
+    "stance": "refutes",
+    "stance_target": "The assumption that the chunked CSA indexer can be dropped onto Ampere-class cards without porting work",
+    "evidence_type": "anecdotal",
+    "scope_conditions": "Repository README, requirements section; 2 commits, May 2026",
+    "quoted_support": "Requirements: PyTorch >= 2.10, Triton >= 3.5, CUDA 12.x or 13.x, Python >= 3.11. Tested on H100 / H200 (Hopper, sm_90a).",
+    "numbers": [
+      "PyTorch >= 2.10",
+      "Triton >= 3.5",
+      "CUDA 12.x/13.x",
+      "Python >= 3.11",
+      "sm_90a only"
+    ],
+    "entities": [
+      "StreamIndex",
+      "Triton",
+      "Hopper",
+      "sm_90a",
+      "CMP 170HX"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "github-rightnow-aistreamindex-memory-bounded-compressed-sparse-attention-via-str"
+  },
+  {
+    "claim": "The repository's published result table confirms the paper's numbers: at S=32,768 the materialize path takes 317 ms and 129 GB while the chunked path takes 31 ms and 0.40 GB (10.3x), and at S=1,048,576 the chunked path runs in 30,900 ms at 6.21 GB peak.",
+    "stance": "supports",
+    "stance_target": "The claim that a chunked top-k makes CSA feasible at 32k on a 64 GB card",
+    "evidence_type": "empirical",
+    "scope_conditions": "Single H200 SXM, BF16, V4-Flash dimensions (H_I=64, m=4)",
+    "quoted_support": "| 32,768 | 317 ms / 129 GB | 31 ms / 0.40 GB | 10.3x | ... | 1,048,576 | OOM | 30,900 ms / 6.21 GB |",
+    "numbers": [
+      "32,768: 317 ms/129 GB vs 31 ms/0.40 GB",
+      "65,536: OOM vs 122 ms/0.59 GB",
+      "131,072: OOM vs 485 ms/0.96 GB",
+      "262,144: OOM vs 1,935 ms/1.71 GB",
+      "524,288: OOM vs 7,730 ms/3.21 GB",
+      "1,048,576: OOM vs 30,900 ms/6.21 GB"
+    ],
+    "entities": [
+      "StreamIndex",
+      "H200",
+      "materialize path",
+      "chunked path"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "github-rightnow-aistreamindex-memory-bounded-compressed-sparse-attention-via-str"
+  },
+  {
+    "claim": "The repository confirms the memory mechanism is the [B, S, H_I, T] FP32 score tensor materialized before top-k, which is 256 GB at S=65,536 with V4-Flash dimensions and exceeds the HBM of any single current GPU.",
+    "stance": "supports",
+    "stance_target": "The claim that the indexer step, not the attention kernel, gates sequence length",
+    "evidence_type": "empirical",
+    "scope_conditions": "README 'What this is' section",
+    "quoted_support": "Public CSA implementations (V3.2-Exp reference, TileLang reference) materialize a [B, S, H_I, T] FP32 score tensor before the top-k reduction. With V4-Flash dimensions (H_I = 64, m = 4), that intermediate is 256 GB at S = 65,536, exceeding the HBM of any single current GPU.",
+    "numbers": [
+      "256 GB at S=65,536",
+      "H_I=64",
+      "m=4"
+    ],
+    "entities": [
+      "CSA",
+      "V3.2-Exp reference",
+      "TileLang reference",
+      "FP32 score tensor"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "github-rightnow-aistreamindex-memory-bounded-compressed-sparse-attention-via-str"
+  },
+  {
+    "claim": "The repository is a minimal 2-commit project (May 2026) with raw benchmark logs committed under benchmarks/results/, so its numbers are reproducible but the codebase is young and lightly maintained.",
+    "stance": "neutral",
+    "stance_target": "How much engineering risk adopting StreamIndex carries",
+    "evidence_type": "anecdotal",
+    "scope_conditions": "Repository metadata",
+    "quoted_support": "Raw logs are in benchmarks/results/",
+    "numbers": [
+      "2 commits",
+      "1 branch"
+    ],
+    "entities": [
+      "StreamIndex",
+      "GitHub"
+    ],
+    "time_period": "2026",
+    "region": "global",
+    "confidence": "high",
+    "source_note_id": "github-rightnow-aistreamindex-memory-bounded-compressed-sparse-attention-via-str"
+  }
+]
